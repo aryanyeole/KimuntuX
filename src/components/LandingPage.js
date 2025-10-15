@@ -215,7 +215,7 @@ const LandingPage = () => {
         <Container>
           <HeroTitle>AI Digital Brokerage Platform</HeroTitle>
           <HeroSubtitle>
-            Multi-Channel Integration and Mobile Application
+            The Intelligent Digital Brokerage & Commerce Universe for B2B, B2C, and Beyond.
           </HeroSubtitle>
           <CTAButtons>
             <CTAButton className="primary">Start Free Trial</CTAButton>
