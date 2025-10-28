@@ -9,6 +9,8 @@ import LandingPage from './components/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
+import FAQPage from './pages/FAQPage';
+import SolutionsPage from './pages/SolutionsPage';
 
 // Import all page components
 import CRMPage from './pages/CRMPage';
@@ -37,6 +39,8 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/solutions" element={<SolutionsPage />} />
               <Route path="/crm" element={<CRMPage />} />
               <Route path="/b2b-brokerage" element={<B2BBrokeragePage />} />
               <Route path="/b2c-marketplace" element={<B2CMarketplacePage />} />
