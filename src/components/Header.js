@@ -1,9 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
-import { ReactComponent as SearchIcon } from '../assets/search.svg';
-import { ReactComponent as UserIcon } from '../assets/user.svg';
-import lightLogo from '../assets/light_logo.jpg';
+import { useTheme } from '../contexts/ThemeContext';
+import { useUser } from '../contexts/UserContext';
 
 const HeaderContainer = styled.header`
   background-color: ${props => props.theme?.colors?.background || '#FFFFFF'};
@@ -36,7 +35,7 @@ const Logo = styled(Link)`
 `;
 
 const LogoImage = styled.img`
-  height: 72px;
+  height: 60px;
   width: auto;
   margin-right: 0.5rem;
 `;
@@ -75,20 +74,20 @@ const RightSection = styled.div`
   gap: 0.5rem;
 `;
 
-const StyledSearchIcon = styled(SearchIcon)`
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-  vertical-align: middle;
-  fill: #111 !important;
+const StyledSearchIcon = styled.div`
+  width: 18px;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+  margin-right: 0.5rem;
 `;
 
-const StyledUserIcon = styled(UserIcon)`
-  width: 22px;
-  height: 22px;
-  margin-right: 8px;
-  vertical-align: middle;
-  fill: #111 !important;
+const StyledUserIcon = styled.div`
+  width: 18px;
+  height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+  margin-right: 0.5rem;
 `;
 
 const SearchButton = styled.button`
@@ -142,31 +141,40 @@ const StartTrialButton = styled(Link)`
 `;
 
 const Header = () => {
+  const { isDarkMode, toggleTheme } = useTheme();
+  const { user, logout } = useUser();
   const location = useLocation();
 
   const mainNavItems = [
     { path: '/about', label: 'About' },
     { path: '/pricing', label: 'Price' },
     { path: '/solutions', label: 'Solutions' },
-    { path: '/products', label: 'Products' }, // Products as ordinary nav item
+    { path: '/products', label: 'Products' },
     { path: '/faq', label: 'FAQ' },
     { path: '/blog', label: 'Blog' }
   ];
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <HeaderContainer>
       <NavContainer>
         <LeftSection>
           <Logo to="/">
-            <LogoImage
-              src={lightLogo}
-              alt="Logo"
-              onError={e => {
+            <LogoImage 
+              src={isDarkMode ? '/dark_logo.jpg' : '/light_logo.jpg'} 
+              alt="KimuntuX Logo"
+              onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'flex';
               }}
             />
-            <span style={{ fontWeight: 600, fontSize: '1.35rem', color: '#111', display: 'none' }}>imuntuX</span>
+            <div style={{ display: 'none', alignItems: 'center', gap: '4px', fontSize: '1.5rem' }}>
+              <span style={{ color: '#00C896', fontWeight: '700' }}>K</span>
+              <span style={{ color: isDarkMode ? '#FFFFFF' : '#111111', fontWeight: '700' }}>imuntuX</span>
+            </div>
           </Logo>
           <MainNav>
             {mainNavItems.map(item => (
@@ -181,13 +189,23 @@ const Header = () => {
             <StyledSearchIcon />
             Search
           </SearchButton>
-          <SignInButton>
-            <StyledUserIcon />
-            Sign in
-          </SignInButton>
-          <StartTrialButton to="/start-trial">
-            Start free trial
-          </StartTrialButton>
+          {user ? (
+            <>
+              <SignInButton onClick={handleLogout}>
+                <StyledUserIcon />
+                Logout
+              </SignInButton>
+              <StartTrialButton to="/dashboard">Dashboard</StartTrialButton>
+            </>
+          ) : (
+            <>
+              <SignInButton as={Link} to="/login">
+                <StyledUserIcon />
+                Sign in
+              </SignInButton>
+              <StartTrialButton to="/signup">Start free trial</StartTrialButton>
+            </>
+          )}
         </RightSection>
       </NavContainer>
     </HeaderContainer>
