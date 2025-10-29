@@ -7,7 +7,6 @@ import { useUser } from '../contexts/UserContext';
 const HeaderContainer = styled.header`
   background-color: ${props => props.theme?.colors?.background || '#FFFFFF'};
   border-bottom: 1px solid ${props => props.theme?.colors?.border || '#E5E5E5'};
-  padding: 0.5rem 0;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -35,7 +34,7 @@ const Logo = styled(Link)`
 `;
 
 const LogoImage = styled.img`
-  height: 70px;
+  height: 75px;
   width: auto;
   margin-right: 0.5rem;
 `;
