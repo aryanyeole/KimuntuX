@@ -35,7 +35,7 @@ const Logo = styled(Link)`
 `;
 
 const LogoImage = styled.img`
-  height: 60px;
+  height: 70px;
   width: auto;
   margin-right: 0.5rem;
 `;
