@@ -407,7 +407,7 @@ const SolutionsPage = () => {
               </ProblemSection>
               
               <SolutionSection>
-                <SolutionTitleText>KimuntuX Solution:</SolutionTitleText>
+                <SolutionTitleText>Solution:</SolutionTitleText>
                 <SolutionText>{solution.solution}</SolutionText>
                 <FeatureList>
                   {solution.features.map((feature, featureIndex) => (

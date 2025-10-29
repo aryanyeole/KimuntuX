@@ -6,6 +6,8 @@ import { GlobalStyles } from './styles/GlobalStyles';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import LandingPage from './components/LandingPage';
+import AboutPage from './pages/AboutPage';
+import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
@@ -36,6 +38,8 @@ function App() {
             <Header />
             <Routes>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
