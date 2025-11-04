@@ -1,410 +1,274 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useTheme } from '../contexts/ThemeContext';
 
-const FAQContainer = styled.div`
+const Page = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.background || '#FFFFFF'}, ${props => props.theme?.colors?.cardBackground || '#f8f9fa'});
-  padding: 4rem 2rem;
+  background: radial-gradient(1200px 600px at -10% -10%, ${p => (p.theme?.colors?.primary || '#00C896')}0D, transparent 60%),
+              radial-gradient(1000px 500px at 110% -20%, ${p => (p.theme?.colors?.accent || '#DAA520')}0F, transparent 55%),
+              ${p => p.theme?.colors?.background || '#FFFFFF'};
 `;
 
-const Container = styled.div`
-  max-width: 1200px;
+const Wrap = styled.div`
+  max-width: 1120px;
   margin: 0 auto;
+  padding: 48px 20px 72px;
 `;
 
-const Header = styled.div`
+const Hero = styled.header`
   text-align: center;
-  margin-bottom: 4rem;
+  margin-bottom: 32px;
 `;
 
-const Title = styled.h1`
-  font-size: 3rem;
+const H1 = styled.h1`
+  margin: 0 0 8px;
+  font-size: 40px;
   font-weight: 700;
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}, ${props => props.theme?.colors?.accent || '#DAA520'});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1rem;
-  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
-  animation: slideInUp 1s ease-out;
-  
-  @keyframes slideInUp {
-    from {
-      opacity: 0;
-      transform: translateY(50px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
 `;
 
-const Subtitle = styled.p`
-  font-size: 1.2rem;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.8;
-  max-width: 600px;
-  margin: 0 auto;
-  animation: slideInUp 1s ease-out 0.2s both;
+const Lead = styled.p`
+  margin: 0 auto 8px;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  opacity: .85;
+  font-size: 18px;
+  max-width: 780px;
 `;
 
-const BenefitsSection = styled.section`
-  margin-bottom: 4rem;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 2.5rem;
-  font-weight: 600;
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}, ${props => props.theme?.colors?.accent || '#DAA520'});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  margin-bottom: 3rem;
-  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}, ${props => props.theme?.colors?.accent || '#DAA520'});
-    border-radius: 2px;
-  }
-`;
-
-const SectorGrid = styled.div`
+const FAQList = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
+  gap: 16px;
 `;
 
-const SectorCard = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.background || '#FFFFFF'}, ${props => props.theme?.colors?.cardBackground || '#f8f9fa'});
-  border: 1px solid ${props => props.theme?.colors?.border || '#E5E5E5'};
-  border-radius: 20px;
-  padding: 2rem;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+const FAQItem = styled.div`
   position: relative;
+  background: linear-gradient(180deg, ${p => (p.theme?.colors?.cardBackground || '#f8f9fa')} 0%, ${p => (p.theme?.colors?.background || '#FFFFFF')} 100%);
+  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  animation: fadeInUp 0.6s ease-out;
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
+  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+  transition: all .3s ease;
+  
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     height: 4px;
-    background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}, ${props => props.theme?.colors?.accent || '#DAA520'});
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
+    background: linear-gradient(90deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    opacity: ${p => p.isOpen ? '1' : '.5'};
+    transition: opacity .3s ease;
   }
-
-  &:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    border-color: ${props => props.theme?.colors?.primary || '#00C896'};
-    
-    &::before {
-      transform: scaleX(1);
-    }
-  }
-`;
-
-const SectorIcon = styled.div`
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  position: relative;
-  display: inline-block;
-  transition: all 0.3s ease;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}20, ${props => props.theme?.colors?.accent || '#DAA520'}20);
-    border-radius: 50%;
-    z-index: -1;
-    transition: all 0.3s ease;
-  }
-  
-  ${SectorCard}:hover & {
-    transform: scale(1.1) rotate(5deg);
-    
-    &::before {
-      transform: translate(-50%, -50%) scale(1.2);
-      background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}30, ${props => props.theme?.colors?.accent || '#DAA520'}30);
-    }
-  }
-`;
-
-const SectorTitle = styled.h3`
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}, ${props => props.theme?.colors?.accent || '#DAA520'});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1rem;
-  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
-  font-size: 1.3rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  
-  ${SectorCard}:hover & {
-    transform: translateY(-2px);
-  }
-`;
-
-const BenefitList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const BenefitItem = styled.li`
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.8;
-  line-height: 1.6;
-  margin-bottom: 0.75rem;
-  padding-left: 1.5rem;
-  position: relative;
-  transition: all 0.3s ease;
-  
-  &::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: ${props => props.theme?.colors?.primary || '#00C896'};
-    font-weight: bold;
-    font-size: 1.1rem;
-  }
-  
-  ${SectorCard}:hover & {
-    opacity: 1;
-    transform: translateX(5px);
-  }
-`;
-
-const UniversalBenefits = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}15, ${props => props.theme?.colors?.accent || '#DAA520'}15);
-  border-radius: 20px;
-  padding: 3rem;
-  text-align: center;
-  margin-top: 3rem;
-  border: 1px solid ${props => props.theme?.colors?.border || '#E5E5E5'};
-  position: relative;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(from 0deg, transparent, ${props => props.theme?.colors?.primary || '#00C896'}20, transparent);
-    animation: rotate 10s linear infinite;
-    opacity: 0.3;
-  }
-
-  @keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-
-const UniversalTitle = styled.h3`
-  font-size: 2rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}, ${props => props.theme?.colors?.accent || '#DAA520'});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1.5rem;
-  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
-  position: relative;
-  z-index: 1;
-`;
-
-const UniversalList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  position: relative;
-  z-index: 1;
-`;
-
-const UniversalItem = styled.div`
-  background: ${props => props.theme?.colors?.background || '#FFFFFF'};
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid ${props => props.theme?.colors?.border || '#E5E5E5'};
-  transition: all 0.3s ease;
   
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  }
-  
-  h4 {
-    color: ${props => props.theme?.colors?.primary || '#00C896'};
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-  
-  p {
-    color: ${props => props.theme?.colors?.text || '#111111'};
-    opacity: 0.8;
-    line-height: 1.6;
-    margin: 0;
+    box-shadow: 0 14px 32px rgba(0,0,0,0.08);
+    border-color: ${p => p.theme?.colors?.primary || '#00C896'}33;
   }
 `;
 
-const FAQPage = () => {
-  const sectors = [
-    {
-      icon: '🏛️',
-      title: 'Government & Public Sector',
-      benefits: [
-        'Digital Governance Hub: Streamline procurement, contracts, and citizen services with blockchain transparency.',
-        'Smart Policy Analytics: Use AI to predict economic trends and improve decision-making.',
-        'Secure Transactions: Facilitate inter-agency financial flows and compliance tracking.'
-      ]
-    },
-    {
-      icon: '💰',
-      title: 'Financial Services & Fintech',
-      benefits: [
-        'AI-Driven Insights: Predict market trends, manage portfolios, and detect fraud in real time.',
-        'Blockchain Settlement: Enable instant, secure, cross-border transactions.',
-        'Integrated Brokerage Suite: Connect banks, brokers, and investors seamlessly in one ecosystem.'
-      ]
-    },
-    {
-      icon: '🏠',
-      title: 'Real Estate & Property Management',
-      benefits: [
-        'Smart Contracts: Automate rental, purchase, and mortgage agreements.',
-        'AI Valuation Engine: Predict property value trends using data intelligence.',
-        'Digital Brokerage: Connect buyers, sellers, and agents across regions.'
-      ]
-    },
-    {
-      icon: '🚛',
-      title: 'Logistics & Supply Chain',
-      benefits: [
-        'AI Route Optimization: Reduce delivery costs and time through predictive logistics.',
-        'Real-Time Tracking: Blockchain-secured tracking for goods and shipments.',
-        'Unified Marketplace: Connect suppliers, freight companies, and clients efficiently.'
-      ]
-    },
-    {
-      icon: '🌍',
-      title: 'Non-Profit & Social Organizations',
-      benefits: [
-        'Transparent Fund Tracking: Blockchain ensures donation transparency.',
-        'AI Impact Reports: Evaluate project efficiency and optimize resource allocation.',
-        'Community Commerce Tools: Enable fundraising campaigns and digital outreach.'
-      ]
-    },
-    {
-      icon: '🏢',
-      title: 'Small & Medium Businesses (SMBs)',
-      benefits: [
-        'All-in-One Digital Office: CRM, marketplace, and payment tools integrated.',
-        'AI Business Advisor: Smart insights for sales, marketing, and customer retention.',
-        'Affordable Growth Tools: Access enterprise-level solutions at SMB-friendly costs.'
-      ]
-    },
-    {
-      icon: '👨‍💼',
-      title: 'Professional & Consulting Services',
-      benefits: [
-        'Client Relationship Management (CRM): Automate leads, meetings, and invoicing.',
-        'AI Project Assistant: Generate proposals, contracts, and marketing content instantly.',
-        'Cross-Sector Visibility: Expand professional networks through the KimuntuX brokerage hub.'
-      ]
-    }
-  ];
+const Question = styled.button`
+  width: 100%;
+  padding: 24px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  font-size: 17px;
+  font-weight: 600;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  transition: color .2s ease;
+  line-height: 1.4;
+  
+  &:hover {
+    color: ${p => p.theme?.colors?.primary || '#00C896'};
+  }
+`;
 
-  const universalBenefits = [
+const Answer = styled.div`
+  padding: 0 24px 24px;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  opacity: .9;
+  line-height: 1.75;
+  max-height: ${p => p.isOpen ? '1500px' : '0'};
+  overflow: hidden;
+  transition: all .4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(${p => p.isOpen ? '0' : '-10px'});
+`;
+
+const Icon = styled.div`
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 300;
+  transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: ${p => p.isOpen ? 'rotate(45deg)' : 'rotate(0deg)'};
+  box-shadow: 0 4px 12px ${p => (p.theme?.colors?.primary || '#00C896')}40;
+  
+  &:hover {
+    transform: ${p => p.isOpen ? 'rotate(45deg) scale(1.1)' : 'rotate(0deg) scale(1.1)'};
+  }
+`;
+
+const ContactSection = styled.div`
+  margin-top: 40px;
+  padding: 24px;
+  background: linear-gradient(135deg, ${p => (p.theme?.colors?.primary || '#00C896')}0F, ${p => (p.theme?.colors?.accent || '#DAA520')}0F);
+  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
+  border-radius: 16px;
+  text-align: center;
+`;
+
+const ContactTitle = styled.h3`
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+`;
+
+const ContactText = styled.p`
+  margin: 0 0 8px;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  opacity: .9;
+`;
+
+const ContactLink = styled.a`
+  color: ${p => p.theme?.colors?.primary || '#00C896'};
+  text-decoration: none;
+  font-weight: 600;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+export default function FAQPage() {
+  const [openItems, setOpenItems] = useState(new Set());
+
+  const toggleItem = (index) => {
+    const newOpenItems = new Set(openItems);
+    if (newOpenItems.has(index)) {
+      newOpenItems.delete(index);
+    } else {
+      newOpenItems.add(index);
+    }
+    setOpenItems(newOpenItems);
+  };
+
+  const faqs = [
     {
-      title: 'One Unified Platform',
-      description: 'Manage commerce, finance, and clients from a single dashboard.'
+      q: "What is KimuntuX?",
+      a: "KimuntuX is an AI-powered Digital Brokerage, Fintech, and Marketing platform that unifies eCommerce, finance, and automation into one intelligent ecosystem. It allows businesses, professionals, and organizations to build, manage, and scale digital operations from online stores to marketing campaigns and financial management, all powered by AI and blockchain."
     },
     {
-      title: 'AI + Blockchain Synergy',
-      description: 'Achieve smarter, safer, and faster operations.'
+      q: "Who is behind KimuntuX?",
+      a: "KimuntuX was initiated by Kimuntu Power Inc., a global innovation company focused on intelligent digital ecosystems. The project was developed through the Arizona State University Capstone Program with the contribution of five talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, Julian Korn, and Sarjan Patel. Kimuntu Power Inc. continues to lead the project's growth as the strategic owner, investor, and technology accelerator."
     },
     {
-      title: 'Global Connectivity',
-      description: 'Operate locally or globally: B2B, B2C, or through affiliates.'
+      q: "What makes KimuntuX different from platforms like Shopify, Wix, or WooCommerce?",
+      a: "Unlike traditional platforms, KimuntuX is not just a store builder, it's an autonomous digital brokerage and fintech ecosystem that: Builds eCommerce boutiques automatically using AI AutoBuild, Integrates multi-channel marketing and fintech orchestration, Provides AI-driven optimization for every user action, Enables secure blockchain contracts and global payments, Supports B2B, B2C, Affiliate, and Reseller models within one ecosystem."
+    },
+    {
+      q: "What are the main features of KimuntuX?",
+      a: "KimuntuX combines multiple intelligent systems into one unified platform, including: AI Boutique Builder, B2B/B2C Brokerage Hub, CRM & AI Lead Assistant, Smart Fintech Hub, AI Campaign & Funnel Builder, AI Digital Marketing Suite, Translation & Content AI Tool, Developer Ecosystem, Blockchain Commerce Layer, and Affiliate & Reseller Network."
+    },
+    {
+      q: "Who can use KimuntuX?",
+      a: "KimuntuX is designed for individuals, professionals, businesses, and institutions across multiple sectors, including: Governments, Financial Institutions, Real Estate, Logistics & Supply Chain, Digital Marketing Agencies, SMBs & Startups, Non-Profit Organizations, and Professional Services."
+    },
+    {
+      q: "How does the Smart Fintech Hub work?",
+      a: "The Smart Fintech Hub connects digital finance with AI intelligence. It allows users to: Manage multi-currency wallets (USD, EUR, Crypto, etc.), Execute cross-border payments with instant settlement, Participate in AI-driven investment tools including Stock Market Intelligence Platform and Crypto Wallet & Trading AI, and Enjoy AI-powered fraud detection and blockchain-secured transactions."
+    },
+    {
+      q: "What is the AI AutoBuild Boutique feature?",
+      a: "The AI AutoBuild engine instantly creates a full eCommerce boutique — from design and product catalog to SEO and marketing setup. It learns from the user's preferences, niche, and brand identity, generating a ready-to-launch digital storefront in minutes."
+    },
+    {
+      q: "What is the role of AI in KimuntuX?",
+      a: "AI is the core of the KimuntuX ecosystem. It powers: Predictive analytics and smart recommendations, Autonomous content creation (text, image, video, voice), Ad optimization and keyword targeting, Dynamic pricing and inventory suggestions, Real-time campaign insights, and Automated customer interactions via AI assistants."
+    },
+    {
+      q: "Does KimuntuX support multiple languages?",
+      a: "Yes! KimuntuX includes an AI Translation & Content Creator Tool that supports over 100 languages. It can translate, create, and rewrite both text and voice content while ensuring compliance with social media and advertising policies on platforms like Facebook, TikTok, and Instagram."
+    },
+    {
+      q: "How does the Affiliate and Reseller Program work?",
+      a: "Users can become affiliates or resellers through a dedicated dashboard that includes: Real-time tracking of clicks, conversions, and earnings, Campaign builder for social media promotions, AI recommendations for high-performing channels, and Automated commission payouts via the fintech layer."
+    },
+    {
+      q: "How does KimuntuX ensure security and transparency?",
+      a: "KimuntuX integrates blockchain and advanced encryption to secure all user data and transactions. Key security measures include: Smart contract validation, End-to-end data encryption, Role-based access control (RBAC), GDPR and PCI compliance, and Real-time blockchain audit trails."
+    },
+    {
+      q: "What technologies power KimuntuX?",
+      a: "KimuntuX uses a modern, scalable architecture, including: Frontend: React / Next.js, Backend: Node.js / NestJS microservices, Databases: PostgreSQL, Redis, S3, AI Layer: LLMs for automation, recommendations, and analytics, Infrastructure: Kubernetes, Terraform, CI/CD pipelines, and Security: HTTPS, encryption at rest, smart contract governance."
+    },
+    {
+      q: "How does KimuntuX generate revenue?",
+      a: "KimuntuX follows a Smart Monetization Framework combining: Subscription plans (Free, Standard, Pro, Enterprise), Transaction and commission fees, Marketplace revenue (apps, templates, extensions), Affiliate and reseller partnerships, and Fintech and brokerage revenue sharing."
+    },
+    {
+      q: "What are the benefits of using KimuntuX?",
+      a: "✅ One unified ecosystem for commerce, marketing, and finance, ✅ AI automation that saves time and increases profits, ✅ Secure blockchain transactions, ✅ Multi-channel digital marketing integration, ✅ Smart multilingual content creation, ✅ Affordable, scalable pricing for all business sizes, ✅ Designed for global markets, with strong focus on Africa and emerging economies"
+    },
+    {
+      q: "How does KimuntuX contribute to social impact and sustainability?",
+      a: "KimuntuX promotes Humanity in Commerce by: Supporting women-led startups and micro-entrepreneurs, Encouraging eco-friendly, fair-trade, and local businesses, Offering educational access through KimuntuX Academy, and Partnering with non-profits to promote inclusive digital growth."
+    },
+    {
+      q: "How can I partner or invest in KimuntuX?",
+      a: "KimuntuX actively seeks partnerships with fintechs, tech agencies, investors, and governments. For collaboration or investment opportunities, please contact: contact@kimuntux.com, support@kimuntux.com, or visit www.kimuntux.com"
+    },
+    {
+      q: "What is the long-term vision for KimuntuX?",
+      a: "KimuntuX aims to become the leading intelligent commerce infrastructure of the 21st century, connecting global economies through AI, fintech, and blockchain innovation, empowering the next billion digital entrepreneurs."
     }
   ];
 
   return (
-    <FAQContainer>
-      <Container>
-        <Header>
-          <Title>Frequently Asked Questions</Title>
-          <Subtitle>
-            Discover how KimuntuX benefits organizations across all sectors with intelligent, inclusive, and borderless digital commerce solutions.
-          </Subtitle>
-        </Header>
+    <Page>
+      <Wrap>
+        <Hero>
+          <H1>Questions & Answers (FAQ)</H1>
+          <Lead>"Everything you need to know about The Intelligent Digital Brokerage, Fintech & Marketing Universe."</Lead>
+        </Hero>
 
-        <BenefitsSection>
-          <SectionTitle>Benefits of Using KimuntuX Across All Sectors</SectionTitle>
-          <SectorGrid>
-            {sectors.map((sector, index) => (
-              <SectorCard key={index} style={{ animationDelay: `${index * 0.1}s` }}>
-                <SectorIcon>{sector.icon}</SectorIcon>
-                <SectorTitle>{sector.title}</SectorTitle>
-                <BenefitList>
-                  {sector.benefits.map((benefit, benefitIndex) => (
-                    <BenefitItem key={benefitIndex}>{benefit}</BenefitItem>
-                  ))}
-                </BenefitList>
-              </SectorCard>
-            ))}
-          </SectorGrid>
+        <FAQList>
+          {faqs.map((faq, index) => (
+            <FAQItem key={index} isOpen={openItems.has(index)}>
+              <Question onClick={() => toggleItem(index)}>
+                <span>{faq.q}</span>
+                <Icon isOpen={openItems.has(index)}>+</Icon>
+              </Question>
+              <Answer isOpen={openItems.has(index)}>
+                {faq.a}
+              </Answer>
+            </FAQItem>
+          ))}
+        </FAQList>
 
-          <UniversalBenefits>
-            <UniversalTitle>💡 Universal Benefits</UniversalTitle>
-            <UniversalList>
-              {universalBenefits.map((benefit, index) => (
-                <UniversalItem key={index}>
-                  <h4>{benefit.title}</h4>
-                  <p>{benefit.description}</p>
-                </UniversalItem>
-              ))}
-            </UniversalList>
-          </UniversalBenefits>
-        </BenefitsSection>
-      </Container>
-    </FAQContainer>
+        <ContactSection>
+          <ContactTitle>Still have questions?</ContactTitle>
+          <ContactText>Get in touch with our team for personalized assistance</ContactText>
+          <ContactText>
+            <ContactLink href="mailto:contact@kimuntux.com">contact@kimuntux.com</ContactLink> | 
+            <ContactLink href="mailto:support@kimuntux.com"> support@kimuntux.com</ContactLink>
+          </ContactText>
+        </ContactSection>
+      </Wrap>
+    </Page>
   );
-};
-
-export default FAQPage;
+}

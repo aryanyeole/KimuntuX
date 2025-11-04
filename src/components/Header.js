@@ -148,6 +148,7 @@ const Header = () => {
     { path: '/about', label: 'About' },
     { path: '/pricing', label: 'Price' },
     { path: '/solutions', label: 'Solutions' },
+    { path: '/benefits', label: 'Benefits' },
     { path: '/products', label: 'Products' },
     { path: '/faq', label: 'FAQ' },
     { path: '/blog', label: 'Blog' }
@@ -202,7 +203,7 @@ const Header = () => {
                 <StyledUserIcon />
                 Sign in
               </SignInButton>
-              <StartTrialButton to="/signup">Start free trial</StartTrialButton>
+              <StartTrialButton to="/signup">Start Free Trial</StartTrialButton>
             </>
           )}
         </RightSection>

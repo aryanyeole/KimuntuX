@@ -583,12 +583,12 @@ const LandingPage = () => {
     <LandingContainer>
       <HeroSection>
         <Container>
-          <HeroTitle>KimuntuX: AI-Driven Digital Brokerage Platform</HeroTitle>
+          <HeroTitle>KimuntuX: AI-Powered Digital Brokerage Platform Built on Blockchain</HeroTitle>
           <HeroSubtitle>
             "Empowering individuals and enterprises to build, connect, and grow through intelligent, inclusive, and borderless digital commerce."
           </HeroSubtitle>
           <CTAButtons>
-            <CTAButton className="primary">Start Free Trial</CTAButton>
+            <CTAButton className="primary">Start Your Journey</CTAButton>
             <CTAButton className="secondary">Watch Demo</CTAButton>
           </CTAButtons>
         </Container>
