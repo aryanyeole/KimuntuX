@@ -1,0 +1,7 @@
+[
+  { "id": "p1", "affiliate": "Alpha Partners", "period": "2025-09", "amount": 1240.5, "status": "Paid" },
+  { "id": "p2", "affiliate": "Beta Affiliates", "period": "2025-10", "amount": 980.0, "status": "Pending" },
+  { "id": "p3", "affiliate": "Gamma Network", "period": "2025-10", "amount": 430.75, "status": "Paid" },
+  { "id": "p4", "affiliate": "Delta Referrals", "period": "2025-09", "amount": 220.0, "status": "Paid" },
+  { "id": "p5", "affiliate": "Epsilon Hub", "period": "2025-10", "amount": 1500.0, "status": "Pending" }
+]
