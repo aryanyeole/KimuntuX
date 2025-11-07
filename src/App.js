@@ -7,7 +7,7 @@ import Footer from './components/Footer';
 import LandingPage from './components/LandingPage';
 
 // Import all page components
-import CRMPage from './pages/CRMPage';
+import CRMMain from './pages/CRMMain';
 import B2BBrokeragePage from './pages/B2BBrokeragePage';
 import B2CMarketplacePage from './pages/B2CMarketplacePage';
 import AffiliateHubPage from './pages/AffiliateHubPage';
@@ -30,7 +30,7 @@ function App() {
           <Header />
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/crm" element={<CRMPage />} />
+            <Route path="/crm" element={<CRMMain />} />
             <Route path="/b2b-brokerage" element={<B2BBrokeragePage />} />
             <Route path="/b2c-marketplace" element={<B2CMarketplacePage />} />
             <Route path="/affiliate-hub" element={<AffiliateHubPage />} />
