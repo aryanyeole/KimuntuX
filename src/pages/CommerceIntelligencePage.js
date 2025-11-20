@@ -334,3 +334,5 @@ const CommerceIntelligencePage = () => {
 };
 
 export default CommerceIntelligencePage;
+
+

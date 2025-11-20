@@ -295,3 +295,5 @@ const FintechPage = () => {
 };
 
 export default FintechPage;
+
+

@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 
-const SignupContainer = styled.div`
+const LoginContainer = styled.div`
   min-height: 100vh;
   background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}10, ${props => props.theme?.colors?.accent || '#DAA520'}10);
   display: flex;
@@ -13,13 +13,13 @@ const SignupContainer = styled.div`
   padding: 2rem;
 `;
 
-const SignupCard = styled.div`
+const LoginCard = styled.div`
   background: linear-gradient(135deg, ${props => props.theme?.colors?.background || '#FFFFFF'}, ${props => props.theme?.colors?.cardBackground || '#f8f9fa'});
   border-radius: 20px;
   padding: 3rem;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 450px;
+  max-width: 400px;
   position: relative;
   overflow: hidden;
 
@@ -165,27 +165,14 @@ const ErrorMessage = styled.div`
   text-align: center;
 `;
 
-const SuccessMessage = styled.div`
-  background: #efe;
-  color: #363;
-  padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid #cfc;
-  margin-bottom: 1rem;
-  text-align: center;
-`;
-
-const SignupPage = () => {
+const LoginPage = () => {
   const { login } = useUser();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -199,69 +186,40 @@ const SignupPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setSuccess('');
-
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      setIsLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
-      setIsLoading(false);
-      return;
-    }
 
     // Simulate API call
     setTimeout(() => {
-      // Mock user data
-      const userData = {
-        id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
-        avatar: null,
-        joinDate: new Date().toISOString()
-      };
-      
-      login(userData);
-      setSuccess('Account created successfully! Redirecting...');
-      
-      setTimeout(() => {
+      if (formData.email && formData.password) {
+        // Mock user data
+        const userData = {
+          id: '1',
+          name: formData.email.split('@')[0],
+          email: formData.email,
+          avatar: null,
+          joinDate: new Date().toISOString()
+        };
+        
+        login(userData);
         navigate('/dashboard');
-      }, 1500);
-      
+      } else {
+        setError('Please fill in all fields');
+      }
       setIsLoading(false);
     }, 1000);
   };
 
   return (
-    <SignupContainer>
-      <SignupCard>
+    <LoginContainer>
+      <LoginCard>
         <Logo>
           <img src="/light_logo.jpg" alt="KimuntuX" />
         </Logo>
-        <Title>Create Account</Title>
-        <Subtitle>Join the KimuntuX intelligent brokerage universe</Subtitle>
+        <Title>Welcome Back</Title>
+        <Subtitle>Sign in to your KimuntuX account</Subtitle>
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        {success && <SuccessMessage>{success}</SuccessMessage>}
         
         <Form onSubmit={handleSubmit}>
-          <InputGroup>
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Enter your full name"
-              required
-            />
-          </InputGroup>
-          
           <InputGroup>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -283,35 +241,22 @@ const SignupPage = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Create a password"
-              required
-            />
-          </InputGroup>
-          
-          <InputGroup>
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm your password"
+              placeholder="Enter your password"
               required
             />
           </InputGroup>
           
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Creating Account...' : 'Create Account'}
+            {isLoading ? 'Signing In...' : 'Sign In'}
           </Button>
         </Form>
         
         <LinkText>
-          Already have an account? <StyledLink to="/login">Sign in</StyledLink>
+          Don't have an account? <StyledLink to="/signup">Sign up</StyledLink>
         </LinkText>
-      </SignupCard>
-    </SignupContainer>
+      </LoginCard>
+    </LoginContainer>
   );
 };
 
-export default SignupPage;
+export default LoginPage;
