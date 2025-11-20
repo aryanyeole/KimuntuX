@@ -1,12 +1,18 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { UserProvider } from './contexts/UserContext';
 import { ChatbotProvider } from './providers/ChatbotProvider';
 import { GlobalStyles } from './styles/GlobalStyles';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
 import LandingPage from './components/LandingPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import Dashboard from './pages/Dashboard';
+import FAQPage from './pages/FAQPage';
+import SolutionsPage from './pages/SolutionsPage';
 
 // Import all page components
 import CRMMain from './pages/CRMMain';
@@ -21,37 +27,42 @@ import CommerceIntelligencePage from './pages/CommerceIntelligencePage';
 import DeveloperPage from './pages/DeveloperPage';
 import MonetizationPage from './pages/MonetizationPage';
 import USBHPage from './pages/USBHPage';
-import SignupPage from './pages/SignupPage';
 
 function App() {
   return (
     <ThemeProvider>
-      <GlobalStyles />
-      <Router>
-        <ChatbotProvider>
+      <UserProvider>
+        <GlobalStyles />
+        <Router>
+          <ChatbotProvider>
           <div className="App">
-            <Header />
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/crm" element={<CRMMain />} />
-              <Route path="/b2b-brokerage" element={<B2BBrokeragePage />} />
-              <Route path="/b2c-marketplace" element={<B2CMarketplacePage />} />
-              <Route path="/affiliate-hub" element={<AffiliateHubPage />} />
-              <Route path="/ecommerce" element={<ECommercePage />} />
-              <Route path="/ai-dashboard" element={<AIDashboardPage />} />
-              <Route path="/blockchain" element={<BlockchainPage />} />
-              <Route path="/fintech" element={<FintechPage />} />
-              <Route path="/commerce-intelligence" element={<CommerceIntelligencePage />} />
-              <Route path="/developer" element={<DeveloperPage />} />
-              <Route path="/monetization" element={<MonetizationPage />} />
-              <Route path="/usbh" element={<USBHPage />} />
+              <Header />
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
-            </Routes>
-            <Footer />
-            <ChatWidget />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/faq" element={<FAQPage />} />
+              <Route path="/solutions" element={<SolutionsPage />} />
+                <Route path="/crm" element={<CRMMain />} />
+                <Route path="/b2b-brokerage" element={<B2BBrokeragePage />} />
+                <Route path="/b2c-marketplace" element={<B2CMarketplacePage />} />
+                <Route path="/affiliate-hub" element={<AffiliateHubPage />} />
+                <Route path="/ecommerce" element={<ECommercePage />} />
+                <Route path="/ai-dashboard" element={<AIDashboardPage />} />
+                <Route path="/blockchain" element={<BlockchainPage />} />
+                <Route path="/fintech" element={<FintechPage />} />
+                <Route path="/commerce-intelligence" element={<CommerceIntelligencePage />} />
+                <Route path="/developer" element={<DeveloperPage />} />
+                <Route path="/monetization" element={<MonetizationPage />} />
+                <Route path="/usbh" element={<USBHPage />} />
+                </Routes>
+              <Footer />
+              <ChatWidget />
           </div>
-        </ChatbotProvider>
+          </ChatbotProvider>
       </Router>
+      </UserProvider>
     </ThemeProvider>
   );
 }
