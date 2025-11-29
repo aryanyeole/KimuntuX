@@ -1,156 +1,313 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import faqsImage from '../assets/faqs.jpg';
 
 const Page = styled.div`
   min-height: 100vh;
-  background: radial-gradient(1200px 600px at -10% -10%, ${p => (p.theme?.colors?.primary || '#00C896')}0D, transparent 60%),
-              radial-gradient(1000px 500px at 110% -20%, ${p => (p.theme?.colors?.accent || '#DAA520')}0F, transparent 55%),
-              ${p => p.theme?.colors?.background || '#FFFFFF'};
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
+  padding-top: 120px;
+  
+  @media (max-width: 768px) {
+    padding-top: 100px;
+  }
 `;
 
 const Wrap = styled.div`
-  max-width: 1120px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 48px 20px 72px;
+  padding: 0 2rem;
 `;
 
-const Hero = styled.header`
+const HeroSection = styled.div`
+  position: relative;
+  margin-bottom: 5rem;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  
+  @media (max-width: 768px) {
+    border-radius: 16px;
+    margin-bottom: 3rem;
+  }
+`;
+
+const HeroImageWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    height: 300px;
+  }
+`;
+
+const HeroImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+`;
+
+const HeroContent = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+  padding: 4rem 3rem 3rem;
+  z-index: 2;
   text-align: center;
-  margin-bottom: 32px;
+  
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem;
+  }
 `;
 
-const H1 = styled.h1`
-  margin: 0 0 8px;
-  font-size: 40px;
+const HeroTitle = styled.h1`
+  font-size: 3.5rem;
   font-weight: 700;
-  color: ${p => p.theme?.colors?.text || '#111111'};
+  color: white;
+  margin: 0 0 1rem 0;
   font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.02em;
+  animation: fadeInUp 0.8s ease-out;
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
 `;
 
-const Lead = styled.p`
-  margin: 0 auto 8px;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  opacity: .85;
-  font-size: 18px;
-  max-width: 780px;
+const HeroSubtitle = styled.p`
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const FAQList = styled.div`
   display: grid;
-  gap: 16px;
+  gap: 1rem;
+  margin-bottom: 4rem;
 `;
 
 const FAQItem = styled.div`
   position: relative;
-  background: linear-gradient(180deg, ${p => (p.theme?.colors?.cardBackground || '#f8f9fa')} 0%, ${p => (p.theme?.colors?.background || '#FFFFFF')} 100%);
-  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
-  border-radius: 16px;
+  background: white;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-  transition: all .3s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.6s ease-out ${props => props.index * 0.05}s both;
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
   
   &::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    opacity: ${p => p.isOpen ? '1' : '.5'};
-    transition: opacity .3s ease;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #00C896;
+    transform: scaleX(${p => p.isOpen ? '1' : '0'});
+    transform-origin: left;
+    transition: transform 0.3s ease;
   }
   
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 32px rgba(0,0,0,0.08);
-    border-color: ${p => p.theme?.colors?.primary || '#00C896'}33;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-color: #00C896;
   }
 `;
 
 const Question = styled.button`
   width: 100%;
-  padding: 24px;
+  padding: 1.75rem 2rem;
   text-align: left;
   background: none;
   border: none;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  font-size: 17px;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  transition: color .2s ease;
-  line-height: 1.4;
+  color: #1a1a1a;
+  transition: color 0.3s ease;
+  line-height: 1.5;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
   
   &:hover {
-    color: ${p => p.theme?.colors?.primary || '#00C896'};
+    color: #00C896;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    font-size: 1rem;
   }
 `;
 
-const Answer = styled.div`
-  padding: 0 24px 24px;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  opacity: .9;
-  line-height: 1.75;
-  max-height: ${p => p.isOpen ? '1500px' : '0'};
-  overflow: hidden;
-  transition: all .4s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(${p => p.isOpen ? '0' : '-10px'});
+const QuestionText = styled.span`
+  flex: 1;
+  text-align: left;
 `;
 
 const Icon = styled.div`
   width: 32px;
   height: 32px;
   flex-shrink: 0;
-  border-radius: 50%;
-  background: linear-gradient(135deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
+  border-radius: 8px;
+  background: ${p => p.isOpen ? '#00C896' : '#f0f0f0'};
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: ${p => p.isOpen ? 'white' : '#6c757d'};
   font-size: 20px;
   font-weight: 300;
-  transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: ${p => p.isOpen ? 'rotate(45deg)' : 'rotate(0deg)'};
-  box-shadow: 0 4px 12px ${p => (p.theme?.colors?.primary || '#00C896')}40;
   
-  &:hover {
-    transform: ${p => p.isOpen ? 'rotate(45deg) scale(1.1)' : 'rotate(0deg) scale(1.1)'};
+  ${Question}:hover & {
+    background: ${p => p.isOpen ? '#00C896' : '#e9ecef'};
+    color: ${p => p.isOpen ? 'white' : '#00C896'};
+  }
+`;
+
+const Answer = styled.div`
+  padding: 0 2rem 1.75rem;
+  color: #495057;
+  line-height: 1.75;
+  max-height: ${p => p.isOpen ? '2000px' : '0'};
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: ${p => p.isOpen ? '1' : '0'};
+  font-size: 0.9375rem;
+  
+  @media (max-width: 768px) {
+    padding: 0 1.5rem 1.5rem;
   }
 `;
 
 const ContactSection = styled.div`
-  margin-top: 40px;
-  padding: 24px;
-  background: linear-gradient(135deg, ${p => (p.theme?.colors?.primary || '#00C896')}0F, ${p => (p.theme?.colors?.accent || '#DAA520')}0F);
-  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
-  border-radius: 16px;
+  margin-top: 4rem;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, #00C896 0%, #20B2AA 100%);
+  border-radius: 20px;
   text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 200, 150, 0.2);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: rotate 20s linear infinite;
+    opacity: 0.3;
+  }
+
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+  }
+`;
+
+const ContactContent = styled.div`
+  position: relative;
+  z-index: 1;
 `;
 
 const ContactTitle = styled.h3`
-  margin: 0 0 12px;
-  font-size: 20px;
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: ${p => p.theme?.colors?.text || '#111111'};
+  color: white;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 const ContactText = styled.p`
-  margin: 0 0 8px;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  opacity: .9;
+  margin: 0 0 0.75rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1rem;
+  line-height: 1.6;
+`;
+
+const ContactLinks = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
 const ContactLink = styled.a`
-  color: ${p => p.theme?.colors?.primary || '#00C896'};
+  color: white;
   text-decoration: none;
   font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
   
   &:hover {
-    text-decoration: underline;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
   }
 `;
 
@@ -174,7 +331,7 @@ export default function FAQPage() {
     },
     {
       q: "Who is behind KimuntuX?",
-      a: "KimuntuX was initiated by Kimuntu Power Inc., a global innovation company focused on intelligent digital ecosystems. The project was developed through the Arizona State University Capstone Program with the contribution of five talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, Julian Korn, and Sarjan Patel. Kimuntu Power Inc. continues to lead the project's growth as the strategic owner, investor, and technology accelerator."
+      a: "KimuntuX was initiated by Kimuntu Power Inc., a global innovation company focused on intelligent digital ecosystems. The project was developed through the Arizona State University Capstone Program with the contribution of four talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, and Julian Korn. Kimuntu Power Inc. continues to lead the project's growth as the strategic owner, investor, and technology accelerator."
     },
     {
       q: "What makes KimuntuX different from platforms like Shopify, Wix, or WooCommerce?",
@@ -241,16 +398,21 @@ export default function FAQPage() {
   return (
     <Page>
       <Wrap>
-        <Hero>
-          <H1>Questions & Answers (FAQ)</H1>
-          <Lead>"Everything you need to know about The Intelligent Digital Brokerage, Fintech & Marketing Universe."</Lead>
-        </Hero>
+        <HeroSection>
+          <HeroImageWrapper>
+            <HeroImage src={faqsImage} alt="FAQ" />
+          </HeroImageWrapper>
+          <HeroContent>
+            <HeroTitle>Questions & Answers (FAQ)</HeroTitle>
+            <HeroSubtitle>Everything you need to know about The Intelligent Digital Brokerage, Fintech & Marketing Universe.</HeroSubtitle>
+          </HeroContent>
+        </HeroSection>
 
         <FAQList>
           {faqs.map((faq, index) => (
-            <FAQItem key={index} isOpen={openItems.has(index)}>
+            <FAQItem key={index} isOpen={openItems.has(index)} index={index}>
               <Question onClick={() => toggleItem(index)}>
-                <span>{faq.q}</span>
+                <QuestionText>{faq.q}</QuestionText>
                 <Icon isOpen={openItems.has(index)}>+</Icon>
               </Question>
               <Answer isOpen={openItems.has(index)}>
@@ -261,12 +423,14 @@ export default function FAQPage() {
         </FAQList>
 
         <ContactSection>
-          <ContactTitle>Still have questions?</ContactTitle>
-          <ContactText>Get in touch with our team for personalized assistance</ContactText>
-          <ContactText>
-            <ContactLink href="mailto:contact@kimuntux.com">contact@kimuntux.com</ContactLink> | 
-            <ContactLink href="mailto:support@kimuntux.com"> support@kimuntux.com</ContactLink>
-          </ContactText>
+          <ContactContent>
+            <ContactTitle>Still have questions?</ContactTitle>
+            <ContactText>Get in touch with our team for personalized assistance</ContactText>
+            <ContactLinks>
+              <ContactLink href="mailto:contact@kimuntux.com">contact@kimuntux.com</ContactLink>
+              <ContactLink href="mailto:support@kimuntux.com">support@kimuntux.com</ContactLink>
+            </ContactLinks>
+          </ContactContent>
         </ContactSection>
       </Wrap>
     </Page>

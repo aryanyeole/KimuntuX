@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import FAQPage from './pages/FAQPage';
 import SolutionsPage from './pages/SolutionsPage';
 import BenefitsBySectorPage from './pages/BenefitsBySectorPage';
+import BlogPage from './pages/BlogPage';
 
 // Import all page components
 import CRMPage from './pages/CRMPage';
@@ -47,6 +48,7 @@ function App() {
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/solutions" element={<SolutionsPage />} />
               <Route path="/benefits" element={<BenefitsBySectorPage />} />
+              <Route path="/blog" element={<BlogPage />} />
               <Route path="/crm" element={<CRMPage />} />
               <Route path="/b2b-brokerage" element={<B2BBrokeragePage />} />
               <Route path="/b2c-marketplace" element={<B2CMarketplacePage />} />

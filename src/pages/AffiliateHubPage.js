@@ -5,7 +5,11 @@ import { useTheme } from '../contexts/ThemeContext';
 const PageContainer = styled.div`
   min-height: 100vh;
   background-color: ${props => props.theme.colors.background};
-  padding: 2rem 0;
+  padding: 120px 0 2rem 0;
+  
+  @media (max-width: 768px) {
+    padding-top: 100px;
+  }
 `;
 
 const Container = styled.div`

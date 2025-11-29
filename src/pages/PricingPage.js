@@ -1,176 +1,337 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 
 const Page = styled.div`
   min-height: 100vh;
-  background: radial-gradient(900px 500px at -10% -10%, ${p => (p.theme?.colors?.primary || '#00C896')}0D, transparent 55%),
-              radial-gradient(900px 500px at 110% -10%, ${p => (p.theme?.colors?.accent || '#DAA520')}0F, transparent 55%),
-              ${p => p.theme?.colors?.background || '#FFFFFF'};
-`;
-
-const Wrap = styled.div`
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 48px 20px 72px;
-`;
-
-const Hero = styled.header`
-  text-align: center;
-  margin-bottom: 28px;
-`;
-
-const H1 = styled.h1`
-  margin: 0 0 8px;
-  font-size: 40px;
-  font-weight: 700;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
-`;
-
-const Lead = styled.p`
-  margin: 0 auto 8px;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  opacity: .85;
-  font-size: 18px;
-  max-width: 780px;
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 22px;
-  align-items: stretch;
-`;
-
-const Tier = styled.div`
+  background: linear-gradient(135deg, #008B8B 0%, #00C896 50%, #20B2AA 100%);
+  padding-top: 120px;
   position: relative;
-  display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  background: ${p => p.theme?.colors?.background || '#FFFFFF'};
-  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
-  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 42px rgba(0,0,0,0.08);
-    border-color: ${p => (p.theme?.colors?.primary || '#00C896')}30;
-  }
-`;
-
-const TierHeader = styled.div`
-  padding: 16px 16px 12px;
-  background: linear-gradient(180deg, ${p => (p.theme?.colors?.cardBackground || '#f8f9fa')} 0%, transparent 100%);
-  border-bottom: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
-`;
-
-const Badge = styled.span`
-  display: inline-block;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 999px;
-  letter-spacing: .2px;
-  color: ${p => p.theme?.colors?.primary || '#00C896'};
-  background: ${p => (p.theme?.colors?.primary || '#00C896')}15;
-  border: 1px solid ${p => (p.theme?.colors?.primary || '#00C896')}30;
-`;
-
-const PlanName = styled.h3`
-  margin: 0 0 4px;
-  font-size: 18px;
-  font-weight: 700;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-`;
-
-const Tag = styled.span`
-  display: inline-block;
-  margin-bottom: 8px;
-  padding: 4px 8px;
-  font-size: 12px;
-  border-radius: 999px;
-  color: ${p => p.theme?.colors?.primary || '#00C896'};
-  background: ${p => (p.theme?.colors?.primary || '#00C896')}15;
-  border: 1px solid ${p => (p.theme?.colors?.primary || '#00C896')}30;
-`;
-
-const PriceWrap = styled.div`
-  display: flex; align-items: baseline; gap: 6px;
-  padding: 12px 16px 0;
-`;
-
-const Price = styled.span`
-  font-size: 22px; font-weight: 700; color: ${p => p.theme?.colors?.text || '#111111'};
-`;
-
-const PriceNote = styled.span`
-  font-size: 12px; opacity: .65; color: ${p => p.theme?.colors?.text || '#111111'};
-`;
-
-const List = styled.ul`
-  list-style: none;
-  margin: 10px 16px 14px;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-`;
-
-const Item = styled.li`
-  position: relative;
-  padding-left: 16px;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  opacity: .9;
-  line-height: 1.6;
   
   &::before {
     content: '';
     position: absolute;
-    left: 0; top: 10px;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: linear-gradient(135deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
-    box-shadow: 0 0 0 2px ${p => p.theme?.colors?.background || '#FFFFFF'};
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  
+  @media (max-width: 768px) {
+    padding-top: 100px;
   }
 `;
 
-const CTA = styled.div`
-  padding: 14px 16px 16px;
-  border-top: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
+const Wrap = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px 72px;
+  position: relative;
+  z-index: 1;
 `;
 
-const Button = styled.button`
-  width: 100%;
-  border: 1px solid ${p => p.theme?.colors?.primary || '#00C896'};
-  background: linear-gradient(90deg, ${p => (p.theme?.colors?.primary || '#00C896')} 0%, ${p => (p.theme?.colors?.accent || '#DAA520')} 100%);
+const Hero = styled.header`
+  text-align: center;
+  margin-bottom: 4rem;
   color: white;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform .2s ease, box-shadow .2s ease;
+`;
 
-  &:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(0,0,0,.12); }
+const H1 = styled.h1`
+  margin: 0 0 12px;
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: white;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  letter-spacing: -0.02em;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const Lead = styled.p`
+  margin: 0 auto;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1.25rem;
+  max-width: 700px;
+  line-height: 1.6;
+  
+  @media (max-width: 768px) {
+    font-size: 1.125rem;
+  }
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  align-items: start;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+`;
+
+const Tier = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  ${p => p.isPopular && `
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+  `}
+  
+  @media (max-width: 968px) {
+    ${p => p.isPopular && `
+      transform: scale(1);
+    `}
+  }
+  
+  &:hover {
+    transform: translateY(-8px) ${p => p.isPopular ? 'scale(1.05)' : 'scale(1.02)'};
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    opacity: ${p => p.isPopular ? '1' : '0.5'};
+  }
+`;
+
+const PopularBadge = styled.div`
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #000;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+  z-index: 2;
+`;
+
+const Badge = styled.span`
+  display: inline-block;
+  padding: 6px 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 1rem;
+`;
+
+const PlanName = styled.h3`
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: white;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  line-height: 1.2;
+`;
+
+const Tag = styled.p`
+  margin: 0 0 1.5rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+`;
+
+const PriceWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+`;
+
+const PriceRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const Price = styled.span`
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: white;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  line-height: 1.2;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+`;
+
+const PriceNote = styled.span`
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  line-height: 1.4;
+`;
+
+const PriceSubNote = styled.span`
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 400;
+  line-height: 1.4;
+  margin-top: 2px;
+`;
+
+const List = styled.ul`
+  list-style: none;
+  margin: 0 0 2rem 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  flex: 1;
+`;
+
+const Item = styled.li`
+  position: relative;
+  padding-left: 28px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  
+  &::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+`;
+
+const Button = styled(Link)`
+  width: 100%;
+  background: white;
+  color: #008B8B;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 255, 0.95);
+  }
+`;
+
+const PopularButton = styled(Link)`
+  width: 100%;
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+  display: block;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 215, 0, 0.6);
+    background: linear-gradient(135deg, #FFED4E, #FFB347);
+  }
 `;
 
 const Footer = styled.section`
-  margin-top: 28px;
-  padding-top: 20px;
-  border-top: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 `;
 
 const FooterTitle = styled.h4`
-  margin: 0 0 10px; font-size: 16px; font-weight: 700;
-  color: ${p => p.theme?.colors?.text || '#111111'};
+  margin: 0 0 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
 `;
 
 const Addons = styled.div`
-  display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const Addon = styled.div`
-  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
-  border-radius: 12px; padding: 12px 14px; background: ${p => p.theme?.colors?.background || '#FFFFFF'};
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  color: white;
+  font-size: 0.9375rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+  }
 `;
 
 export default function PricingPage() {
@@ -184,13 +345,15 @@ export default function PricingPage() {
 
         <Grid>
           <Tier>
-            <TierHeader>
-              <Badge>Starter</Badge>
-              <PlanName>Free Plan</PlanName>
-              <Tag>For beginners exploring digital entrepreneurship</Tag>
-            </TierHeader>
+            <Badge>Starter</Badge>
+            <PlanName>Free Plan</PlanName>
+            <Tag>For beginners exploring digital entrepreneurship</Tag>
             <PriceWrap>
-              <Price>💲 $19–$29</Price><PriceNote>/month (region-adjusted)</PriceNote>
+              <PriceRow>
+                <Price>$19–$29</Price>
+                <PriceNote>per month</PriceNote>
+                <PriceSubNote>region-adjusted pricing</PriceSubNote>
+              </PriceRow>
             </PriceWrap>
             <List>
               <Item>1 AI-generated boutique/store</Item>
@@ -200,19 +363,20 @@ export default function PricingPage() {
               <Item>Basic analytics dashboard</Item>
               <Item>Community support</Item>
             </List>
-            <CTA>
-              <Button>Get Started</Button>
-            </CTA>
+            <Button to="/signup">Get Started</Button>
           </Tier>
 
-          <Tier>
-            <TierHeader>
-              <Badge>Most Popular</Badge>
-              <PlanName>Pro Plan · “Growth”</PlanName>
-              <Tag>For small & medium businesses scaling operations</Tag>
-            </TierHeader>
+          <Tier isPopular={true}>
+            <PopularBadge>Most Popular</PopularBadge>
+            <Badge>Professional</Badge>
+            <PlanName>Pro Plan · "Growth"</PlanName>
+            <Tag>For small & medium businesses scaling operations</Tag>
             <PriceWrap>
-              <Price>💲 $49–$99</Price><PriceNote>/month (region-adjusted)</PriceNote>
+              <PriceRow>
+                <Price>$49–$99</Price>
+                <PriceNote>per month</PriceNote>
+                <PriceSubNote>region-adjusted pricing</PriceSubNote>
+              </PriceRow>
             </PriceWrap>
             <List>
               <Item>Everything in Starter</Item>
@@ -225,19 +389,18 @@ export default function PricingPage() {
               <Item>AI Translation + Rewrite compliance tool</Item>
               <Item>Priority chat & email support</Item>
             </List>
-            <CTA>
-              <Button>Start Growth</Button>
-            </CTA>
+            <PopularButton to="/signup">Start Growth</PopularButton>
           </Tier>
 
           <Tier>
-            <TierHeader>
-              <Badge>Advanced</Badge>
-              <PlanName>Business Plan · “ScaleX”</PlanName>
-              <Tag>For agencies, resellers, and digital entrepreneurs</Tag>
-            </TierHeader>
+            <Badge>Advanced</Badge>
+            <PlanName>Business Plan · "ScaleX"</PlanName>
+            <Tag>For agencies, resellers, and digital entrepreneurs</Tag>
             <PriceWrap>
-              <Price>💲 $199–$299</Price><PriceNote>/month</PriceNote>
+              <PriceRow>
+                <Price>$199–$299</Price>
+                <PriceNote>per month</PriceNote>
+              </PriceRow>
             </PriceWrap>
             <List>
               <Item>Everything in Growth</Item>
@@ -251,19 +414,19 @@ export default function PricingPage() {
               <Item>API & SDK access for custom development</Item>
               <Item>24/7 Premium AI Assistant</Item>
             </List>
-            <CTA>
-              <Button>Choose ScaleX</Button>
-            </CTA>
+            <Button to="/signup">Choose ScaleX</Button>
           </Tier>
 
           <Tier>
-            <TierHeader>
-              <Badge>Enterprise</Badge>
-              <PlanName>Enterprise Plan · “KimuntuX Global”</PlanName>
-              <Tag>For governments, corporations, and large-scale brokers</Tag>
-            </TierHeader>
+            <Badge>Enterprise</Badge>
+            <PlanName>Enterprise Plan · "KimuntuX Global"</PlanName>
+            <Tag>For governments, corporations, and large-scale brokers</Tag>
             <PriceWrap>
-              <Price>💲 Custom</Price><PriceNote>Enterprise Quote / Annual Contract</PriceNote>
+              <PriceRow>
+                <Price>Custom</Price>
+                <PriceNote>Enterprise Quote</PriceNote>
+                <PriceSubNote>Annual Contract</PriceSubNote>
+              </PriceRow>
             </PriceWrap>
             <List>
               <Item>Everything in ScaleX</Item>
@@ -276,9 +439,7 @@ export default function PricingPage() {
               <Item>Advanced analytics, fraud detection, and audit tools</Item>
               <Item>Dedicated success manager + enterprise SLA</Item>
             </List>
-            <CTA>
-              <Button>Contact Sales</Button>
-            </CTA>
+            <Button as="a" href="mailto:contact@kimuntux.com">Contact Sales</Button>
           </Tier>
         </Grid>
 
@@ -296,5 +457,3 @@ export default function PricingPage() {
     </Page>
   );
 }
-
-

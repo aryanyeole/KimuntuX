@@ -1,11 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
+import aboutImage from '../assets/About.jpg';
 
 const Page = styled.div`
   min-height: 100vh;
   background: radial-gradient(1200px 600px at -10% -10%, ${p => (p.theme?.colors?.primary || '#00C896')}0D, transparent 60%),
               radial-gradient(1000px 500px at 110% -20%, ${p => (p.theme?.colors?.accent || '#DAA520')}0F, transparent 55%),
               ${p => p.theme?.colors?.background || '#FFFFFF'};
+  padding-top: 120px;
+  
+  @media (max-width: 768px) {
+    padding-top: 100px;
+  }
 `;
 
 const Wrap = styled.div`
@@ -15,12 +21,75 @@ const Wrap = styled.div`
 `;
 
 const Hero = styled.header`
-  padding: 28px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  padding: 0;
   margin: 0 0 4px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+`;
+
+const HeroContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 24px;
   background: linear-gradient(135deg, ${p => (p.theme?.colors?.primary || '#00C896')}0F, ${p => (p.theme?.colors?.accent || '#DAA520')}0F);
   border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+`;
+
+const HeroImageContainer = styled.div`
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
+  background: ${p => p.theme?.colors?.cardBackground || '#f8f9fa'};
+  min-height: 280px;
+  display: flex;
+  align-items: stretch;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, ${p => (p.theme?.colors?.primary || '#00C896')}05, ${p => (p.theme?.colors?.accent || '#DAA520')}05);
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  @media (max-width: 900px) {
+    min-height: 300px;
+    max-height: 400px;
+  }
+`;
+
+const HeroImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 0;
+  
+  ${HeroImageContainer}:hover & {
+    transform: scale(1.02);
+  }
 `;
 
 const H1 = styled.h1`
@@ -92,9 +161,15 @@ const Body = styled.div`
 `;
 
 const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
+  justify-content: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+  }
 `;
 
 const Card = styled.div`
@@ -105,6 +180,18 @@ const Card = styled.div`
   background: linear-gradient(180deg, ${p => (p.theme?.colors?.cardBackground || '#f8f9fa')} 0%, ${p => (p.theme?.colors?.background || '#FFFFFF')} 100%);
   box-shadow: 0 6px 18px rgba(0,0,0,0.04);
   transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  flex: 0 0 calc(33.333% - 11px);
+  min-width: 240px;
+  max-width: 300px;
+  
+  @media (max-width: 968px) {
+    flex: 0 0 calc(50% - 8px);
+  }
+  
+  @media (max-width: 768px) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
   
   &::before {
     content: '';
@@ -176,13 +263,34 @@ const Muted = styled.p`
   margin: 0; opacity: .8;
 `;
 
+const FeatureText = styled.p`
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  opacity: 0.9;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  
+  &:first-of-type {
+    margin-top: 8px;
+  }
+  
+  &:not(:first-of-type) {
+    margin-top: 4px;
+  }
+`;
+
 export default function AboutPage() {
   return (
     <Page>
       <Wrap>
         <Hero>
-          <H1>About KimuntuX</H1>
-          <Lead>The Intelligent Digital Brokerage & Marketing Universe.</Lead>
+          <HeroContent>
+            <H1>About KimuntuX</H1>
+            <Lead>The Intelligent Digital Brokerage & Marketing Universe.</Lead>
+          </HeroContent>
+          <HeroImageContainer>
+            <HeroImage src={aboutImage} alt="KimuntuX Team" />
+          </HeroImageContainer>
         </Hero>
 
         <Section>
@@ -196,7 +304,7 @@ export default function AboutPage() {
           <Title>Who We Are</Title>
           <Body>
             <p>KimuntuX is an AI‑powered Digital Brokerage, Fintech, and Marketing platform that unites technology, creativity, and commerce. It provides a single, intelligent environment for businesses, professionals, and creators to build, manage, and scale operations across finance, logistics, real estate, technology, digital marketing, and eCommerce.</p>
-            <Muted>Born from the innovation initiative supported by Arizona State University’s Capstone Program and powered by Kimuntu Power Inc., KimuntuX was developed with the collaboration of five talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, Julian Korn, and Sarjan Patel.</Muted>
+            <Muted>Born from the innovation initiative supported by Arizona State University’s Capstone Program and powered by Kimuntu Power Inc., KimuntuX was developed with the collaboration of four talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, and Julian Korn.</Muted>
             <Muted>Together, they helped engineer the foundation of what would become one of the most advanced AI‑driven digital brokerage platforms of the decade.</Muted>
           </Body>
         </Section>
@@ -214,73 +322,53 @@ export default function AboutPage() {
             <Grid>
               <Card>
                 <Small>AI Brokerage Hub</Small>
-                <Bullets>
-                  <Bullet>AI matchmaking for B2B/B2C</Bullet>
-                  <Bullet>Blockchain‑secured contracts</Bullet>
-                </Bullets>
+                <FeatureText>AI matchmaking for B2B/B2C</FeatureText>
+                <FeatureText>Blockchain‑secured contracts</FeatureText>
               </Card>
               <Card>
                 <Small>CRM & Lead Automation</Small>
-                <Bullets>
-                  <Bullet>Predictive insights</Bullet>
-                  <Bullet>AI‑powered follow‑ups</Bullet>
-                </Bullets>
+                <FeatureText>Predictive insights</FeatureText>
+                <FeatureText>AI‑powered follow‑ups</FeatureText>
               </Card>
               <Card>
                 <Small>AI Boutique Builder</Small>
-                <Bullets>
-                  <Bullet>Auto‑generated storefronts</Bullet>
-                  <Bullet>Content & design by AI</Bullet>
-                </Bullets>
+                <FeatureText>Auto‑generated storefronts</FeatureText>
+                <FeatureText>Content & design by AI</FeatureText>
               </Card>
               <Card>
                 <Small>Smart Fintech Hub</Small>
-                <Bullets>
-                  <Bullet>Multi‑currency wallets & cross‑border payments</Bullet>
-                  <Bullet>AI stock & crypto insights</Bullet>
-                </Bullets>
+                <FeatureText>Multi‑currency wallets & cross‑border payments</FeatureText>
+                <FeatureText>AI stock & crypto insights</FeatureText>
               </Card>
               <Card>
                 <Small>AI Marketing Suite</Small>
-                <Bullets>
-                  <Bullet>Create, launch & optimize campaigns</Bullet>
-                  <Bullet>Policy‑compliant across channels</Bullet>
-                </Bullets>
+                <FeatureText>Create, launch & optimize campaigns</FeatureText>
+                <FeatureText>Policy‑compliant across channels</FeatureText>
               </Card>
               <Card>
                 <Small>Affiliate & Reseller</Small>
-                <Bullets>
-                  <Bullet>Performance tracking</Bullet>
-                  <Bullet>Commission tools</Bullet>
-                </Bullets>
+                <FeatureText>Performance tracking</FeatureText>
+                <FeatureText>Commission tools</FeatureText>
               </Card>
               <Card>
                 <Small>Campaign & Funnel Builder</Small>
-                <Bullets>
-                  <Bullet>Visual journeys</Bullet>
-                  <Bullet>Real‑time optimization</Bullet>
-                </Bullets>
+                <FeatureText>Visual journeys</FeatureText>
+                <FeatureText>Real‑time optimization</FeatureText>
               </Card>
               <Card>
                 <Small>Multilingual Content</Small>
-                <Bullets>
-                  <Bullet>100+ languages</Bullet>
-                  <Bullet>Text & voice</Bullet>
-                </Bullets>
+                <FeatureText>100+ languages</FeatureText>
+                <FeatureText>Text & voice</FeatureText>
               </Card>
               <Card>
                 <Small>Blockchain Layer</Small>
-                <Bullets>
-                  <Bullet>Smart contracts</Bullet>
-                  <Bullet>Tokenized rewards & transparency</Bullet>
-                </Bullets>
+                <FeatureText>Smart contracts</FeatureText>
+                <FeatureText>Tokenized rewards & transparency</FeatureText>
               </Card>
               <Card>
                 <Small>Developer Ecosystem</Small>
-                <Bullets>
-                  <Bullet>Open API & SDK marketplace</Bullet>
-                  <Bullet>Extensions & integrations</Bullet>
-                </Bullets>
+                <FeatureText>Open API & SDK marketplace</FeatureText>
+                <FeatureText>Extensions & integrations</FeatureText>
               </Card>
             </Grid>
           </Body>
