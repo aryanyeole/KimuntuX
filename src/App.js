@@ -19,7 +19,7 @@ import BenefitsBySectorPage from './pages/BenefitsBySectorPage';
 import BlogPage from './pages/BlogPage';
 
 // Import all page components
-import CRMMain from './pages/CRMMain';
+import CRMPage from './pages/CRMPage';
 import B2BBrokeragePage from './pages/B2BBrokeragePage';
 import B2CMarketplacePage from './pages/B2CMarketplacePage';
 import AffiliateHubPage from './pages/AffiliateHubPage';
