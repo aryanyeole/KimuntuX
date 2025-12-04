@@ -2,9 +2,11 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UserProvider } from './contexts/UserContext';
+import { ChatbotProvider } from './providers/ChatbotProvider';
 import { GlobalStyles } from './styles/GlobalStyles';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ChatWidget from './components/ChatWidget';
 import LandingPage from './components/LandingPage';
 import AboutPage from './pages/AboutPage';
 import PricingPage from './pages/PricingPage';
@@ -17,7 +19,7 @@ import BenefitsBySectorPage from './pages/BenefitsBySectorPage';
 import BlogPage from './pages/BlogPage';
 
 // Import all page components
-import CRMPage from './pages/CRMPage';
+import CRMMain from './pages/CRMMain';
 import B2BBrokeragePage from './pages/B2BBrokeragePage';
 import B2CMarketplacePage from './pages/B2CMarketplacePage';
 import AffiliateHubPage from './pages/AffiliateHubPage';
@@ -36,6 +38,7 @@ function App() {
       <UserProvider>
         <GlobalStyles />
         <Router>
+          <ChatbotProvider>
           <div className="App">
             <Header />
             <Routes>
@@ -64,7 +67,8 @@ function App() {
             </Routes>
             <Footer />
           </div>
-        </Router>
+          </ChatbotProvider>
+      </Router>
       </UserProvider>
     </ThemeProvider>
   );
