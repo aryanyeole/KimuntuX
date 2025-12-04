@@ -41,10 +41,14 @@ const Logo = styled(Link)`
 `;
 
 const LogoImage = styled.img`
-  height: 90px;
+  height: 110px;
   width: auto;
   margin-right: 0.5rem;
   background: transparent;
+  
+  @media (max-width: 768px) {
+    height: 90px;
+  }
 `;
 
 const MainNav = styled.nav`
@@ -63,7 +67,7 @@ const NavLink = styled(Link)`
   padding: 8px 12px;
   border-radius: 4px;
   transition: all 0.2s ease;
-  font-size: 1.125rem;
+  font-size: 1.375rem;
   white-space: nowrap;
   opacity: 0.9;
   &:hover {
@@ -85,16 +89,16 @@ const RightSection = styled.div`
 `;
 
 const StyledSearchIcon = styled.div`
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") no-repeat center;
   background-size: contain;
   margin-right: 0.5rem;
 `;
 
 const StyledUserIcon = styled.div`
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'/%3E%3C/svg%3E") no-repeat center;
   background-size: contain;
   margin-right: 0.5rem;
@@ -111,7 +115,7 @@ const SearchButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.125rem;
+  font-size: 1.375rem;
   font-weight: 400;
   opacity: 0.9;
   &:hover {
@@ -131,7 +135,7 @@ const SignInButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.125rem;
+  font-size: 1.375rem;
   font-weight: 400;
   opacity: 0.9;
   &:hover {
@@ -144,9 +148,9 @@ const StartTrialButton = styled(Link)`
   background-color: ${props => props.theme?.colors?.primary || '#00C896'};
   color: white;
   text-decoration: none;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 4px;
-  font-size: 1.125rem;
+  font-size: 1.375rem;
   font-weight: 500;
   transition: all 0.2s ease;
   &:hover {

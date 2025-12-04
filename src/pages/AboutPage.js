@@ -21,59 +21,27 @@ const Wrap = styled.div`
 `;
 
 const Hero = styled.header`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  padding: 0;
-  margin: 0 0 4px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
+  position: relative;
+  margin-bottom: 5rem;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
   
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+  @media (max-width: 768px) {
+    border-radius: 16px;
+    margin-bottom: 3rem;
   }
-`;
-
-const HeroContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 28px 24px;
-  background: linear-gradient(135deg, ${p => (p.theme?.colors?.primary || '#00C896')}0F, ${p => (p.theme?.colors?.accent || '#DAA520')}0F);
-  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
 `;
 
 const HeroImageContainer = styled.div`
   position: relative;
-  border-radius: 16px;
+  width: 100%;
+  height: 500px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
-  background: ${p => p.theme?.colors?.cardBackground || '#f8f9fa'};
-  min-height: 280px;
-  display: flex;
-  align-items: stretch;
   
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, ${p => (p.theme?.colors?.primary || '#00C896')}05, ${p => (p.theme?.colors?.accent || '#DAA520')}05);
-    z-index: 1;
-    pointer-events: none;
-  }
-  
-  @media (max-width: 900px) {
-    min-height: 300px;
-    max-height: 400px;
+  @media (max-width: 768px) {
+    height: 300px;
   }
 `;
 
@@ -83,48 +51,64 @@ const HeroImage = styled.img`
   object-fit: cover;
   object-position: center;
   display: block;
-  transition: transform 0.3s ease;
-  position: relative;
-  z-index: 0;
+`;
+
+const HeroContent = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+  padding: 4rem 3rem 3rem;
+  z-index: 2;
+  text-align: center;
   
-  ${HeroImageContainer}:hover & {
-    transform: scale(1.02);
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem;
   }
 `;
 
 const H1 = styled.h1`
-  margin: 0 0 8px;
-  font-size: 40px;
+  margin: 0 0 1rem 0;
+  font-size: 3.5rem;
   line-height: 1.15;
   font-weight: 700;
-  color: ${p => p.theme?.colors?.text || '#111111'};
+  color: white;
   font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
-  position: relative;
-  animation: fadeUp .5s ease-out both;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.02em;
+  animation: fadeInUp 0.8s ease-out;
   
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: -10px;
-    width: 72px;
-    height: 4px;
-    background: linear-gradient(90deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
-    border-radius: 2px;
+  @media (max-width: 768px) {
+    font-size: 2rem;
   }
 `;
 
 const Lead = styled.p`
-  margin: 0 0 24px;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  opacity: .8;
-  font-size: 18px;
-  max-width: 820px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 1.75rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const Section = styled.section`
@@ -142,14 +126,22 @@ const Section = styled.section`
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
   }
+  
+  &:first-of-type {
+    padding-top: 30px;
+  }
 `;
 
 const Title = styled.h2`
   margin: 0;
-  font-size: 20px;
+  font-size: 28px;
   line-height: 1.3;
   font-weight: 700;
   color: ${p => p.theme?.colors?.text || '#111111'};
+  
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
 `;
 
 const Body = styled.div`
@@ -158,6 +150,19 @@ const Body = styled.div`
   color: ${p => p.theme?.colors?.text || '#111111'};
   opacity: .95;
   line-height: 1.75;
+  font-size: 18px;
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+  
+  p {
+    font-size: 18px;
+    
+    @media (max-width: 768px) {
+      font-size: 16px;
+    }
+  }
 `;
 
 const Grid = styled.div`
@@ -284,12 +289,12 @@ export default function AboutPage() {
     <Page>
       <Wrap>
         <Hero>
-          <HeroContent>
-            <H1>About KimuntuX</H1>
-            <Lead>The Intelligent Digital Brokerage & Marketing Universe.</Lead>
-          </HeroContent>
           <HeroImageContainer>
             <HeroImage src={aboutImage} alt="KimuntuX Team" />
+            <HeroContent>
+              <H1>About</H1>
+              <Lead>The Intelligent Digital Brokerage & Digital Marketing Platform.</Lead>
+            </HeroContent>
           </HeroImageContainer>
         </Hero>
 

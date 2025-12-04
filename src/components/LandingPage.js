@@ -3,8 +3,22 @@ import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
 import { Link } from 'react-router-dom';
 import kimuntuIntroVideo from '../assets/Kimuntu_intro.mp4';
-import kimuntuAnimationVideo from '../assets/Kimuntu_animation.mp4';
+import kimuntuAnimationVideo from '../assets/Homepage_title_video.mp4';
 import backgroundDesign from '../assets/background_design.jpg';
+import whyChooseUsBackground from '../assets/WHY Choose us backgound.png';
+import onlineBoutiqueImage from '../assets/Online_Boutique.jpeg';
+import crmImage from '../assets/CRM.jpeg';
+import fintechImage from '../assets/Fintech.jpeg';
+import digitalMarketingImage from '../assets/Digital Marketing.jpeg';
+import marketplaceApiImage from '../assets/Marketplace API.jpeg';
+import funnelsLandingPageImage from '../assets/Funnels and landing page.jpeg';
+import affiliateImage from '../assets/Affiliate.png';
+import campaignImage from '../assets/Campaign.jpeg';
+import brokerageImage from '../assets/Brokerage.jpeg';
+import blockchainImage from '../assets/Blockchain commerce plateform.jpeg';
+import websiteEcommerceBoutiqueImage from '../assets/Website_Ecommerce_boutique.jpeg';
+import financialInclusionImage from '../assets/Financial Inclusion.jpg';
+import aiDrivenCryptoImage from '../assets/AI Driven Crypto.jpg';
 
 // Import partner logos
 import awsLogo from '../assets/Company_logos/aws.jpg';
@@ -155,8 +169,14 @@ const HeroTitle = styled.h1`
   }
 `;
 
+const BlockchainText = styled.span`
+  font-size: 0.7em;
+  color: ${props => props.theme?.colors?.primary || '#00C896'};
+  display: block;
+`;
+
 const HeroSubtitle = styled.p`
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: white;
   opacity: 0.9;
   margin-bottom: 3rem;
@@ -166,8 +186,12 @@ const HeroSubtitle = styled.p`
   position: relative;
   z-index: 1;
   
+  @media (max-width: 968px) {
+    font-size: 1.75rem;
+  }
+  
   @media (max-width: 768px) {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 `;
 
@@ -238,7 +262,7 @@ const Section = styled.section`
 
 const SectionTitle = styled.h2`
   text-align: center;
-  font-size: 3.5rem;
+  font-size: 4.5rem;
   font-weight: 700;
   color: ${props => props.theme?.colors?.text || '#111111'};
   margin-bottom: 1.5rem;
@@ -246,8 +270,12 @@ const SectionTitle = styled.h2`
   letter-spacing: -0.02em;
   line-height: 1.2;
   
+  @media (max-width: 968px) {
+    font-size: 3.5rem;
+  }
+  
   @media (max-width: 768px) {
-    font-size: 2.5rem;
+    font-size: 4rem;
   }
 `;
 
@@ -272,6 +300,25 @@ const PreviewSection = styled(Section)`
   background-color: ${props => props.theme?.colors?.background || '#FFFFFF'};
 `;
 
+const PreviewSubtitle = styled.p`
+  text-align: center;
+  font-size: 2rem;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  opacity: 0.75;
+  margin-bottom: 4rem;
+  width: 100%;
+  line-height: 1.8;
+  font-weight: 400;
+  
+  @media (max-width: 968px) {
+    font-size: 2.25rem;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+`;
+
 const PreviewVideoContainer = styled.div`
   width: 100%;
   margin: 0 auto;
@@ -294,19 +341,115 @@ const FeaturesSection = styled(Section)`
               radial-gradient(1000px 500px at 110% -20%, ${p => (p.theme?.colors?.accent || '#DAA520')}0F, transparent 55%),
               ${p => p.theme?.colors?.background || '#FFFFFF'};
   overflow: hidden;
+  padding-top: 40px;
+  padding-bottom: 50px;
+  
+  @media (max-width: 768px) {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+`;
+
+const FeaturesSubtitle = styled.p`
+  text-align: center;
+  font-size: 1.8rem;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  opacity: 0.75;
+  margin-bottom: 4rem;
+  width: 100%;
+  line-height: 1.8;
+  font-weight: 400;
+  
+  @media (max-width: 968px) {
+    font-size: 1.75rem;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const CTASection = styled(Section)`
+  position: relative;
+  padding: 50px 20px 100px;
+  text-align: center;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    padding: 30px 20px 60px;
+  }
+`;
+
+const CTASectionWithBackground = styled(CTASection)`
+  background-image: url(${whyChooseUsBackground});
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+`;
+
+const CTAHeading = styled.h2`
+  font-size: 3rem;
+  font-weight: 700;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  margin-bottom: 1.5rem;
+  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
+  line-height: 1.2;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+`;
+
+const CTADescription = styled.p`
+  font-size: 1.8rem;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  opacity: 0.8;
+  margin-bottom: 2.5rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.7;
+  font-weight: 400;
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+`;
+
+const StartTrialButton = styled(Link)`
+  background-color: ${props => props.theme?.colors?.primary || '#00C896'};
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 1.375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-block;
+  
+  &:hover {
+    background-color: #00B085;
+  }
 `;
 
 const FeaturesSliderContainer = styled.div`
   overflow: hidden;
   position: relative;
-  width: 100%;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
   padding: 20px 0;
+  
+  @media (max-width: 968px) {
+    width: 100%;
+    margin-left: 0;
+  }
 `;
 
 const FeaturesSlider = styled.div`
   display: flex;
   gap: 2rem;
-  animation: slideFeatures 60s linear infinite;
+  animation: slideFeatures 120s linear infinite;
   width: fit-content;
   
   @keyframes slideFeatures {
@@ -314,7 +457,7 @@ const FeaturesSlider = styled.div`
       transform: translateX(0);
     }
     100% {
-      transform: translateX(-50%);
+      transform: translateX(-33.333%);
     }
   }
   
@@ -327,6 +470,7 @@ const FeaturesSlider = styled.div`
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     animation: none;
     gap: 1.5rem;
+    transform: none !important;
   }
 `;
 
@@ -346,40 +490,53 @@ const FeatureCard = styled.div`
   background: linear-gradient(180deg, ${p => (p.theme?.colors?.cardBackground || '#f8f9fa')} 0%, ${p => (p.theme?.colors?.background || '#FFFFFF')} 100%);
   border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
   border-radius: 16px;
-  padding: 1.5rem;
+  padding: 2rem;
   transition: all 0.3s ease;
-  text-align: left;
+  text-align: center;
   box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-  min-width: 320px;
-  max-width: 340px;
+  min-width: 420px;
+  max-width: 600px;
   flex-shrink: 0;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+  overflow: hidden;
   
   &:hover {
     transform: translateY(-6px);
     box-shadow: 0 18px 42px rgba(0,0,0,0.08);
     border-color: ${p => p.theme?.colors?.primary || '#00C896'}33;
-    
-    &::before {
-      opacity: 1;
-    }
   }
   
   @media (max-width: 968px) {
     min-width: auto;
-    max-width: 350px;
+    max-width: 600px;
   }
+`;
+
+const FeatureCardContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  justify-content: space-between;
+`;
+
+const FeatureTextSection = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex-shrink: 0;
+`;
+
+const FeatureImage = styled.img`
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+  max-height: 450px;
+  margin-top: auto;
 `;
 
 const FeatureIcon = styled.div`
@@ -421,75 +578,72 @@ const FeatureIcon = styled.div`
 `;
 
 const FeatureTitle = styled.h3`
-  font-size: 1.125rem;
+  font-size: 1.7rem;
   font-weight: 600;
   color: ${props => props.theme?.colors?.text || '#111111'};
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
   line-height: 1.3;
+  text-align: center;
+  width: 100%;
 `;
 
 const FeatureDescription = styled.p`
   color: ${props => props.theme?.colors?.text || '#111111'};
   opacity: 0.75;
   line-height: 1.6;
-  font-size: 0.9375rem;
+  font-size: 1.3rem;
   font-weight: 400;
+  text-align: center;
+  width: 100%;
 `;
 
 const SectorsSection = styled(Section)`
   position: relative;
   overflow: hidden;
-  background-image: url(${backgroundDesign});
+  background-image: url(${whyChooseUsBackground});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
   
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(248, 249, 250, 0.7);
-    z-index: 0;
-  }
+  padding-bottom: 50px;
   
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(1200px 600px at -10% -10%, ${p => (p.theme?.colors?.primary || '#00C896')}0D, transparent 60%),
-                radial-gradient(1000px 500px at 110% -20%, ${p => (p.theme?.colors?.accent || '#DAA520')}0F, transparent 55%),
-                transparent;
-    z-index: 1;
-  }
-  
-  > * {
-    position: relative;
-    z-index: 2;
+  @media (max-width: 768px) {
+    padding-bottom: 30px;
   }
 `;
 
 const SectorsGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
-  justify-content: center;
+  justify-items: center;
   
-  @media (max-width: 968px) {
-    justify-content: center;
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
   }
   
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: 1fr;
   }
+`;
+
+const SectorTitle = styled.h4`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  margin-bottom: 0.5rem;
+  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
+  transition: font-size 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+`;
+
+const SectorDescription = styled.p`
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  opacity: 0.75;
+  line-height: 1.6;
+  font-size: 1rem;
+  transition: font-size 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
 `;
 
 const SectorCard = styled.div`
@@ -499,40 +653,25 @@ const SectorCard = styled.div`
   border-radius: 16px;
   padding: 2rem;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 8px 20px rgba(0,0,0,0.04);
-  flex: 0 0 calc(33.333% - 1rem);
-  min-width: 280px;
-  max-width: 350px;
-  
-  @media (max-width: 968px) {
-    flex: 0 0 calc(50% - 0.75rem);
-  }
-  
-  @media (max-width: 768px) {
-    flex: 0 0 100%;
-    max-width: 400px;
-  }
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+  width: 100%;
+  max-width: 100%;
+  cursor: pointer;
   
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 18px 42px rgba(0,0,0,0.08);
+    transform: translateY(-12px) scale(1.05);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.15);
     border-color: ${p => p.theme?.colors?.primary || '#00C896'}33;
+    z-index: 10;
     
-    &::before {
-      opacity: 1;
+    ${SectorTitle} {
+      font-size: 1.5rem;
+    }
+    
+    ${SectorDescription} {
+      font-size: 1.2rem;
+      opacity: 0.9;
     }
   }
 `;
@@ -562,19 +701,18 @@ const SectorIcon = styled.div`
   }
 `;
 
-const SectorTitle = styled.h4`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  margin-bottom: 0.5rem;
-  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
-`;
-
-const SectorDescription = styled.p`
+const SectorsSubtitle = styled.p`
+  text-align: center;
+  font-size: 2rem;
   color: ${props => props.theme?.colors?.text || '#111111'};
   opacity: 0.75;
-  line-height: 1.6;
-  font-size: 1rem;
+  margin-bottom: 4rem;
+  line-height: 1.8;
+  font-weight: 400;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 `;
 
 // Partners Section - Larger Logos
@@ -622,13 +760,131 @@ const PartnersTitle = styled.h2`
   }
 `;
 
+const CryptoWealthSection = styled(Section)`
+  background-color: #000000;
+  color: white;
+  padding: 100px 0;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    padding: 60px 0;
+  }
+`;
+
+const CryptoWealthContainer = styled.div`
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 4rem;
+  align-items: center;
+  
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+`;
+
+const CryptoWealthImageWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  overflow: hidden;
+  border-radius: 16px;
+  
+  @media (max-width: 968px) {
+    min-height: 400px;
+    order: -1;
+  }
+  
+  @media (max-width: 768px) {
+    min-height: 300px;
+  }
+`;
+
+const CryptoWealthImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
+const CryptoWealthContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 0;
+`;
+
+const CryptoWealthTitle = styled.h2`
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 1.5rem 0;
+  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const CryptoWealthSubtitle = styled.h3`
+  font-size: 2rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 2rem 0;
+  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
+  line-height: 1.3;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const CryptoWealthDescription = styled.p`
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 2.5rem 0;
+  line-height: 1.7;
+  font-weight: 400;
+  
+  @media (max-width: 768px) {
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+  }
+`;
+
+const TalkToTeamButton = styled(Link)`
+  background-color: ${props => props.theme?.colors?.primary || '#00C896'};
+  color: white;
+  text-decoration: none;
+  padding: 16px 20px;
+  border-radius: 8px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-block;
+  width: fit-content;
+  
+  &:hover {
+    background-color: #00B085;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 200, 150, 0.3);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 14px 16px;
+    font-size: 1.125rem;
+  }
+`;
+
 const LogoSlider = styled.div`
   display: flex;
   gap: 4rem;
-  animation: slide 40s linear infinite;
+  animation: slideLeftToRight 50s linear infinite;
   width: fit-content;
   
-  @keyframes slide {
+  @keyframes slideLeftToRight {
     0% {
       transform: translateX(0);
     }
@@ -647,9 +903,9 @@ const LogoWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 240px;
-  height: 140px;
-  padding: 1.5rem;
+  width: 320px;
+  height: 180px;
+  padding: 2rem;
   background-color: ${props => props.theme?.colors?.background || '#FFFFFF'};
   border: 1px solid ${props => props.theme?.colors?.border || '#E5E5E5'};
   border-radius: 12px;
@@ -660,6 +916,12 @@ const LogoWrapper = styled.div`
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     border-color: ${props => props.theme?.colors?.primary || '#00C896'}33;
   }
+  
+  @media (max-width: 768px) {
+    width: 260px;
+    height: 150px;
+    padding: 1.5rem;
+  }
 `;
 
 const LogoImage = styled.img`
@@ -668,6 +930,8 @@ const LogoImage = styled.img`
   object-fit: contain;
   opacity: 0.8;
   transition: all 0.3s ease;
+  width: auto;
+  height: auto;
   
   ${LogoWrapper}:hover & {
     opacity: 1;
@@ -678,7 +942,15 @@ const LogoImage = styled.img`
 const SliderContainer = styled.div`
   overflow: hidden;
   position: relative;
-  width: 100%;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  
+  @media (max-width: 1200px) {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
 `;
 
 const LandingPage = () => {
@@ -726,15 +998,15 @@ const LandingPage = () => {
 
   const keySolutions = [
     { title: 'AI Marketing Engine', description: 'Create, launch, and optimize ads automatically across Facebook, Instagram, YouTube, and more with AI-powered campaign management.' },
-    { title: 'Smart Brokerage Tools', description: 'Connect with verified partners, suppliers, and clients globally through AI-powered brokerage and blockchain-secured transactions.' },
-    { title: 'Blockchain Security Layer', description: 'Secure transactions with smart contracts, escrow services, and transparent blockchain verification for trust and compliance.' },
+    { title: 'Universal Digital Brokerage', description: 'Connect with verified partners, suppliers, and clients globally through AI-powered brokerage and blockchain-secured transactions.' },
+    { title: 'Financial Inclusion', description: 'Empowering entrepreneurs and small businesses with affordable digital tools and fintech access.' },
     { title: 'API Integrations', description: 'Build, extend, and innovate with KimuntuX APIs, SDKs, and partner marketplace for seamless third-party connections.' },
-    { title: 'AI Boutique Builder', description: 'Launch your complete online store in minutes, automatically designed, optimized, and ready to sell with AI-generated content.' },
+    { title: 'AI eCommerce & Store Creation', description: 'Launch your complete online store in minutes, automatically designed, optimized, and ready to sell with AI-generated content.' },
     { title: 'Intelligent CRM', description: 'Manage leads, clients, and conversations effortlessly with smart automation and AI-powered follow-ups and insights.' },
     { title: 'Smart Fintech Hub', description: 'Multi-currency wallets, instant payouts, AI fraud detection, and smart crypto wallet with predictive investment engine.' },
     { title: 'Multi-Channel Commerce', description: 'Sync your Shopify, WooCommerce, Amazon, and TikTok stores into one smart dashboard for unified management.' },
-    { title: 'Data & Intelligence', description: 'Get real-time analytics, forecasts, and personalized AI recommendations to grow faster with data-driven insights.' },
-    { title: 'Affiliate & Reseller Network', description: 'Join the global affiliate community: earn, promote, and grow with transparent blockchain rewards and tracking.' }
+    { title: 'Funnel Landing Page', description: 'Create high-converting funnels and landing pages powered by AI. Drag-and-drop design, smart optimization, and automated tracking to capture leads and boost sales effortlessly.' },
+    { title: 'Global Affiliate & Reseller Network', description: 'Join the global affiliate community: earn, promote, and grow with transparent blockchain rewards and tracking.' }
   ];
 
   const sectors = [
@@ -792,7 +1064,7 @@ const LandingPage = () => {
   ];
 
   const duplicatedPartners = [...partners, ...partners];
-  const duplicatedSolutions = [...keySolutions, ...keySolutions];
+  const duplicatedSolutions = [...keySolutions, ...keySolutions, ...keySolutions];
 
   return (
     <LandingContainer>
@@ -800,10 +1072,13 @@ const LandingPage = () => {
         <HeroContainer>
           <HeroContent>
             <HeroTitle>
-              AI-Powered Digital Brokerage & Marketing Platform Built on Blockchain.
+              AI-Powered<br />
+              Digital Brokerage<br />
+              & Marketing Platform<br />
+              <BlockchainText>Built on Blockchain.</BlockchainText>
             </HeroTitle>
             <HeroSubtitle>
-              "Empowering individuals and enterprises to build, connect, and grow through intelligent, inclusive, and borderless digital commerce."
+              "Empowering individuals and businesses to build, connect, and grow through intelligent, inclusive, and borderless digital commerce."
             </HeroSubtitle>
             <CTAButtons>
               <CTAButton to="/signup" className="primary">Start Your Journey</CTAButton>
@@ -828,9 +1103,9 @@ const LandingPage = () => {
       <PreviewSection>
         <Container>
           <SectionTitle>Platform Preview</SectionTitle>
-          <SectionSubtitle>
+          <PreviewSubtitle>
             Experience the power of unified AI-driven business management with real-time analytics, smart automation, and comprehensive insights.
-          </SectionSubtitle>
+          </PreviewSubtitle>
           <PreviewVideoContainer>
             <PreviewVideo
               ref={videoRef}
@@ -848,33 +1123,77 @@ const LandingPage = () => {
       <FeaturesSection>
         <Container>
           <SectionTitle>Key Solutions</SectionTitle>
-          <SectionSubtitle>
+          <FeaturesSubtitle>
             KimuntuX solves the real-world pain points that individuals, entrepreneurs, and enterprises face in the modern digital economy. It merges AI, Blockchain, and Fintech into a single intelligent platform that simplifies, secures, and scales business growth.
-          </SectionSubtitle>
+          </FeaturesSubtitle>
           <FeaturesSliderContainer>
             <FeaturesSlider>
-              {duplicatedSolutions.map((solution, index) => (
-                <FeatureCard key={index}>
-                  <FeatureIcon />
-                  <FeatureTitle>{solution.title}</FeatureTitle>
-                  <FeatureDescription>{solution.description}</FeatureDescription>
-                </FeatureCard>
-              ))}
+              {duplicatedSolutions.map((solution, index) => {
+                const hasImage = solution.title === 'AI eCommerce & Store Creation' || 
+                                 solution.title === 'Intelligent CRM' ||
+                                 solution.title === 'Smart Fintech Hub' ||
+                                 solution.title === 'Multi-Channel Commerce' ||
+                                 solution.title === 'API Integrations' ||
+                                 solution.title === 'Funnel Landing Page' ||
+                                 solution.title === 'Global Affiliate & Reseller Network' ||
+                                 solution.title === 'AI Marketing Engine' ||
+                                 solution.title === 'Universal Digital Brokerage' ||
+                                 solution.title === 'Blockchain Security Layer' ||
+                                 solution.title === 'Financial Inclusion';
+                const getImage = () => {
+                  if (solution.title === 'AI eCommerce & Store Creation') return websiteEcommerceBoutiqueImage;
+                  if (solution.title === 'Intelligent CRM') return crmImage;
+                  if (solution.title === 'Smart Fintech Hub') return fintechImage;
+                  if (solution.title === 'Multi-Channel Commerce') return digitalMarketingImage;
+                  if (solution.title === 'API Integrations') return marketplaceApiImage;
+                  if (solution.title === 'Funnel Landing Page') return funnelsLandingPageImage;
+                  if (solution.title === 'Global Affiliate & Reseller Network') return affiliateImage;
+                  if (solution.title === 'AI Marketing Engine') return campaignImage;
+                  if (solution.title === 'Universal Digital Brokerage') return brokerageImage;
+                  if (solution.title === 'Blockchain Security Layer') return blockchainImage;
+                  if (solution.title === 'Financial Inclusion') return financialInclusionImage;
+                  return null;
+                };
+                const imageSrc = getImage();
+
+  return (
+                  <FeatureCard key={index} hasImage={hasImage}>
+                    <FeatureCardContent>
+                      <FeatureTextSection>
+                        <FeatureTitle>{solution.title}</FeatureTitle>
+                        <FeatureDescription>{solution.description}</FeatureDescription>
+                      </FeatureTextSection>
+                      {hasImage && imageSrc && (
+                        <FeatureImage src={imageSrc} alt={solution.title} />
+                      )}
+                    </FeatureCardContent>
+                  </FeatureCard>
+                );
+              })}
             </FeaturesSlider>
           </FeaturesSliderContainer>
         </Container>
       </FeaturesSection>
 
+      <CTASection>
+        <Container>
+          <CTAHeading>Launch Smarter. Grow Faster. Earn More.</CTAHeading>
+          <CTADescription>
+            Turn your business into an automated revenue engine — powered by AI, blockchain, and smart marketing tools working 24/7 to bring you customers, leads, and sales.
+          </CTADescription>
+          <StartTrialButton to="/pricing">Start Free Trial</StartTrialButton>
+        </Container>
+      </CTASection>
+
       <SectorsSection>
         <Container>
           <SectionTitle>Why Choose Us</SectionTitle>
-          <SectionSubtitle>
+          <SectorsSubtitle>
             Benefits Across All Sectors
-          </SectionSubtitle>
+          </SectorsSubtitle>
           <SectorsGrid>
             {sectors.map((sector, index) => (
               <SectorCard key={index}>
-                <SectorIcon />
                 <SectorTitle>{sector.title}</SectorTitle>
                 <SectorDescription>{sector.description}</SectorDescription>
               </SectorCard>
@@ -883,19 +1202,47 @@ const LandingPage = () => {
         </Container>
       </SectorsSection>
 
+      <CTASectionWithBackground>
+        <Container>
+          <CTAHeading>Because Your Success Deserves Intelligence.</CTAHeading>
+          <CTADescription>
+            Grow 10× faster with an all-in-one platform that builds, automates, and scales your business using advanced AI, intelligent marketing, secure fintech, and universal integrations.
+          </CTADescription>
+          <StartTrialButton to="/pricing">Start Free Trial</StartTrialButton>
+        </Container>
+      </CTASectionWithBackground>
+
+      <CryptoWealthSection>
+        <Container>
+          <CryptoWealthContainer>
+            <CryptoWealthImageWrapper>
+              <CryptoWealthImage src={aiDrivenCryptoImage} alt="AI-Driven Crypto & Fintech Wealth Engine" />
+            </CryptoWealthImageWrapper>
+            <CryptoWealthContent>
+              <CryptoWealthTitle>AI-Driven Crypto & Fintech Wealth Engine</CryptoWealthTitle>
+              <CryptoWealthSubtitle>Trade smarter. Grow faster. Earn more.</CryptoWealthSubtitle>
+              <CryptoWealthDescription>
+                Unlock the future of digital investing with KimuntuX's intelligent trading platform — where AI, fintech, and blockchain work together to help you grow your wealth with confidence.
+              </CryptoWealthDescription>
+              <TalkToTeamButton to="/contact">Talk to the Team</TalkToTeamButton>
+            </CryptoWealthContent>
+          </CryptoWealthContainer>
+        </Container>
+      </CryptoWealthSection>
+
       <PartnersSection>
         <Container>
           <PartnersTitle>Our Trusted Partners</PartnersTitle>
-          <SliderContainer>
-            <LogoSlider>
-              {duplicatedPartners.map((partner, index) => (
-                <LogoWrapper key={index}>
-                  <LogoImage src={partner.logo} alt={partner.name} />
-                </LogoWrapper>
-              ))}
-            </LogoSlider>
-          </SliderContainer>
         </Container>
+        <SliderContainer>
+          <LogoSlider>
+            {duplicatedPartners.map((partner, index) => (
+              <LogoWrapper key={index}>
+                <LogoImage src={partner.logo} alt={partner.name} />
+              </LogoWrapper>
+            ))}
+          </LogoSlider>
+        </SliderContainer>
       </PartnersSection>
     </LandingContainer>
   );

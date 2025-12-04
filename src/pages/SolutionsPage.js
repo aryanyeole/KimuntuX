@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
 import pricingImage from '../assets/pricing.jpg';
+import financialInclusionImage from '../assets/Financial Inclusion.jpg';
 
 const SolutionsContainer = styled.div`
   min-height: 100vh;
@@ -280,97 +281,16 @@ const FeatureItem = styled.li`
   }
 `;
 
-const SpecialSection = styled.div`
-  background: linear-gradient(135deg, #00C896 0%, #20B2AA 100%);
-  border-radius: 24px;
-  padding: 3rem;
-  margin-top: 4rem;
-  margin-bottom: 4rem;
-  box-shadow: 0 12px 40px rgba(0, 200, 150, 0.2);
-  position: relative;
-  overflow: hidden;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    animation: rotate 20s linear infinite;
-    opacity: 0.3;
-  }
-
-  @keyframes rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  @media (max-width: 768px) {
-    padding: 2rem;
-    border-radius: 16px;
-  }
+const SolutionImage = styled.img`
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  max-height: 450px;
+  margin-top: 2rem;
+  border-radius: 8px;
+  display: block;
 `;
 
-const SpecialTitle = styled.h3`
-  font-size: 2rem;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 2rem 0;
-  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  position: relative;
-  z-index: 1;
-  
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-  }
-`;
-
-const SpecialContent = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
-  position: relative;
-  z-index: 1;
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-`;
-
-const SpecialCard = styled.div`
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 2rem;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const SpecialCardTitle = styled.h4`
-  color: white;
-  font-weight: 700;
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
-`;
-
-const SpecialText = styled.p`
-  color: rgba(255, 255, 255, 0.95);
-  line-height: 1.7;
-  margin: 0.5rem 0;
-  font-size: 0.9375rem;
-`;
 
 const SolutionsPage = () => {
   const solutions = [
@@ -385,7 +305,7 @@ const SolutionsPage = () => {
       ]
     },
     {
-      title: 'Autonomous eCommerce & Store Creation',
+      title: 'AI eCommerce & Store Creation',
       problem: 'Launching and managing an online business is complex, time-consuming, and costly for non-technical users.',
       solution: 'The AI AutoBuild Boutique Engine creates a complete eCommerce store — including design, catalog, copy, and SEO — in minutes.',
       features: [
@@ -395,7 +315,7 @@ const SolutionsPage = () => {
       ]
     },
     {
-      title: 'Intelligent CRM & Relationship Management',
+      title: 'Intelligent CRM',
       problem: 'Businesses lose leads and clients due to poor follow-up and disconnected communication tools.',
       solution: 'A unified AI-Driven CRM System that automates client nurturing and communication.',
       features: [
@@ -416,7 +336,7 @@ const SolutionsPage = () => {
       ]
     },
     {
-      title: 'Cross-Platform Integration & Multi-Channel Commerce',
+      title: 'Multi-Channel Commerce',
       problem: 'Businesses manage multiple sales channels separately — losing data, time, and sales potential.',
       solution: 'A Unified Commerce Dashboard that connects and manages multiple ecosystems.',
       features: [
@@ -426,7 +346,7 @@ const SolutionsPage = () => {
       ]
     },
     {
-      title: 'AI-Powered Campaigns & Marketing Intelligence',
+      title: 'AI Marketing Engine',
       problem: 'Running marketing campaigns across multiple platforms is costly and inefficient without automation.',
       solution: 'An AI Campaign Optimization Engine that automates ad creation, budget allocation, and ROI tracking.',
       features: [
@@ -436,7 +356,7 @@ const SolutionsPage = () => {
       ]
     },
     {
-      title: 'Developer & Partner Ecosystem',
+      title: 'API Integrations',
       problem: 'Limited access to tools and APIs prevents developers and partners from contributing to platform growth.',
       solution: 'An open Developer Marketplace and API Ecosystem for innovation and collaboration.',
       features: [
@@ -446,17 +366,16 @@ const SolutionsPage = () => {
       ]
     },
     {
-      title: 'Data Intelligence & Predictive Insights',
-      problem: 'Businesses often operate blindly without real-time data or forecasting.',
-      solution: 'A Commerce Intelligence Dashboard that turns data into actionable insights.',
+      title: 'Funnel Landing Page',
+      problem: 'Businesses struggle to create high-converting funnels and pages that attract leads and sales.',
+      solution: 'AI builds clean, ready-to-use funnels in minutes to help businesses launch campaigns fast.',
       features: [
-        'Predictive analytics for sales, pricing, and customer retention.',
-        'Real-time performance visualization with AI recommendations.',
-        'Unified KPIs across CRM, brokerage, and eCommerce.'
+        'Smart AI improves copy, layout, and targeting to boost conversions automatically.',
+        'Automated funnels connect to CRM, ads, and analytics to grow leads and sales at scale.'
       ]
     },
     {
-      title: 'Financial Inclusion & Empowerment',
+      title: 'Financial Inclusion',
       problem: 'Millions of small entrepreneurs lack access to digital and financial infrastructure.',
       solution: 'KimuntuX bridges this gap through inclusive, low-cost, and localized digital tools.',
       features: [
@@ -477,18 +396,6 @@ const SolutionsPage = () => {
     }
   ];
 
-  const specialSolutions = [
-    {
-      title: 'AI-Powered Stock Market Integration',
-      problem: 'Complex platforms and lack of financial literacy limit retail investor access to stock markets.',
-      solution: 'Intuitive AI-driven stock market dashboard with real-time insights, risk profiling, and auto-portfolio suggestions.'
-    },
-    {
-      title: 'AI Crypto Wallet & Predictive Investment Engine',
-      problem: 'Volatile markets and manual tracking make crypto investing risky and time-consuming.',
-      solution: 'Smart crypto wallet with AI-based trend forecasting, portfolio optimization, and automated alerts for buy/sell signals.'
-    }
-  ];
 
   return (
     <SolutionsContainer>
@@ -506,48 +413,38 @@ const SolutionsPage = () => {
         </HeroSection>
 
         <SolutionsGrid>
-          {solutions.map((solution, index) => (
-            <SolutionCard key={index} index={index}>
-              <CardHeader>
-                <SolutionTitle>{solution.title}</SolutionTitle>
-              </CardHeader>
-              
-              <ProblemSection>
-                <ProblemTitle>Problem</ProblemTitle>
-                <ProblemText>{solution.problem}</ProblemText>
-              </ProblemSection>
-              
-              <SolutionSection>
-                <SolutionTitleText>Solution</SolutionTitleText>
-                <SolutionText>{solution.solution}</SolutionText>
-                <FeatureList>
-                  {solution.features.map((feature, featureIndex) => (
-                    <FeatureItem key={featureIndex}>{feature}</FeatureItem>
-                  ))}
-                </FeatureList>
-              </SolutionSection>
-            </SolutionCard>
-          ))}
-        </SolutionsGrid>
+          {solutions.map((solution, index) => {
+            const hasImage = solution.title === 'Financial Inclusion';
+            const imageSrc = hasImage ? financialInclusionImage : null;
 
-        <SpecialSection>
-          <SpecialTitle>Specialized Financial Solutions</SpecialTitle>
-          <SpecialContent>
-            {specialSolutions.map((special, index) => (
-              <SpecialCard key={index}>
-                <SpecialCardTitle>{special.title}</SpecialCardTitle>
-                <div>
-                  <SpecialText>
-                    <strong style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Problem:</strong> {special.problem}
-                  </SpecialText>
-                  <SpecialText>
-                    <strong style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Solution:</strong> {special.solution}
-                  </SpecialText>
-                </div>
-              </SpecialCard>
-            ))}
-          </SpecialContent>
-        </SpecialSection>
+            return (
+              <SolutionCard key={index} index={index}>
+                <CardHeader>
+                  <SolutionTitle>{solution.title}</SolutionTitle>
+                </CardHeader>
+                
+                <ProblemSection>
+                  <ProblemTitle>Problem</ProblemTitle>
+                  <ProblemText>{solution.problem}</ProblemText>
+                </ProblemSection>
+                
+                <SolutionSection>
+                  <SolutionTitleText>Solution</SolutionTitleText>
+                  <SolutionText>{solution.solution}</SolutionText>
+                  <FeatureList>
+                    {solution.features.map((feature, featureIndex) => (
+                      <FeatureItem key={featureIndex}>{feature}</FeatureItem>
+                    ))}
+                  </FeatureList>
+                </SolutionSection>
+                
+                {hasImage && imageSrc && (
+                  <SolutionImage src={imageSrc} alt={solution.title} />
+                )}
+              </SolutionCard>
+            );
+          })}
+        </SolutionsGrid>
       </Container>
     </SolutionsContainer>
   );

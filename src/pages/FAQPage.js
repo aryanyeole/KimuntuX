@@ -93,7 +93,7 @@ const HeroTitle = styled.h1`
 `;
 
 const HeroSubtitle = styled.p`
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   max-width: 800px;
@@ -165,7 +165,7 @@ const Question = styled.button`
   justify-content: space-between;
   align-items: center;
   gap: 1.5rem;
-  font-size: 1.125rem;
+  font-size: 1.5rem;
   font-weight: 600;
   color: #1a1a1a;
   transition: color 0.3s ease;
@@ -216,7 +216,7 @@ const Answer = styled.div`
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: ${p => p.isOpen ? '1' : '0'};
-  font-size: 0.9375rem;
+  font-size: 1.25rem;
   
   @media (max-width: 768px) {
     padding: 0 1.5rem 1.5rem;
@@ -301,13 +301,13 @@ const ContactLink = styled.a`
   font-size: 1rem;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  background: #000000;
   transition: all 0.3s ease;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #1a1a1a;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 `;
 
@@ -404,7 +404,7 @@ export default function FAQPage() {
           </HeroImageWrapper>
           <HeroContent>
             <HeroTitle>Questions & Answers (FAQ)</HeroTitle>
-            <HeroSubtitle>Everything you need to know about The Intelligent Digital Brokerage, Fintech & Marketing Universe.</HeroSubtitle>
+            <HeroSubtitle>Everything you need to know about The Intelligent Digital Brokerage, Fintech & Digital Marketing Platform.</HeroSubtitle>
           </HeroContent>
         </HeroSection>
 

@@ -68,11 +68,11 @@ const Lead = styled.p`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
-  align-items: start;
+  align-items: stretch;
   
-  @media (max-width: 768px) {
+  @media (max-width: 968px) {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
@@ -82,29 +82,21 @@ const Tier = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 24px;
   padding: 2.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  height: 100%;
   ${p => p.isPopular && `
     border: 2px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
-    transform: scale(1.05);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
   `}
   
-  @media (max-width: 968px) {
-    ${p => p.isPopular && `
-      transform: scale(1);
-    `}
-  }
-  
   &:hover {
-    transform: translateY(-8px) ${p => p.isPopular ? 'scale(1.05)' : 'scale(1.02)'};
-    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.2);
+    transform: translateY(-8px);
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
     border-color: rgba(255, 255, 255, 0.3);
   }
   
@@ -115,7 +107,7 @@ const Tier = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
+    background: linear-gradient(90deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
     opacity: ${p => p.isPopular ? '1' : '0.5'};
@@ -140,9 +132,9 @@ const PopularBadge = styled.div`
 `;
 
 const Badge = styled.span`
-  display: inline-block;
+  display: block;
   padding: 6px 16px;
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 600;
   border-radius: 20px;
   letter-spacing: 0.5px;
@@ -150,7 +142,9 @@ const Badge = styled.span`
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem auto;
+  text-align: center;
+  width: fit-content;
 `;
 
 const PlanName = styled.h3`
@@ -160,6 +154,7 @@ const PlanName = styled.h3`
   color: white;
   font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
   line-height: 1.2;
+  text-align: center;
 `;
 
 const Tag = styled.p`
@@ -167,6 +162,7 @@ const Tag = styled.p`
   color: rgba(255, 255, 255, 0.85);
   font-size: 0.9375rem;
   line-height: 1.5;
+  text-align: center;
 `;
 
 const PriceWrap = styled.div`
@@ -175,12 +171,15 @@ const PriceWrap = styled.div`
   margin-bottom: 2rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  align-items: center;
 `;
 
 const PriceRow = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: center;
+  text-align: center;
 `;
 
 const Price = styled.span`
@@ -189,6 +188,7 @@ const Price = styled.span`
   color: white;
   font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
   line-height: 1.2;
+  text-align: center;
   
   @media (max-width: 768px) {
     font-size: 2rem;
@@ -200,6 +200,7 @@ const PriceNote = styled.span`
   color: rgba(255, 255, 255, 0.8);
   font-weight: 400;
   line-height: 1.4;
+  text-align: center;
 `;
 
 const PriceSubNote = styled.span`
@@ -208,6 +209,7 @@ const PriceSubNote = styled.span`
   font-weight: 400;
   line-height: 1.4;
   margin-top: 2px;
+  text-align: center;
 `;
 
 const List = styled.ul`
@@ -217,6 +219,7 @@ const List = styled.ul`
   display: grid;
   gap: 12px;
   flex: 1;
+  min-height: 0;
 `;
 
 const Item = styled.li`
@@ -253,7 +256,7 @@ const Button = styled(Link)`
   border-radius: 12px;
   padding: 16px 24px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.25rem;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
@@ -276,7 +279,7 @@ const PopularButton = styled(Link)`
   border-radius: 12px;
   padding: 16px 24px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.25rem;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
@@ -317,9 +320,7 @@ const Addons = styled.div`
 `;
 
 const Addon = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   padding: 1rem 1.25rem;
@@ -327,10 +328,12 @@ const Addon = styled.div`
   font-size: 0.9375rem;
   text-align: center;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
   }
 `;
 
@@ -346,7 +349,7 @@ export default function PricingPage() {
         <Grid>
           <Tier>
             <Badge>Starter</Badge>
-            <PlanName>Free Plan</PlanName>
+            <PlanName>Starting Plan · "Starter"</PlanName>
             <Tag>For beginners exploring digital entrepreneurship</Tag>
             <PriceWrap>
               <PriceRow>
@@ -419,7 +422,7 @@ export default function PricingPage() {
 
           <Tier>
             <Badge>Enterprise</Badge>
-            <PlanName>Enterprise Plan · "KimuntuX Global"</PlanName>
+            <PlanName>Enterprise Plan · "X Global"</PlanName>
             <Tag>For governments, corporations, and large-scale brokers</Tag>
             <PriceWrap>
               <PriceRow>
@@ -450,7 +453,6 @@ export default function PricingPage() {
             <Addon>Auto Funnel Builder (drag-and-drop AI funnels)</Addon>
             <Addon>KimuntuX Academy (training & certification portal)</Addon>
             <Addon>Affiliate Program Management Suite</Addon>
-            <Addon>Blockchain Loyalty & Token Rewards</Addon>
           </Addons>
         </Footer>
       </Wrap>

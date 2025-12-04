@@ -46,7 +46,7 @@ const FooterSection = styled.div`
   h3 {
     color: white;
     margin-bottom: 1.25rem;
-    font-size: 1rem;
+    font-size: 1.75rem;
     font-weight: 600;
     font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
     letter-spacing: 0.5px;
@@ -80,7 +80,7 @@ const FooterSection = styled.div`
     color: white;
     opacity: 0.75;
     text-decoration: none;
-    font-size: 0.95rem;
+    font-size: 1.25rem;
     transition: all 0.2s ease;
     display: inline-block;
     position: relative;
@@ -117,11 +117,12 @@ const FooterBottom = styled.div`
   text-align: center;
   color: white;
   opacity: 0.7;
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   line-height: 1.6;
   
   @media (max-width: 768px) {
     padding: 2rem 24px 0;
+    font-size: 1rem;
   }
 `;
 
