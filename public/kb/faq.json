@@ -1,0 +1,165 @@
+{
+  "faqs": [
+    {
+      "id": "kx-global-01",
+      "scope": "global",
+      "q": "What is KimuntuX?",
+      "a": "KimuntuX is an AI-driven brokerage & affiliate marketing platform that connects businesses with growth opportunities through intelligent campaign management, CRM tools, and data-driven insights. We help you scale faster with automated workflows and real-time analytics.",
+      "tags": ["about", "overview", "introduction"]
+    },
+    {
+      "id": "kx-global-02",
+      "scope": "global",
+      "q": "What features does KimuntuX offer?",
+      "a": "KimuntuX offers: 🎯 Campaign Management, 📊 AI-Powered Analytics, 💼 B2B Brokerage, 🛍️ B2C Marketplace, 💰 Affiliate Hub, 🤖 AI Dashboard, ⛓️ Blockchain Integration, 💳 Fintech Tools, 📈 Commerce Intelligence, and 👨‍💻 Developer API.",
+      "tags": ["features", "capabilities", "services"]
+    },
+    {
+      "id": "kx-global-03",
+      "scope": "global",
+      "q": "How much does KimuntuX cost?",
+      "a": "We offer flexible pricing plans starting from $99/month for startups, $499/month for growing businesses, and custom enterprise plans. All plans include a 14-day free trial with no credit card required.",
+      "tags": ["pricing", "cost", "plans", "budget"]
+    },
+    {
+      "id": "kx-global-04",
+      "scope": "global",
+      "q": "How do I sign up?",
+      "a": "Click the 'Sign Up' button in the top right corner, fill in your details, and you'll be ready to go in under 2 minutes! We'll send you a confirmation email with next steps.",
+      "tags": ["signup", "register", "account", "onboarding"]
+    },
+    {
+      "id": "kx-campaigns-01",
+      "scope": "campaigns",
+      "q": "How do I create my first campaign?",
+      "a": "Go to Campaigns → New, pick your objective (awareness, conversions, or engagement), connect an ad account, set your budget and schedule, then launch! Our AI will optimize targeting automatically.",
+      "tags": ["campaigns", "getting-started", "create", "new"]
+    },
+    {
+      "id": "kx-campaigns-02",
+      "scope": "campaigns",
+      "q": "Can I track campaign performance in real-time?",
+      "a": "Absolutely! Your campaign dashboard updates every 60 seconds with metrics like impressions, clicks, conversions, ROI, and more. Set up custom alerts to get notified of important changes.",
+      "tags": ["campaigns", "analytics", "tracking", "real-time"]
+    },
+    {
+      "id": "kx-campaigns-03",
+      "scope": "campaigns",
+      "q": "What ad platforms do you support?",
+      "a": "We integrate with Google Ads, Facebook Ads, Instagram, LinkedIn, TikTok, Twitter, and more. Connect multiple accounts and manage everything from one dashboard.",
+      "tags": ["campaigns", "integrations", "platforms", "ads"]
+    },
+    {
+      "id": "kx-crm-01",
+      "scope": "crm",
+      "q": "How does the CRM help manage leads?",
+      "a": "Our CRM automatically captures leads from all sources, scores them with AI, assigns them to your pipeline stages, and sends smart follow-up reminders. You can also track every interaction and note.",
+      "tags": ["crm", "leads", "management", "pipeline"]
+    },
+    {
+      "id": "kx-crm-02",
+      "scope": "crm",
+      "q": "Can I import existing contacts?",
+      "a": "Yes! Go to CRM → Import and upload a CSV file with your contacts. We support standard formats and can map custom fields during import.",
+      "tags": ["crm", "import", "contacts", "csv"]
+    },
+    {
+      "id": "kx-crm-03",
+      "scope": "crm",
+      "q": "Does the CRM integrate with email?",
+      "a": "Yes! Connect Gmail, Outlook, or any SMTP provider. Send emails directly from the CRM, track opens and clicks, and sync all conversations automatically.",
+      "tags": ["crm", "email", "integration", "communication"]
+    },
+    {
+      "id": "kx-payouts-01",
+      "scope": "payouts",
+      "q": "How do affiliate payouts work?",
+      "a": "Affiliates earn commissions on completed sales or actions. Payouts are processed monthly via PayPal, Stripe, or bank transfer. You can set custom commission rates and track earnings in real-time.",
+      "tags": ["payouts", "affiliate", "commissions", "earnings"]
+    },
+    {
+      "id": "kx-payouts-02",
+      "scope": "payouts",
+      "q": "What's the minimum payout threshold?",
+      "a": "The default minimum payout is $100, but you can adjust it in Settings → Payouts. Lower thresholds may incur additional processing fees.",
+      "tags": ["payouts", "minimum", "threshold", "withdrawal"]
+    },
+    {
+      "id": "kx-payouts-03",
+      "scope": "payouts",
+      "q": "When do I receive my payout?",
+      "a": "Payouts are processed on the 5th of each month for the previous month's earnings. Bank transfers take 3-5 business days, PayPal is instant.",
+      "tags": ["payouts", "timing", "schedule", "when"]
+    },
+    {
+      "id": "kx-settings-01",
+      "scope": "settings",
+      "q": "How do I connect integrations?",
+      "a": "Go to Settings → Integrations, select the service you want to connect (Slack, Zapier, Shopify, etc.), and click 'Connect'. Follow the OAuth flow to authorize access.",
+      "tags": ["settings", "integrations", "connect", "api"]
+    },
+    {
+      "id": "kx-settings-02",
+      "scope": "settings",
+      "q": "Can I customize my dashboard?",
+      "a": "Yes! Click 'Customize' in the top right of any dashboard to add/remove widgets, change layouts, and set default filters. Your preferences are saved automatically.",
+      "tags": ["settings", "customize", "dashboard", "preferences"]
+    },
+    {
+      "id": "kx-settings-03",
+      "scope": "settings",
+      "q": "How do I manage team permissions?",
+      "a": "Go to Settings → Team, invite members by email, and assign roles (Admin, Manager, Viewer). Each role has different access levels to features and data.",
+      "tags": ["settings", "team", "permissions", "roles"]
+    },
+    {
+      "id": "kx-billing-01",
+      "scope": "global",
+      "q": "How do I upgrade my plan?",
+      "a": "Go to Settings → Billing and click 'Upgrade Plan'. Choose your new tier and enter payment details. The upgrade is instant and you'll only pay the prorated difference.",
+      "tags": ["billing", "upgrade", "plan", "subscription"]
+    },
+    {
+      "id": "kx-billing-02",
+      "scope": "global",
+      "q": "Can I cancel anytime?",
+      "a": "Yes, you can cancel anytime from Settings → Billing. Your plan remains active until the end of the billing period, and you can export all your data before leaving.",
+      "tags": ["billing", "cancel", "refund", "subscription"]
+    },
+    {
+      "id": "kx-developer-01",
+      "scope": "developer",
+      "q": "Do you have an API?",
+      "a": "Yes! Our REST API is fully documented at https://api.kimuntux.com/docs. Get your API key from Settings → Developer to start making requests.",
+      "tags": ["developer", "api", "documentation", "integration"]
+    },
+    {
+      "id": "kx-developer-02",
+      "scope": "developer",
+      "q": "What API rate limits apply?",
+      "a": "Standard plans get 1000 requests/hour, Pro plans get 5000 requests/hour, and Enterprise plans get unlimited API access with dedicated support.",
+      "tags": ["developer", "api", "rate-limit", "quota"]
+    },
+    {
+      "id": "kx-support-01",
+      "scope": "global",
+      "q": "How can I get help?",
+      "a": "You can chat with me anytime, email support@kimuntux.com, or schedule a call with our team. Enterprise customers get dedicated Slack support.",
+      "tags": ["support", "help", "contact", "assistance"]
+    },
+    {
+      "id": "kx-ai-01",
+      "scope": "ai-dashboard",
+      "q": "What AI features are available?",
+      "a": "Our AI Dashboard provides predictive analytics, automated insights, anomaly detection, smart recommendations, and natural language query support. It learns from your data to provide increasingly accurate predictions.",
+      "tags": ["ai", "machine-learning", "analytics", "predictions"]
+    },
+    {
+      "id": "kx-blockchain-01",
+      "scope": "blockchain",
+      "q": "How does blockchain integration work?",
+      "a": "We support smart contract deployment, crypto payments, NFT marketplace features, and transparent transaction tracking on Ethereum, Polygon, and Solana networks.",
+      "tags": ["blockchain", "crypto", "web3", "smart-contracts"]
+    }
+  ]
+}
