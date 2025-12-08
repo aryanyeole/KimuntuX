@@ -45,7 +45,7 @@ export default function ChatWidget() {
       const welcomeMsg = {
         id: `msg_${Date.now()}`,
         from: 'bot',
-        text: `Welcome to KimuntuX Assistant! I'm here to help you with ${pageContext.feature === 'global' ? 'anything' : pageContext.feature}. How can I assist you today?`,
+        text: `Hi! I'm Kim, your KimuntuX assistant. I'm here to help you with ${pageContext.feature === 'global' ? 'anything' : pageContext.feature}. How can I assist you today?`,
         ts: Date.now()
       };
       setMessages([welcomeMsg]);
@@ -153,12 +153,12 @@ export default function ChatWidget() {
           className="chat-widget-drawer"
           ref={drawerRef}
           role="dialog"
-          aria-label="KimuntuX Assistant"
+          aria-label="Kim - KimuntuX Assistant"
           aria-modal="true"
         >
           {/* Header */}
           <div className="chat-widget-header">
-            <h2>KimuntuX Assistant</h2>
+            <h2>Kim</h2>
             <button
               className="chat-widget-close"
               onClick={() => setIsOpen(false)}

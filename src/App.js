@@ -8,11 +8,15 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
 import LandingPage from './components/LandingPage';
+import AboutPage from './pages/AboutPage';
+import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import FAQPage from './pages/FAQPage';
 import SolutionsPage from './pages/SolutionsPage';
+import BenefitsBySectorPage from './pages/BenefitsBySectorPage';
+import BlogPage from './pages/BlogPage';
 
 // Import all page components
 import CRMMain from './pages/CRMMain';
@@ -36,29 +40,33 @@ function App() {
         <Router>
           <ChatbotProvider>
           <div className="App">
-              <Header />
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
+            <Header />
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/faq" element={<FAQPage />} />
               <Route path="/solutions" element={<SolutionsPage />} />
-                <Route path="/crm" element={<CRMMain />} />
-                <Route path="/b2b-brokerage" element={<B2BBrokeragePage />} />
-                <Route path="/b2c-marketplace" element={<B2CMarketplacePage />} />
-                <Route path="/affiliate-hub" element={<AffiliateHubPage />} />
-                <Route path="/ecommerce" element={<ECommercePage />} />
-                <Route path="/ai-dashboard" element={<AIDashboardPage />} />
-                <Route path="/blockchain" element={<BlockchainPage />} />
-                <Route path="/fintech" element={<FintechPage />} />
-                <Route path="/commerce-intelligence" element={<CommerceIntelligencePage />} />
-                <Route path="/developer" element={<DeveloperPage />} />
-                <Route path="/monetization" element={<MonetizationPage />} />
-                <Route path="/usbh" element={<USBHPage />} />
-                </Routes>
-              <Footer />
-              <ChatWidget />
+              <Route path="/benefits" element={<BenefitsBySectorPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/crm" element={<CRMMain />} />
+              <Route path="/b2b-brokerage" element={<B2BBrokeragePage />} />
+              <Route path="/b2c-marketplace" element={<B2CMarketplacePage />} />
+              <Route path="/affiliate-hub" element={<AffiliateHubPage />} />
+              <Route path="/ecommerce" element={<ECommercePage />} />
+              <Route path="/ai-dashboard" element={<AIDashboardPage />} />
+              <Route path="/blockchain" element={<BlockchainPage />} />
+              <Route path="/fintech" element={<FintechPage />} />
+              <Route path="/commerce-intelligence" element={<CommerceIntelligencePage />} />
+              <Route path="/developer" element={<DeveloperPage />} />
+              <Route path="/monetization" element={<MonetizationPage />} />
+              <Route path="/usbh" element={<USBHPage />} />
+            </Routes>
+            <Footer />
+            <ChatWidget />
           </div>
           </ChatbotProvider>
       </Router>
