@@ -6,6 +6,16 @@ import { useUser } from '../contexts/UserContext';
 import lightLogo from '../assets/light_logo.jpg';
 import darkLogo from '../assets/dark_logo.jpg';
 
+const HoverTrigger = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 999;
+  pointer-events: ${props => props.isCrmPage ? 'auto' : 'none'};
+`;
+
 const HeaderContainer = styled.header`
   background: #000000;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -164,8 +174,17 @@ const Header = () => {
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+
+  const isCrmPage = location.pathname === '/crm';
 
   useEffect(() => {
+    // On CRM page, hide header by default
+    if (isCrmPage) {
+      setIsVisible(false);
+      return;
+    }
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
@@ -185,7 +204,14 @@ const Header = () => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, [lastScrollY, isCrmPage]);
+
+  // Handle hover on CRM page
+  useEffect(() => {
+    if (isCrmPage) {
+      setIsVisible(isHovering);
+    }
+  }, [isHovering, isCrmPage]);
 
   const mainNavItems = [
     { path: '/about', label: 'About' },
@@ -203,8 +229,18 @@ const Header = () => {
   };
 
   return (
-    <HeaderContainer isVisible={isVisible}>
-      <NavContainer>
+    <>
+      <HoverTrigger 
+        isCrmPage={isCrmPage}
+        onMouseEnter={() => isCrmPage && setIsHovering(true)}
+        onMouseLeave={() => isCrmPage && setIsHovering(false)}
+      />
+      <HeaderContainer 
+        isVisible={isVisible}
+        onMouseEnter={() => isCrmPage && setIsHovering(true)}
+        onMouseLeave={() => isCrmPage && setIsHovering(false)}
+      >
+        <NavContainer>
         <LeftSection>
           <Logo to="/">
             <LogoImage 
@@ -256,6 +292,7 @@ const Header = () => {
         </RightSection>
       </NavContainer>
     </HeaderContainer>
+    </>
   );
 };
 
