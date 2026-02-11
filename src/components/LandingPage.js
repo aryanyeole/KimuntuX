@@ -49,6 +49,7 @@ const LandingContainer = styled.div`
 const HeroSection = styled.section`
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   position: relative;
   overflow: hidden;
@@ -300,6 +301,122 @@ const PreviewSection = styled(Section)`
   background-color: ${props => props.theme?.colors?.background || '#FFFFFF'};
 `;
 
+const IntroSection = styled.div`
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  padding-bottom: 3rem;
+  width: 100%;
+`;
+
+const IntroCard = styled.div`
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 4px solid ${p => p.theme?.colors?.primary || '#00C896'};
+  border-radius: 14px;
+  padding: 2.5rem 2.75rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  position: relative;
+  
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem;
+  }
+`;
+
+const IntroHeadline = styled.h2`
+  font-size: 2.9rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: left;
+  margin: 0 0 1.5rem 0;
+  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
+  line-height: 1.2;
+  
+  span {
+    color: ${props => props.theme?.colors?.primary || '#00C896'};
+  }
+  
+  @media (max-width: 968px) {
+    font-size: 2.5rem;
+    text-align: center;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 2.1rem;
+  }
+`;
+
+const IntroText = styled.p`
+  font-size: 1.35rem;
+  color: rgba(255, 255, 255, 0.85);
+  opacity: 1;
+  line-height: 1.8;
+  max-width: 980px;
+  margin: 0 0 1.5rem;
+  text-align: left;
+  
+  @media (max-width: 768px) {
+    font-size: 1.15rem;
+    text-align: center;
+  }
+`;
+
+const IntroHighlight = styled(IntroText)`
+  margin: 0 0 1.75rem;
+  
+  strong {
+    font-weight: 700;
+    color: ${props => props.theme?.colors?.primary || '#00C896'};
+  }
+`;
+
+const IntroSubheading = styled(IntroText)`
+  margin: 0 0 1rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+`;
+
+const IntroBenefitsRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  max-width: 920px;
+  margin: 0 0 1.25rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const IntroBenefit = styled.div`
+  padding: 0.85rem 1.25rem;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 200, 150, 0.45);
+  background: rgba(0, 200, 150, 0.08);
+  transition: all 0.25s ease;
+  cursor: default;
+  
+  &:hover {
+    background: rgba(0, 200, 150, 0.18);
+    border-color: rgba(0, 200, 150, 0.8);
+    box-shadow: 0 10px 24px rgba(0, 200, 150, 0.2);
+    transform: translateY(-2px);
+  }
+`;
+
+const IntroFooter = styled(IntroText)`
+  margin: 0;
+`;
+
 const PreviewSubtitle = styled.p`
   text-align: center;
   font-size: 2rem;
@@ -378,14 +495,6 @@ const CTASection = styled(Section)`
   @media (max-width: 768px) {
     padding: 30px 20px 60px;
   }
-`;
-
-const CTASectionWithBackground = styled(CTASection)`
-  background-image: url(${whyChooseUsBackground});
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
 `;
 
 const CTAHeading = styled.h2`
@@ -630,31 +739,31 @@ const SectorsGrid = styled.div`
 `;
 
 const SectorTitle = styled.h4`
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 600;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  color: #ffffff;
   margin-bottom: 0.5rem;
   font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
   transition: font-size 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 `;
 
 const SectorDescription = styled.p`
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.75;
+  color: #ffffff;
+  opacity: 0.9;
   line-height: 1.6;
-  font-size: 1rem;
+  font-size: 1.1rem;
   transition: font-size 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
 `;
 
 const SectorCard = styled.div`
   position: relative;
-  background: linear-gradient(180deg, ${p => (p.theme?.colors?.background || '#FFFFFF')} 0%, ${p => (p.theme?.colors?.cardBackground || '#f8f9fa')} 100%);
-  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
+  background: ${p => p.theme?.colors?.primary || '#00C896'};
+  border: 1px solid ${p => p.theme?.colors?.primary || '#00C896'};
   border-radius: 16px;
   padding: 2rem;
   text-align: center;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
   width: 100%;
   max-width: 100%;
   cursor: pointer;
@@ -662,7 +771,7 @@ const SectorCard = styled.div`
   &:hover {
     transform: translateY(-12px) scale(1.05);
     box-shadow: 0 24px 60px rgba(0,0,0,0.15);
-    border-color: ${p => p.theme?.colors?.primary || '#00C896'}33;
+    border-color: #f2c94c;
     z-index: 10;
     
     ${SectorTitle} {
@@ -704,15 +813,693 @@ const SectorIcon = styled.div`
 const SectorsSubtitle = styled.p`
   text-align: center;
   font-size: 2rem;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  color: #111111;
+  font-weight: 700;
+  margin-top: 1.5rem;
   opacity: 0.75;
   margin-bottom: 4rem;
   line-height: 1.8;
-  font-weight: 400;
   
   @media (max-width: 768px) {
     font-size: 1.5rem;
   }
+`;
+
+const WhyChooseUsDescription = styled.p`
+  text-align: center;
+  font-size: 1.8rem;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  opacity: 0.85;
+  margin: 0 auto 1.5rem;
+  max-width: 900px;
+  line-height: 1.7;
+  font-weight: 400;
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+`;
+
+const WhyChooseUsButton = styled(StartTrialButton)`
+  background-color: #f2c94c;
+  color: #111111;
+  
+  &:hover {
+    background-color: #e6bc3f;
+  }
+`;
+
+const WhyChooseUsButtonRow = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+`;
+
+const GrowthTeamSection = styled(Section)`
+  background: radial-gradient(900px 480px at 0% -10%, ${p => (p.theme?.colors?.primary || '#00C896')}12, transparent 55%),
+              radial-gradient(900px 480px at 100% 0%, ${p => (p.theme?.colors?.accent || '#DAA520')}10, transparent 55%),
+              ${p => p.theme?.colors?.background || '#FFFFFF'};
+`;
+
+const GrowthTeamTitle = styled.h2`
+  text-align: center;
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  margin-bottom: 0.75rem;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  
+  @media (max-width: 968px) {
+    font-size: 2.6rem;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 2.2rem;
+  }
+`;
+
+const GrowthTeamSubtitle = styled.p`
+  text-align: center;
+  font-size: 2rem;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  opacity: 0.75;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const GrowthTeamDescription = styled.p`
+  max-width: 900px;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+  font-size: 1.8rem;
+  line-height: 1.7;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  opacity: 0.85;
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+`;
+
+const GrowthTeamDescriptionSpaced = styled(GrowthTeamDescription)`
+  margin-top: 120px;
+`;
+
+const GrowthTeamSliderContainer = styled.div`
+  overflow: hidden;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  margin-top: 2.75rem;
+  
+  @media (max-width: 1200px) {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+`;
+
+const GrowthTeamSlider = styled.div`
+  display: flex;
+  gap: 1.75rem;
+  width: fit-content;
+  animation: slideGrowthTeam 45s linear infinite;
+  
+  @keyframes slideGrowthTeam {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  &:hover {
+    animation-play-state: paused;
+  }
+  
+  @media (max-width: 900px) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    animation: none;
+    width: 100%;
+  }
+`;
+
+const GrowthTeamCard = styled.div`
+  background: #ffffff;
+  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
+  border-radius: 14px;
+  padding: 1.75rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  width: 100%;
+  min-width: 320px;
+  max-width: 360px;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.1);
+    border-color: ${p => (p.theme?.colors?.primary || '#00C896')}55;
+  }
+`;
+
+const GrowthTeamCardCentered = styled(GrowthTeamCard)`
+  @media (min-width: 1201px) {
+    grid-column: 2 / span 1;
+  }
+`;
+
+const GrowthTeamCardCenteredRight = styled(GrowthTeamCard)`
+  @media (min-width: 1201px) {
+    grid-column: 3 / span 1;
+  }
+`;
+
+const GrowthTeamCardTitle = styled.h3`
+  margin: 0 0 0.75rem 0;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+`;
+
+const GrowthTeamCardText = styled.p`
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.6;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  opacity: 0.8;
+`;
+
+const GrowthTeamFooterTitle = styled.h3`
+  margin: 2.5rem 0 0.75rem;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  
+  @media (max-width: 768px) {
+    font-size: 1.6rem;
+  }
+`;
+
+const GrowthTeamFooterText = styled.p`
+  margin: 0 auto;
+  text-align: center;
+  font-size: 1.8rem;
+  line-height: 1.7;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  opacity: 0.85;
+  max-width: 900px;
+  
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+`;
+
+const FAQPreviewSection = styled(Section)`
+  background-color: ${p => p.theme?.colors?.background || '#FFFFFF'};
+`;
+
+const FAQPreviewTitle = styled.h2`
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: ${p => p.theme?.colors?.text || '#111111'};
+  margin-bottom: 2rem;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+`;
+
+const FAQPreviewList = styled.div`
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+const FAQPreviewItem = styled.div`
+  position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e9ecef;
+  overflow: hidden;
+`;
+
+const FAQPreviewQuestion = styled.button`
+  width: 100%;
+  padding: 1.5rem 2rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  transition: color 0.3s ease;
+  line-height: 1.5;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  
+  &:hover {
+    color: #00C896;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 1.25rem 1.5rem;
+    font-size: 1.1rem;
+  }
+`;
+
+const FAQPreviewQuestionText = styled.span`
+  flex: 1;
+  text-align: left;
+`;
+
+const FAQPreviewIcon = styled.div`
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: ${p => (p.isOpen ? '#00C896' : '#f0f0f0')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${p => (p.isOpen ? 'white' : '#6c757d')};
+  font-size: 20px;
+  font-weight: 300;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: ${p => (p.isOpen ? 'rotate(45deg)' : 'rotate(0deg)')};
+  
+  ${FAQPreviewQuestion}:hover & {
+    background: ${p => (p.isOpen ? '#00C896' : '#e9ecef')};
+    color: ${p => (p.isOpen ? 'white' : '#00C896')};
+  }
+`;
+
+const FAQPreviewAnswer = styled.div`
+  padding: 0 2rem 1.5rem;
+  color: #495057;
+  line-height: 1.75;
+  max-height: ${p => (p.isOpen ? '2000px' : '0')};
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: ${p => (p.isOpen ? '1' : '0')};
+  font-size: 1.125rem;
+  
+  p {
+    margin: 0 0 0.75rem;
+  }
+  
+  p:last-child {
+    margin-bottom: 0;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0 1.5rem 1.25rem;
+  }
+`;
+
+const FAQPreviewButtonRow = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+`;
+
+const FAQPreviewButton = styled(Link)`
+  background-color: ${p => p.theme?.colors?.primary || '#00C896'};
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #00B085;
+    transform: translateY(-2px);
+  }
+`;
+
+const StartGrowingSection = styled(Section)`
+  background: #000000;
+  color: white;
+`;
+
+const StartGrowingCard = styled.div`
+  background: #0b0b0b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 3rem;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 2.5rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+    padding: 2.25rem;
+  }
+`;
+
+const StartGrowingTitle = styled.h2`
+  margin: 0 0 0.75rem;
+  font-size: 3rem;
+  font-weight: 700;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  line-height: 1.2;
+  
+  @media (max-width: 768px) {
+    font-size: 2.25rem;
+  }
+`;
+
+const StartGrowingSubtitle = styled.p`
+  margin: 0 0 1.5rem;
+  font-size: 1.35rem;
+  opacity: 0.85;
+  
+  @media (max-width: 768px) {
+    font-size: 1.1rem;
+  }
+`;
+
+const StartGrowingDescription = styled.p`
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.8;
+  opacity: 0.8;
+`;
+
+const StartGrowingCTA = styled.div`
+  background: #101010;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2rem;
+  display: grid;
+  gap: 1.25rem;
+`;
+
+const StartGrowingCTATitle = styled.h3`
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const StartGrowingCTAText = styled.p`
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  opacity: 0.8;
+`;
+
+const StartGrowingList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+`;
+
+const StartGrowingListItem = styled.li`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.05rem;
+  opacity: 0.9;
+  
+  &::before {
+    content: '✓';
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(0, 200, 150, 0.18);
+    color: ${p => p.theme?.colors?.primary || '#00C896'};
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+`;
+
+const StartGrowingButton = styled(Link)`
+  background-color: ${p => p.theme?.colors?.primary || '#00C896'};
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  width: fit-content;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #00B085;
+    transform: translateY(-2px);
+  }
+`;
+
+const StartGrowingMicrocopy = styled.p`
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.75;
+`;
+
+const DarkSectionDivider = styled.div`
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+
+  &::before {
+    content: '';
+    width: 80%;
+    max-width: 900px;
+    height: 1px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      ${p => p.theme?.colors?.primary || '#00C896'},
+      transparent
+    );
+    box-shadow: 0 0 18px rgba(0, 200, 150, 0.4);
+  }
+`;
+
+const ContactSection = styled(Section)`
+  background: #000000;
+  color: white;
+`;
+
+const ContactInner = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 2.5rem;
+  align-items: center;
+
+  @media (max-width: 968px) {
+    grid-template-columns: 1fr;
+    padding: 0 24px;
+  }
+`;
+
+const ContactImageWrapper = styled.div`
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(15, 23, 42, 0.9);
+`;
+
+const ContactImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
+const ContactFormCard = styled.form`
+  background: #050505;
+  border-radius: 24px;
+  padding: 2.5rem 2.75rem;
+  box-shadow: 0 28px 72px rgba(0, 200, 150, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  display: grid;
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    padding: 2rem 1.75rem;
+  }
+`;
+
+const ContactTitle = styled.h2`
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: 700;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+`;
+
+const ContactSubtitle = styled.p`
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.8;
+  opacity: 0.85;
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FormField = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+`;
+
+const FieldLabel = styled.label`
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.95);
+`;
+
+const RequiredMark = styled.span`
+  color: #f97316;
+`;
+
+const TextInput = styled.input`
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.9);
+  color: white;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.95rem;
+  outline: none;
+
+  &:focus {
+    border-color: ${p => p.theme?.colors?.primary || '#00C896'};
+    box-shadow: 0 0 0 1px ${p => p.theme?.colors?.primary || '#00C896'};
+  }
+`;
+
+const SelectInput = styled.select`
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.9);
+  color: white;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.95rem;
+  outline: none;
+
+  &:focus {
+    border-color: ${p => p.theme?.colors?.primary || '#00C896'};
+    box-shadow: 0 0 0 1px ${p => p.theme?.colors?.primary || '#00C896'};
+  }
+`;
+
+const RadioRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+`;
+
+const RadioPill = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.9);
+  color: rgba(226, 232, 240, 0.9);
+
+  input {
+    accent-color: ${p => p.theme?.colors?.primary || '#00C896'};
+  }
+`;
+
+const TextArea = styled.textarea`
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  background: rgba(15, 23, 42, 0.9);
+  color: white;
+  padding: 0.8rem 0.85rem;
+  font-size: 0.95rem;
+  min-height: 96px;
+  resize: vertical;
+  outline: none;
+
+  &:focus {
+    border-color: ${p => p.theme?.colors?.primary || '#00C896'};
+    box-shadow: 0 0 0 1px ${p => p.theme?.colors?.primary || '#00C896'};
+  }
+`;
+
+const ContactButtonRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+const ContactSubmitButton = styled.button`
+  border: none;
+  outline: none;
+  border-radius: 999px;
+  padding: 0.9rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: ${p => p.theme?.colors?.primary || '#00C896'};
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background-color: #00B085;
+    box-shadow: 0 12px 30px rgba(0, 200, 150, 0.45);
+  }
+`;
+
+const ContactMicrocopy = styled.p`
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
 `;
 
 // Partners Section - Larger Logos
@@ -956,6 +1743,7 @@ const SliderContainer = styled.div`
 const LandingPage = () => {
   const theme = useTheme();
   const [showVideo, setShowVideo] = useState(false);
+  const [openFaqPreview, setOpenFaqPreview] = useState(new Set());
   const videoRef = useRef(null);
   const animationVideoRef = useRef(null);
 
@@ -1065,6 +1853,84 @@ const LandingPage = () => {
 
   const duplicatedPartners = [...partners, ...partners];
   const duplicatedSolutions = [...keySolutions, ...keySolutions, ...keySolutions];
+  const growthTeamItems = [
+    {
+      title: 'AI SEO Engine',
+      description: 'Automated on-page optimization, keyword clustering, backlinks, and AI content to boost rankings and organic traffic.'
+    },
+    {
+      title: 'AI-Optimized Google Ads',
+      description: 'Smart PPC campaigns with predictive targeting, automated setup, and real-time bid optimization for maximum ROI.'
+    },
+    {
+      title: 'Meta & TikTok Ads Automation',
+      description: 'AI-generated creatives, intelligent audience targeting, and continuous ROAS optimization across social platforms.'
+    },
+    {
+      title: 'GBP Ranker (Local AI Boost)',
+      description: 'Local SEO automation to dominate Google Business Profile rankings and increase local visibility.'
+    },
+    {
+      title: 'AI Social Posting',
+      description: 'Daily automated posts with AI-generated visuals, captions, and scheduling across all major platforms.'
+    },
+    {
+      title: 'AI Content Writing',
+      description: 'High-quality blogs, landing pages, ads, emails, and scripts — created in your brand voice at scale.'
+    },
+    {
+      title: 'AI Marketing Assistant (Smart Growth Engine)',
+      description: 'Your 24/7 marketing brain for lead generation, CRM nurturing, campaign automation, and performance analytics.'
+    },
+    {
+      title: 'AI Tech Setup Assistant',
+      description: 'Instantly automates ad accounts, pixels, APIs, business managers, and campaign infrastructure.'
+    },
+    {
+      title: 'Smart Funnels & Landing Pages',
+      description: 'AI-generated funnels and landing pages designed to convert leads, customers, and investors.'
+    },
+    {
+      title: 'AI B2B Outreach Agent',
+      description: 'Fully automated prospecting, outreach, follow-ups, and meeting booking — completely hands-free.'
+    }
+  ];
+  const duplicatedGrowthTeamItems = [...growthTeamItems, ...growthTeamItems];
+  const faqPreviewItems = [
+    {
+      q: 'What is KimuX?',
+      a: 'KimuX is an AI-powered Digital Brokerage, Fintech, and Marketing platform that unifies eCommerce, finance, and automation into one intelligent ecosystem. It allows businesses, professionals, and organizations to build, manage, and scale digital operations—from online stores to marketing campaigns and financial management—all powered by AI and blockchain.'
+    },
+    {
+      q: 'What makes KimuX different from platforms like Shopify, Wix, or WooCommerce?',
+      a: "Unlike traditional platforms, KimuX is not just a store builder, it’s an autonomous digital brokerage and fintech ecosystem that builds eCommerce boutiques automatically using AI AutoBuild, integrates multi-channel marketing and fintech orchestration, and supports B2B, B2C, Affiliate, and Reseller models within one ecosystem."
+    },
+    {
+      q: 'Who can use KimuX?',
+      a: 'KimuX is designed for individuals, professionals, businesses, and institutions across multiple sectors, including governments, financial institutions, real estate, logistics, digital marketing agencies, SMBs, startups, non-profit organizations, and professional services.'
+    },
+    {
+      q: 'How does KimuX ensure security and transparency?',
+      a: 'KimuX integrates blockchain and advanced encryption to secure all user data and transactions, including smart contract validation, end-to-end data encryption, GDPR and PCI compliance, and real-time blockchain audit trails.'
+    }
+  ];
+  const startGrowingBenefits = [
+    'No installation',
+    'Secure cloud-based SaaS',
+    'Continuous updates',
+    'Built for revenue growth'
+  ];
+  const toggleFaqPreview = (index) => {
+    setOpenFaqPreview((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
 
   return (
     <LandingContainer>
@@ -1073,12 +1939,12 @@ const LandingPage = () => {
           <HeroContent>
             <HeroTitle>
               AI-Powered<br />
-              Digital Brokerage<br />
-              & Marketing Platform<br />
+              Digital Marketing<br />
+              & Brokerage Platform<br />
               <BlockchainText>Built on Blockchain.</BlockchainText>
             </HeroTitle>
             <HeroSubtitle>
-              "Empowering individuals and businesses to build, connect, and grow through intelligent, inclusive, and borderless digital commerce."
+              "Empowering B2B and B2C to build, connect, and grow through intelligent, inclusive, and borderless digital commerce."
             </HeroSubtitle>
             <CTAButtons>
               <CTAButton to="/signup" className="primary">Start Your Journey</CTAButton>
@@ -1098,6 +1964,32 @@ const LandingPage = () => {
             </AnimationVideo>
           </AnimationVideoContainer>
         </HeroContainer>
+        <IntroSection>
+          <Container>
+            <IntroCard>
+              <IntroHeadline>
+                Empowering Businesses with Secure, Intelligent, and Scalable <span>B2B SaaS</span> Solutions
+              </IntroHeadline>
+              <IntroText>
+                KimuX is a powerful AI-driven SaaS platform built on AWS Cloud and Blockchain technology, enabling
+                organizations to optimize operations, scale faster, and drive measurable growth. Through automation,
+                intelligence, and seamless integrations, KimuX helps businesses unlock efficiency, innovation, and
+                new revenue opportunities.
+              </IntroText>
+              <IntroHighlight>
+                Over the world, leading B2B SaaS & AI startups have accelerated their growth, added <strong>6–7 figures</strong> in new revenue
+                streams, and transformed their operations using growth-driven SaaS platforms and digital accelerators like KimuX.
+              </IntroHighlight>
+              <IntroSubheading>KimuX positions your organization to:</IntroSubheading>
+              <IntroBenefitsRow>
+                <IntroBenefit>scale smarter</IntroBenefit>
+                <IntroBenefit>grow faster</IntroBenefit>
+                <IntroBenefit>perform better</IntroBenefit>
+              </IntroBenefitsRow>
+              <IntroFooter>All with security, trust, intelligence, and performance at the core.</IntroFooter>
+            </IntroCard>
+          </Container>
+        </IntroSection>
       </HeroSection>
 
       <PreviewSection>
@@ -1188,6 +2080,9 @@ const LandingPage = () => {
       <SectorsSection>
         <Container>
           <SectionTitle>Why Choose Us</SectionTitle>
+          <WhyChooseUsDescription>
+            Because your success deserves intelligent growth with a platform designed to build, automate, and scale every part of your business.
+          </WhyChooseUsDescription>
           <SectorsSubtitle>
             Benefits Across All Sectors
           </SectorsSubtitle>
@@ -1199,18 +2094,41 @@ const LandingPage = () => {
               </SectorCard>
             ))}
           </SectorsGrid>
+          <WhyChooseUsButtonRow>
+            <WhyChooseUsButton to="/pricing">Start Free Trial</WhyChooseUsButton>
+          </WhyChooseUsButtonRow>
         </Container>
       </SectorsSection>
 
-      <CTASectionWithBackground>
+      <GrowthTeamSection>
         <Container>
-          <CTAHeading>Because Your Success Deserves Intelligence.</CTAHeading>
-          <CTADescription>
-            Grow 10× faster with an all-in-one platform that builds, automates, and scales your business using advanced AI, intelligent marketing, secure fintech, and universal integrations.
-          </CTADescription>
-          <StartTrialButton to="/pricing">Start Free Trial</StartTrialButton>
+          <GrowthTeamTitle>Your All-In-One Digital Growth Team</GrowthTeamTitle>
+          <GrowthTeamSubtitle>Powered by AI, Automation & Blockchain</GrowthTeamSubtitle>
+          <GrowthTeamDescription>
+            KimuX is a fully integrated, AI-powered growth platform that replaces fragmented tools, agencies, and teams with one intelligent system.
+            White-labeled under your brand, KimuX runs every service and automation seamlessly in one place — helping you grow faster,
+            generate more revenue, and scale globally without increasing headcount or operational costs.
+          </GrowthTeamDescription>
+          <GrowthTeamDescriptionSpaced>
+            From marketing and advertising to content, outreach, and analytics, KimuX works 24/7 as your digital team — so you can focus on
+            strategy while the platform drives results.
+          </GrowthTeamDescriptionSpaced>
+          <GrowthTeamSliderContainer>
+            <GrowthTeamSlider>
+              {duplicatedGrowthTeamItems.map((item, index) => (
+                <GrowthTeamCard key={index}>
+                  <GrowthTeamCardTitle>{item.title}</GrowthTeamCardTitle>
+                  <GrowthTeamCardText>{item.description}</GrowthTeamCardText>
+                </GrowthTeamCard>
+              ))}
+            </GrowthTeamSlider>
+          </GrowthTeamSliderContainer>
+          <GrowthTeamFooterTitle>One Platform. One Brand. Unlimited Growth.</GrowthTeamFooterTitle>
+          <GrowthTeamFooterText>
+            KimuX isn't just software — it's your revenue engine, your digital workforce, and your competitive advantage, all in one powerful ecosystem.
+          </GrowthTeamFooterText>
         </Container>
-      </CTASectionWithBackground>
+      </GrowthTeamSection>
 
       <CryptoWealthSection>
         <Container>
@@ -1229,6 +2147,164 @@ const LandingPage = () => {
           </CryptoWealthContainer>
         </Container>
       </CryptoWealthSection>
+
+      <FAQPreviewSection>
+        <Container>
+          <FAQPreviewTitle>Frequently Asked Questions</FAQPreviewTitle>
+          <FAQPreviewList>
+            {faqPreviewItems.map((item, index) => (
+              <FAQPreviewItem key={index}>
+                <FAQPreviewQuestion onClick={() => toggleFaqPreview(index)}>
+                  <FAQPreviewQuestionText>{item.q}</FAQPreviewQuestionText>
+                  <FAQPreviewIcon isOpen={openFaqPreview.has(index)}>+</FAQPreviewIcon>
+                </FAQPreviewQuestion>
+                <FAQPreviewAnswer isOpen={openFaqPreview.has(index)}>
+                  <p>{item.a}</p>
+                </FAQPreviewAnswer>
+              </FAQPreviewItem>
+            ))}
+          </FAQPreviewList>
+          <FAQPreviewButtonRow>
+            <FAQPreviewButton to="/faq">View Full FAQ</FAQPreviewButton>
+          </FAQPreviewButtonRow>
+        </Container>
+      </FAQPreviewSection>
+
+      <StartGrowingSection>
+        <Container>
+          <StartGrowingCard>
+            <div>
+              <StartGrowingTitle>Start Growing with KimuX</StartGrowingTitle>
+              <StartGrowingSubtitle>One Platform. One Subscription. Unlimited Growth Potential.</StartGrowingSubtitle>
+              <StartGrowingDescription>
+                KimuX helps businesses, institutions, and innovators automate operations, increase revenue, and scale globally using AI, automation,
+                and blockchain—without complexity.
+              </StartGrowingDescription>
+            </div>
+            <StartGrowingCTA>
+              <StartGrowingCTATitle>🚀 Get Started with KimuX</StartGrowingCTATitle>
+              <StartGrowingCTAText>Access AI-powered tools, backend fulfillment, and growth automation in minutes.</StartGrowingCTAText>
+              <StartGrowingList>
+                {startGrowingBenefits.map((item) => (
+                  <StartGrowingListItem key={item}>{item}</StartGrowingListItem>
+                ))}
+              </StartGrowingList>
+              <StartGrowingButton to="/pricing">Start Free Trial</StartGrowingButton>
+              <StartGrowingMicrocopy>No credit card required • Cancel anytime</StartGrowingMicrocopy>
+            </StartGrowingCTA>
+          </StartGrowingCard>
+        </Container>
+      </StartGrowingSection>
+
+      <DarkSectionDivider />
+
+      <ContactSection>
+        <ContactInner>
+          <ContactFormCard
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <div>
+              <ContactTitle>Talk to Our Team</ContactTitle>
+              <ContactSubtitle>
+                Not sure where to start? Need a custom solution, enterprise setup, or partnership discussion? Our team will
+                help you design the right KimuX configuration for your goals.
+              </ContactSubtitle>
+            </div>
+
+            <FormGrid>
+              <FormField>
+                <FieldLabel htmlFor="fullName">
+                  Full Name <RequiredMark>*</RequiredMark>
+                </FieldLabel>
+                <TextInput id="fullName" name="fullName" placeholder="Full Name" />
+              </FormField>
+              <FormField>
+                <FieldLabel htmlFor="email">
+                  Email Address <RequiredMark>*</RequiredMark>
+                </FieldLabel>
+                <TextInput id="email" name="email" type="email" placeholder="Email Address" />
+              </FormField>
+            </FormGrid>
+
+            <FormGrid>
+              <FormField>
+                <FieldLabel htmlFor="company">
+                  Company / Organization Name
+                </FieldLabel>
+                <TextInput id="company" name="company" placeholder="Company / Organization Name" />
+              </FormField>
+              <FormField>
+                <FieldLabel htmlFor="country">Country / Region</FieldLabel>
+                <SelectInput id="country" name="country" defaultValue="">
+                  <option value="" disabled>
+                    Select Country / Region
+                  </option>
+                  <option value="north-america">North America</option>
+                  <option value="europe">Europe</option>
+                  <option value="africa">Africa</option>
+                  <option value="asia-pacific">Asia-Pacific</option>
+                  <option value="latin-america">Latin America</option>
+                  <option value="middle-east">Middle East</option>
+                </SelectInput>
+              </FormField>
+            </FormGrid>
+
+            <FormField>
+              <FieldLabel>
+                Company Size
+              </FieldLabel>
+              <RadioRow>
+                {['Solo / Freelancer', '2–10', '11–50', '51–200', '200+'].map((size) => (
+                  <RadioPill key={size}>
+                    <input type="radio" name="companySize" value={size} />
+                    <span>{size}</span>
+                  </RadioPill>
+                ))}
+              </RadioRow>
+            </FormField>
+
+            <FormGrid>
+              <FormField>
+                <FieldLabel htmlFor="interest">
+                  Primary Interest
+                </FieldLabel>
+                <SelectInput id="interest" name="interest" defaultValue="">
+                  <option value="" disabled>
+                    Select an option
+                  </option>
+                  <option value="ai-marketing">AI Marketing &amp; Growth</option>
+                  <option value="b2b-saas">B2B SaaS Tools</option>
+                  <option value="fintech-brokerage">Fintech &amp; Brokerage</option>
+                  <option value="government-institution">Government / Institution</option>
+                  <option value="partnerships">Partnerships / Investment</option>
+                </SelectInput>
+              </FormField>
+              <FormField>
+                <FieldLabel htmlFor="message">
+                  Message / Use Case
+                </FieldLabel>
+                <TextArea
+                  id="message"
+                  name="message"
+                  placeholder="Tell us about your needs..."
+                />
+              </FormField>
+            </FormGrid>
+
+            <ContactButtonRow>
+              <ContactSubmitButton type="submit">
+                Request Demo / Contact Sales
+              </ContactSubmitButton>
+              <ContactMicrocopy>We usually respond within 24 hours.</ContactMicrocopy>
+            </ContactButtonRow>
+          </ContactFormCard>
+          <ContactImageWrapper>
+            <ContactImage src={financialInclusionImage} alt="Talk to our team" />
+          </ContactImageWrapper>
+        </ContactInner>
+      </ContactSection>
 
       <PartnersSection>
         <Container>

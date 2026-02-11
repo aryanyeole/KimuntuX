@@ -166,69 +166,70 @@ const Body = styled.div`
 `;
 
 const Grid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
   
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 `;
 
 const Card = styled.div`
   position: relative;
-  border: 1px solid ${p => p.theme?.colors?.border || '#E5E5E5'};
+  border: 1px solid #e9ecef;
   border-radius: 12px;
-  padding: 16px;
-  background: linear-gradient(180deg, ${p => (p.theme?.colors?.cardBackground || '#f8f9fa')} 0%, ${p => (p.theme?.colors?.background || '#FFFFFF')} 100%);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
-  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-  flex: 0 0 calc(33.333% - 11px);
-  min-width: 240px;
-  max-width: 300px;
-  
-  @media (max-width: 968px) {
-    flex: 0 0 calc(50% - 8px);
-  }
-  
-  @media (max-width: 768px) {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    opacity: .85;
-  }
+  padding: 1.5rem;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
   
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 14px 32px rgba(0,0,0,0.08);
-    border-color: ${p => p.theme?.colors?.primary || '#00C896'}33;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border-color: ${p => p.theme?.colors?.primary || '#00C896'};
   }
 `;
 
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const IconBadge = styled.span`
+  display: none;
+`;
+
 const Small = styled.h3`
-  margin: 0 0 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: ${p => p.theme?.colors?.text || '#111111'};
-  opacity: .95;
-  letter-spacing: .3px;
-  text-transform: uppercase;
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
+  line-height: 1.3;
+  transition: color 0.3s ease;
+  
+  ${Card}:hover & {
+    color: ${p => p.theme?.colors?.primary || '#00C896'};
+  }
+`;
+
+const CardBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 `;
 
 const List = styled.ul`
-  margin: 0; padding: 0 0 0 18px;
-  display: grid; gap: 8px;
+  margin: 0; 
+  padding: 0 0 0 18px;
+  display: grid; 
+  gap: 8px;
 `;
 
 // Refined bullets for feature lists inside "What We Offer"
@@ -237,7 +238,7 @@ const Bullets = styled.ul`
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 0.75rem;
 `;
 
 const Bullet = styled.li`
@@ -261,26 +262,56 @@ const Bullet = styled.li`
 `;
 
 const InlineList = styled.div`
-  display: grid; gap: 8px;
+  display: grid; 
+  gap: 8px;
 `;
 
 const Muted = styled.p`
-  margin: 0; opacity: .8;
+  margin: 0; 
+  opacity: .8;
 `;
 
 const FeatureText = styled.p`
-  margin: 8px 0 0 0;
-  font-size: 14px;
+  margin: 0;
+  font-size: 0.9375rem;
   line-height: 1.6;
-  opacity: 0.9;
-  color: ${p => p.theme?.colors?.text || '#111111'};
+  color: #495057;
+  font-weight: 400;
+  position: relative;
+  padding-left: 1.25rem;
+  transition: all 0.3s ease;
   
-  &:first-of-type {
-    margin-top: 8px;
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: ${p => p.theme?.colors?.primary || '#00C896'};
+    transition: transform 0.3s ease;
   }
   
-  &:not(:first-of-type) {
-    margin-top: 4px;
+  ${Card}:hover & {
+    color: #1a1a1a;
+    
+    &::before {
+      transform: scale(1.3);
+    }
+  }
+`;
+
+const CardDescription = styled.p`
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #495057;
+  font-weight: 400;
+  transition: color 0.3s ease;
+  
+  ${Card}:hover & {
+    color: #1a1a1a;
   }
 `;
 
@@ -293,87 +324,123 @@ export default function AboutPage() {
             <HeroImage src={aboutImage} alt="KimuntuX Team" />
             <HeroContent>
               <H1>About</H1>
-              <Lead>The Intelligent Digital Brokerage & Digital Marketing Platform.</Lead>
+              <Lead>The Intelligent Digital Marketing & Brokerage Platform Built on Blockchain</Lead>
             </HeroContent>
           </HeroImageContainer>
         </Hero>
 
         <Section>
+          <Title>About KimuX</Title>
+          <Body>
+            <p>KimuX is a next-generation B2B SaaS and AI-powered digital marketing platform designed to accelerate growth, innovation, and operational efficiency for businesses and organizations across industries. Hosted securely on Amazon Web Services (AWS), powered by blockchain technology, and built with advanced API integrations, KimuX delivers scalable, reliable, and intelligent digital solutions that drive sustainable impact and measurable results.</p>
+            <p>Our platform enables companies to automate processes, enhance customer engagement, improve data intelligence, and unlock new revenue streams—all while maintaining enterprise-grade security, transparency, and compliance. Through a cloud-based Software-as-a-Service model, KimuX provides continuous innovation, including:</p>
+            <Bullets>
+              <Bullet>Constant updates and improvements</Bullet>
+              <Bullet>Zero installation requirements</Bullet>
+              <Bullet>Lower IT infrastructure costs</Bullet>
+              <Bullet>Global access from anywhere</Bullet>
+              <Bullet>Secure and compliant environments</Bullet>
+            </Bullets>
+            <p>KimuX is more than a digital solution—it is a strategic growth enabler, empowering enterprises, startups, governments, and development organizations to scale with confidence.</p>
+          </Body>
+        </Section>
+
+        <Section>
           <Title>Our Vision</Title>
           <Body>
-            <p>We believe in empowering the next generation of digital entrepreneurs, marketers, and enterprises through artificial intelligence, blockchain, and automation. Our vision is a universal digital ecosystem that connects people, businesses, and opportunities across industries—transforming how the world trades, markets, and grows.</p>
+            <p>We believe in empowering the next generation of digital entrepreneurs, marketers, and enterprises through artificial intelligence, blockchain, and automation. Our vision is to create a universal digital ecosystem that connects people, businesses, and opportunities across industries, transforming how the world trades, markets, and grows.</p>
           </Body>
         </Section>
 
         <Section>
           <Title>Who We Are</Title>
           <Body>
-            <p>KimuntuX is an AI‑powered Digital Brokerage, Fintech, and Marketing platform that unites technology, creativity, and commerce. It provides a single, intelligent environment for businesses, professionals, and creators to build, manage, and scale operations across finance, logistics, real estate, technology, digital marketing, and eCommerce.</p>
-            <Muted>Born from the innovation initiative supported by Arizona State University’s Capstone Program and powered by Kimuntu Power Inc., KimuntuX was developed with the collaboration of four talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, and Julian Korn.</Muted>
-            <Muted>Together, they helped engineer the foundation of what would become one of the most advanced AI‑driven digital brokerage platforms of the decade.</Muted>
+            <p>KimuX is an AI-powered digital brokerage, fintech, and marketing platform that unites technology, creativity, and commerce. We provide a single, intelligent environment for businesses, professionals, and creators to build, manage, and scale operations across finance, logistics, real estate, technology, digital marketing, and eCommerce.</p>
+            <Muted>Born from an innovation initiative supported by Arizona State University’s Capstone Program and powered by Kimuntu Power Inc., KimuX was developed with the collaboration of five talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, Julian Korn, and Sarjan Patel.</Muted>
+            <Muted>Together, they engineered the foundation of what has become one of the most advanced AI-driven digital brokerage platforms of the decade.</Muted>
           </Body>
         </Section>
 
         <Section>
           <Title>Our Mission</Title>
           <Body>
-            <p>To simplify digital transformation by integrating brokerage, fintech, and marketing into one smart ecosystem—enabling businesses and individuals to launch, grow, and scale globally with the power of AI. We aim to make digital entrepreneurship accessible to everyone, from startups to governments, from small agencies to multinational enterprises.</p>
+            <p>Our mission is to simplify digital transformation by integrating brokerage, fintech, and marketing into a single smart ecosystem. We empower businesses and individuals to launch, grow, and scale globally with the power of AI. KimuX makes digital entrepreneurship accessible to everyone—from startups to governments, from small agencies to multinational enterprises.</p>
           </Body>
         </Section>
 
         <Section>
-          <Title>What We Offer</Title>
+          <Title>What KimuX Offers</Title>
           <Body>
             <Grid>
               <Card>
-                <Small>AI Brokerage Hub</Small>
-                <FeatureText>AI matchmaking for B2B/B2C</FeatureText>
-                <FeatureText>Blockchain‑secured contracts</FeatureText>
+                <CardHeader><IconBadge>AI</IconBadge><Small>AI Brokerage Hub</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>B2B/B2C brokerage with AI matchmaking</FeatureText>
+                  <FeatureText>Blockchain-secured contracts</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>CRM & Lead Automation</Small>
-                <FeatureText>Predictive insights</FeatureText>
-                <FeatureText>AI‑powered follow‑ups</FeatureText>
+                <CardHeader><IconBadge>CRM</IconBadge><Small>CRM & Lead Automation</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Smart client management with predictive insights</FeatureText>
+                  <FeatureText>AI-powered follow-ups</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>AI Boutique Builder</Small>
-                <FeatureText>Auto‑generated storefronts</FeatureText>
-                <FeatureText>Content & design by AI</FeatureText>
+                <CardHeader><IconBadge>AB</IconBadge><Small>AI Boutique Builder</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Auto-generate and manage eCommerce stores</FeatureText>
+                  <FeatureText>AI-built content and design</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>Smart Fintech Hub</Small>
-                <FeatureText>Multi‑currency wallets & cross‑border payments</FeatureText>
-                <FeatureText>AI stock & crypto insights</FeatureText>
+                <CardHeader><IconBadge>FT</IconBadge><Small>Smart Fintech Hub</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Multi-currency wallets and cross-border payments</FeatureText>
+                  <FeatureText>Stock and crypto AI investment features</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>AI Marketing Suite</Small>
-                <FeatureText>Create, launch & optimize campaigns</FeatureText>
-                <FeatureText>Policy‑compliant across channels</FeatureText>
+                <CardHeader><IconBadge>MK</IconBadge><Small>AI Marketing Suite</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Create, launch, and optimize campaigns</FeatureText>
+                  <FeatureText>Compliant across Facebook, TikTok, Google, and Instagram</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>Affiliate & Reseller</Small>
-                <FeatureText>Performance tracking</FeatureText>
-                <FeatureText>Commission tools</FeatureText>
+                <CardHeader><IconBadge>AR</IconBadge><Small>Affiliate & Reseller</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Affiliate performance tracking</FeatureText>
+                  <FeatureText>Commission tools for growth</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>Campaign & Funnel Builder</Small>
-                <FeatureText>Visual journeys</FeatureText>
-                <FeatureText>Real‑time optimization</FeatureText>
+                <CardHeader><IconBadge>CF</IconBadge><Small>Campaign & Funnel Builder</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Visualize and automate the customer journey</FeatureText>
+                  <FeatureText>Real-time AI optimization</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>Multilingual Content</Small>
-                <FeatureText>100+ languages</FeatureText>
-                <FeatureText>Text & voice</FeatureText>
+                <CardHeader><IconBadge>ML</IconBadge><Small>AI Multilingual Content</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Translate, create, and rewrite text and voice</FeatureText>
+                  <FeatureText>100+ languages for global audiences</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>Blockchain Layer</Small>
-                <FeatureText>Smart contracts</FeatureText>
-                <FeatureText>Tokenized rewards & transparency</FeatureText>
+                <CardHeader><IconBadge>BC</IconBadge><Small>Blockchain Commerce Layer</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Smart contracts and tokenized rewards</FeatureText>
+                  <FeatureText>Full transaction transparency</FeatureText>
+                </CardBody>
               </Card>
               <Card>
-                <Small>Developer Ecosystem</Small>
-                <FeatureText>Open API & SDK marketplace</FeatureText>
-                <FeatureText>Extensions & integrations</FeatureText>
+                <CardHeader><IconBadge>DV</IconBadge><Small>Developer Ecosystem</Small></CardHeader>
+                <CardBody>
+                  <FeatureText>Open API and SDK marketplace</FeatureText>
+                  <FeatureText>Extensions, plugins, and integrations</FeatureText>
+                </CardBody>
               </Card>
             </Grid>
           </Body>
@@ -383,27 +450,66 @@ export default function AboutPage() {
           <Title>Who We Serve</Title>
           <Body>
             <Grid>
-              <Card><Small>Governments</Small><p>Transparency, automation, and citizen‑focused services.</p></Card>
-              <Card><Small>Financial Institutions</Small><p>Digital brokerage, payment orchestration, compliance.</p></Card>
-              <Card><Small>Real Estate</Small><p>Listings automation, client matching, blockchain contracts.</p></Card>
-              <Card><Small>Logistics & Supply Chain</Small><p>Routing optimization, supplier management, delivery tracking.</p></Card>
-              <Card><Small>Agencies</Small><p>Centralized ad creation and performance analytics.</p></Card>
-              <Card><Small>Non‑Profits</Small><p>Transparent funds and maximized impact.</p></Card>
-              <Card><Small>SMBs & Startups</Small><p>Affordable CRM, marketing, and marketplace tools.</p></Card>
-              <Card><Small>Professional Services</Small><p>Automated engagement, contracts, and communication.</p></Card>
+              <Card>
+                <CardHeader><IconBadge>GV</IconBadge><Small>Governments</Small></CardHeader>
+                <CardBody><CardDescription>Enable transparency, automation, and citizen-focused digital services.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>FI</IconBadge><Small>Financial Institutions</Small></CardHeader>
+                <CardBody><CardDescription>Streamline digital brokerage, payments, and compliance automation.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>RE</IconBadge><Small>Real Estate</Small></CardHeader>
+                <CardBody><CardDescription>Automate listings, client matching, and property contracts via blockchain.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>LS</IconBadge><Small>Logistics & Supply Chain</Small></CardHeader>
+                <CardBody><CardDescription>Optimize routing, supplier management, and delivery tracking with AI.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>DM</IconBadge><Small>Digital Marketing Agencies</Small></CardHeader>
+                <CardBody><CardDescription>Centralize ad creation, compliance, and performance analytics.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>NP</IconBadge><Small>Non-Profit Organizations</Small></CardHeader>
+                <CardBody><CardDescription>Enhance transparency and maximize fundraising impact.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>SB</IconBadge><Small>SMBs & Startups</Small></CardHeader>
+                <CardBody><CardDescription>Access affordable tools for CRM, marketing, and marketplace management.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>PS</IconBadge><Small>Professional Services</Small></CardHeader>
+                <CardBody><CardDescription>Automate client engagement, contracts, and digital communication.</CardDescription></CardBody>
+              </Card>
             </Grid>
           </Body>
         </Section>
 
         <Section>
-          <Title>Technology Core</Title>
+          <Title>Our Technology Core</Title>
           <Body>
             <Grid>
-              <Card><Small>AI & ML</Small><p>Predictive analytics, automation, recommendations.</p></Card>
-              <Card><Small>Blockchain</Small><p>Smart contracts, verifiable transactions, transparency.</p></Card>
-              <Card><Small>Fintech Layer</Small><p>Wallets, payments, brokerage, digital assets.</p></Card>
-              <Card><Small>Marketing Engine</Small><p>Real‑time campaign optimization.</p></Card>
-              <Card><Small>Cloud Infrastructure</Small><p>Secure, scalable, compliant global footprint.</p></Card>
+              <Card>
+                <CardHeader><IconBadge>AI</IconBadge><Small>Artificial Intelligence</Small></CardHeader>
+                <CardBody><CardDescription>Predictive analytics, campaign automation, and smart recommendations.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>BC</IconBadge><Small>Blockchain</Small></CardHeader>
+                <CardBody><CardDescription>Smart contracts, verifiable transactions, and security transparency.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>FT</IconBadge><Small>Fintech Layer</Small></CardHeader>
+                <CardBody><CardDescription>Multi-currency wallets, payments, brokerage, and digital asset management.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>MK</IconBadge><Small>Marketing Automation</Small></CardHeader>
+                <CardBody><CardDescription>Real-time AI campaign optimization for social and ad platforms.</CardDescription></CardBody>
+              </Card>
+              <Card>
+                <CardHeader><IconBadge>CD</IconBadge><Small>Cloud Infrastructure</Small></CardHeader>
+                <CardBody><CardDescription>Secure, globally distributed servers with encryption, scalability, and compliance.</CardDescription></CardBody>
+              </Card>
             </Grid>
           </Body>
         </Section>
@@ -411,17 +517,24 @@ export default function AboutPage() {
         <Section>
           <Title>Our Commitment</Title>
           <Body>
-            <p>We are building the future of intelligent digital commerce and marketing, enabling every entrepreneur and enterprise to thrive in a transparent, trusted, and innovative economy.</p>
+            <p>We are building more than a platform—we are building the future of intelligent digital commerce and marketing. Our goal is to ensure every entrepreneur, marketer, and business can thrive in a connected, data-driven economy while maintaining transparency, trust, and innovation.</p>
           </Body>
         </Section>
 
         <Section>
-          <Title>Motto & Contact</Title>
+          <Title>Join the Future</Title>
+          <Body>
+            <p>Whether you are a creator, marketer, broker, or enterprise, KimuX is your partner in digital excellence, empowering you to connect, automate, and grow in a smart, borderless world.</p>
+          </Body>
+        </Section>
+
+        <Section>
+          <Title>Our Motto</Title>
           <Body>
             <InlineList>
               <p><strong>Motto:</strong> “Beyond eCommerce : Where AI Builds the Future of Business.”</p>
-              <p><strong>Contact:</strong> contact@kimuntux.com</p>
-              <p><strong>Help center:</strong> support@kimuntux.com</p>
+              <p><strong>Contact:</strong> contact@kimux.io</p>
+              <p><strong>Help center:</strong> support@kimux.io</p>
             </InlineList>
           </Body>
         </Section>

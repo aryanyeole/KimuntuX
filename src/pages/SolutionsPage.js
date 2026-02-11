@@ -1,8 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useTheme } from '../contexts/ThemeContext';
 import pricingImage from '../assets/pricing.jpg';
 import financialInclusionImage from '../assets/Financial Inclusion.jpg';
+import websiteEcommerceBoutiqueImage from '../assets/Website_Ecommerce_boutique.jpeg';
+import crmImage from '../assets/CRM.jpeg';
+import fintechImage from '../assets/Fintech.jpeg';
+import digitalMarketingImage from '../assets/Digital Marketing.jpeg';
+import marketplaceApiImage from '../assets/Marketplace API.jpeg';
+import funnelsLandingPageImage from '../assets/Funnels and landing page.jpeg';
+import affiliateImage from '../assets/Affiliate.png';
+import campaignImage from '../assets/Campaign.jpeg';
+import brokerageImage from '../assets/Brokerage.jpeg';
 
 const SolutionsContainer = styled.div`
   min-height: 100vh;
@@ -96,7 +104,7 @@ const HeroTitle = styled.h1`
 `;
 
 const HeroSubtitle = styled.p`
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   max-width: 800px;
@@ -113,13 +121,9 @@ const HeroSubtitle = styled.p`
 
 const SolutionsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   margin-bottom: 3rem;
-  
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  }
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -130,13 +134,14 @@ const SolutionsGrid = styled.div`
 const SolutionCard = styled.div`
   background: white;
   border-radius: 12px;
-  padding: 2.5rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   border: 1px solid #e9ecef;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
   animation: fadeInUp 0.6s ease-out ${props => props.index * 0.1}s both;
+  display: flex;
+  flex-direction: column;
   
   @keyframes fadeInUp {
     from {
@@ -160,6 +165,7 @@ const SolutionCard = styled.div`
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s ease;
+    z-index: 2;
   }
   
   &:hover {
@@ -173,10 +179,44 @@ const SolutionCard = styled.div`
   }
 `;
 
+const CardImageWrapper = styled.div`
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  
+  @media (max-width: 768px) {
+    height: 180px;
+  }
+`;
+
+const CardImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.4s ease;
+  
+  ${SolutionCard}:hover & {
+    transform: scale(1.05);
+  }
+`;
+
+const CardContent = styled.div`
+  padding: 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
 const CardHeader = styled.div`
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
   border-bottom: 2px solid #f0f0f0;
+  text-align: center;
 `;
 
 const SolutionTitle = styled.h3`
@@ -193,54 +233,89 @@ const SolutionTitle = styled.h3`
   }
 `;
 
-const ProblemSection = styled.div`
-  background: #f8f9fa;
-  border-left: 3px solid #6c757d;
-  border-radius: 6px;
-  padding: 1.5rem;
+const ContentSection = styled.div`
   margin-bottom: 1.5rem;
 `;
 
-const ProblemTitle = styled.h4`
-  color: #495057;
+const SectionLabel = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+`;
+
+const LabelIcon = styled.span`
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  background: ${props => props.variant === 'problem' 
+    ? 'linear-gradient(135deg, #6c757d, #495057)' 
+    : 'linear-gradient(135deg, #00C896, #20B2AA)'};
+  box-shadow: ${props => props.variant === 'problem'
+    ? '0 2px 8px rgba(108, 117, 125, 0.3)'
+    : '0 2px 8px rgba(0, 200, 150, 0.3)'};
+`;
+
+const LabelText = styled.span`
+  font-size: 0.8125rem;
   font-weight: 600;
-  margin: 0 0 0.75rem 0;
-  font-size: 0.875rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  color: ${props => props.variant === 'problem' ? '#495057' : '#00C896'};
   font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
 `;
 
-const ProblemText = styled.p`
-  color: #495057;
-  line-height: 1.7;
+const SectionText = styled.p`
+  color: #1a1a1a;
+  line-height: 1.8;
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 1.25rem;
+  font-weight: 400;
+  padding-left: 2rem;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0.6rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: ${props => props.variant === 'problem' 
+      ? 'linear-gradient(180deg, #6c757d 0%, transparent 100%)' 
+      : 'linear-gradient(180deg, #00C896 0%, transparent 100%)'};
+    border-radius: 1px;
+  }
 `;
 
-const SolutionSection = styled.div`
-  background: #f8f9fa;
-  border-left: 3px solid #00C896;
-  border-radius: 6px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-`;
-
-const SolutionTitleText = styled.h4`
-  color: #00C896;
-  font-weight: 600;
-  margin: 0 0 0.75rem 0;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-family: ${props => props.theme?.fonts?.title || 'Poppins, sans-serif'};
+const SolutionContent = styled.div`
+  padding-left: 2rem;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0.6rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, #00C896 0%, rgba(0, 200, 150, 0.2) 100%);
+    border-radius: 1px;
+  }
 `;
 
 const SolutionText = styled.p`
-  color: #495057;
-  line-height: 1.7;
+  color: #1a1a1a;
+  line-height: 1.8;
   margin: 0 0 1.25rem 0;
-  font-size: 0.9375rem;
+  font-size: 1.125rem;
+  font-weight: 500;
 `;
 
 const FeatureList = styled.ul`
@@ -248,49 +323,45 @@ const FeatureList = styled.ul`
   padding: 0;
   margin: 0;
   display: grid;
-  gap: 0.875rem;
+  gap: 0.75rem;
 `;
 
 const FeatureItem = styled.li`
   color: #495057;
   line-height: 1.7;
-  padding-left: 1.75rem;
+  padding-left: 1.5rem;
   position: relative;
-  font-size: 0.9375rem;
+  font-size: 1.125rem;
   transition: all 0.3s ease;
   
   &::before {
-    content: '';
+    content: '✓';
     position: absolute;
     left: 0;
-    top: 0.65rem;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #00C896;
-    transition: transform 0.3s ease;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 200, 150, 0.1);
+    color: #00C896;
+    border-radius: 4px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    transition: all 0.3s ease;
   }
   
   ${SolutionCard}:hover & {
     color: #1a1a1a;
-    transform: translateX(2px);
     
     &::before {
-      transform: scale(1.2);
+      background: #00C896;
+      color: white;
+      transform: scale(1.1);
     }
   }
 `;
-
-const SolutionImage = styled.img`
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  max-height: 450px;
-  margin-top: 2rem;
-  border-radius: 8px;
-  display: block;
-`;
-
 
 const SolutionsPage = () => {
   const solutions = [
@@ -414,33 +485,59 @@ const SolutionsPage = () => {
 
         <SolutionsGrid>
           {solutions.map((solution, index) => {
-            const hasImage = solution.title === 'Financial Inclusion';
-            const imageSrc = hasImage ? financialInclusionImage : null;
+            const getImage = () => {
+              switch (solution.title) {
+                case 'Universal Digital Brokerage': return brokerageImage;
+                case 'AI eCommerce & Store Creation': return websiteEcommerceBoutiqueImage;
+                case 'Intelligent CRM': return crmImage;
+                case 'Smart Fintech Hub': return fintechImage;
+                case 'Multi-Channel Commerce': return digitalMarketingImage;
+                case 'AI Marketing Engine': return campaignImage;
+                case 'API Integrations': return marketplaceApiImage;
+                case 'Funnel Landing Page': return funnelsLandingPageImage;
+                case 'Financial Inclusion': return financialInclusionImage;
+                case 'Global Affiliate & Reseller Network': return affiliateImage;
+                default: return null;
+              }
+            };
+            const imageSrc = getImage();
 
             return (
               <SolutionCard key={index} index={index}>
-                <CardHeader>
-                  <SolutionTitle>{solution.title}</SolutionTitle>
-                </CardHeader>
-                
-                <ProblemSection>
-                  <ProblemTitle>Problem</ProblemTitle>
-                  <ProblemText>{solution.problem}</ProblemText>
-                </ProblemSection>
-                
-                <SolutionSection>
-                  <SolutionTitleText>Solution</SolutionTitleText>
-                  <SolutionText>{solution.solution}</SolutionText>
-                  <FeatureList>
-                    {solution.features.map((feature, featureIndex) => (
-                      <FeatureItem key={featureIndex}>{feature}</FeatureItem>
-                    ))}
-                  </FeatureList>
-                </SolutionSection>
-                
-                {hasImage && imageSrc && (
-                  <SolutionImage src={imageSrc} alt={solution.title} />
-                )}
+                <CardContent>
+                  <CardHeader>
+                    <SolutionTitle>{solution.title}</SolutionTitle>
+                  </CardHeader>
+                  
+                  {imageSrc && (
+                    <CardImageWrapper>
+                      <CardImage src={imageSrc} alt={solution.title} />
+                    </CardImageWrapper>
+                  )}
+                  
+                  <ContentSection>
+                    <SectionLabel>
+                      <LabelIcon variant="problem">!</LabelIcon>
+                      <LabelText variant="problem">Challenge</LabelText>
+                    </SectionLabel>
+                    <SectionText variant="problem">{solution.problem}</SectionText>
+                  </ContentSection>
+                  
+                  <ContentSection>
+                    <SectionLabel>
+                      <LabelIcon variant="solution">✓</LabelIcon>
+                      <LabelText variant="solution">Solution</LabelText>
+                    </SectionLabel>
+                    <SolutionContent>
+                      <SolutionText>{solution.solution}</SolutionText>
+                      <FeatureList>
+                        {solution.features.map((feature, featureIndex) => (
+                          <FeatureItem key={featureIndex}>{feature}</FeatureItem>
+                        ))}
+                      </FeatureList>
+                    </SolutionContent>
+                  </ContentSection>
+                </CardContent>
               </SolutionCard>
             );
           })}

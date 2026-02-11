@@ -93,7 +93,7 @@ const HeroTitle = styled.h1`
 `;
 
 const HeroSubtitle = styled.p`
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   color: rgba(255, 255, 255, 0.95);
   margin: 0;
   max-width: 800px;
@@ -109,15 +109,14 @@ const HeroSubtitle = styled.p`
 `;
 
 const Grid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  gap: 2rem;
   margin-bottom: 4rem;
+  justify-items: center;
   
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
   }
 `;
 
@@ -129,9 +128,9 @@ const Sector = styled.div`
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   border: 1px solid #e9ecef;
   transition: all 0.3s ease;
-  flex: 0 0 calc(33.333% - 11px);
   min-width: 320px;
-  max-width: 400px;
+  max-width: 520px;
+  width: 100%;
   animation: fadeInUp 0.6s ease-out ${props => props.index * 0.1}s both;
   
   @keyframes fadeInUp {
@@ -168,12 +167,7 @@ const Sector = styled.div`
     }
   }
   
-  @media (max-width: 1100px) {
-    flex: 0 0 calc(50% - 8px);
-  }
-  
   @media (max-width: 768px) {
-    flex: 0 0 100%;
     max-width: 100%;
   }
 `;
@@ -182,11 +176,12 @@ const SectorHeader = styled.div`
   margin-bottom: 1.25rem;
   padding-bottom: 1.25rem;
   border-bottom: 2px solid #f0f0f0;
+  text-align: center;
 `;
 
 const SectorTitle = styled.h3`
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #1a1a1a;
   font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
@@ -202,7 +197,7 @@ const SectorDesc = styled.p`
   margin: 0;
   color: #495057;
   line-height: 1.7;
-  font-size: 0.9375rem;
+  font-size: 18px;
 `;
 
 export default function BenefitsBySectorPage() {

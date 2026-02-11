@@ -3,8 +3,7 @@ import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import lightLogo from '../assets/light_logo.jpg';
-import darkLogo from '../assets/dark_logo.jpg';
+import transparentLogo from '../assets/dark_new_logo.jpeg';
 
 const HeaderContainer = styled.header`
   background: #000000;
@@ -41,13 +40,13 @@ const Logo = styled(Link)`
 `;
 
 const LogoImage = styled.img`
-  height: 110px;
+  height: 72px;
   width: auto;
   margin-right: 0.5rem;
   background: transparent;
   
   @media (max-width: 768px) {
-    height: 90px;
+    height: 56px;
   }
 `;
 
@@ -148,9 +147,9 @@ const StartTrialButton = styled(Link)`
   background-color: ${props => props.theme?.colors?.primary || '#00C896'};
   color: white;
   text-decoration: none;
-  padding: 12px 24px;
+  padding: 10px 20px;
   border-radius: 4px;
-  font-size: 1.375rem;
+  font-size: 1.25rem;
   font-weight: 500;
   transition: all 0.2s ease;
   &:hover {
@@ -208,7 +207,7 @@ const Header = () => {
         <LeftSection>
           <Logo to="/">
             <LogoImage 
-              src={isDarkMode ? darkLogo : lightLogo} 
+              src={transparentLogo} 
               alt="KimuntuX Logo"
               style={{ background: 'transparent' }}
               onError={(e) => {
