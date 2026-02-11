@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+
+# Hardhat
+cache/
+artifacts/
+deployments/*.json
+!deployments/.gitkeep
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+.DS_Store
+*.log
+gas-report.txt
+coverage/
+coverage.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
