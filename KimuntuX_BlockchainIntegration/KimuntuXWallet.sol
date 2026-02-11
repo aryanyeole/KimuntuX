@@ -2,8 +2,8 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -106,7 +106,7 @@ contract KimuntuXWallet is Ownable, ReentrancyGuard, Pausable {
      * @dev Constructor initializes the wallet system
      * @param _minimumWithdrawalAmount Minimum amount for withdrawals (in wei)
      */
-    constructor(uint256 _minimumWithdrawalAmount) {
+    constructor(uint256 _minimumWithdrawalAmount) Ownable(msg.sender) {
         minimumWithdrawalAmount = _minimumWithdrawalAmount;
         authorizedPlatforms[msg.sender] = true;
     }

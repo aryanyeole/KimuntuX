@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title PaymentEscrow
@@ -158,8 +158,8 @@ contract PaymentEscrow is Ownable, ReentrancyGuard, Pausable {
     }
     
     // ============ Constructor ============
-    
-    constructor() {
+
+    constructor() Ownable(msg.sender) {
         // Owner is automatically authorized arbiter
         authorizedArbiters[msg.sender] = true;
     }
