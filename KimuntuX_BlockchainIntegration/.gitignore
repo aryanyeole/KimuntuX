@@ -1,31 +1,343 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# KIMUNTUX BLOCKCHAIN - GIT IGNORE RULES
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# CRITICAL: This file prevents sensitive data from being committed to git
+#
+# ⚠️  WARNING: Committing private keys to git can result in:
+#   - Complete loss of funds
+#   - Unauthorized contract modifications
+#   - Identity theft
+#   - Irreversible damage
+#
+# IF YOU ACCIDENTALLY COMMIT SECRETS:
+#   1. Immediately rotate all keys/passwords
+#   2. Transfer all funds to new wallets
+#   3. Use tools like BFG Repo-Cleaner or git-filter-repo
+#   4. Force push cleaned history (breaks all forks)
+#   5. Notify team members to re-clone
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SENSITIVE FILES - CRITICAL SECURITY
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Environment variables (NEVER COMMIT THESE!)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# Private keys and secrets (additional safety)
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.*
+private-keys.*
+wallet-*.json
+keystore/
+
+# Backup files that might contain secrets
+*.backup
+*.bak
+*.old
+*.orig
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# NODE.JS / NPM
+# ═══════════════════════════════════════════════════════════════════════════
+
 # Dependencies
 node_modules/
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+.pnp.*
 
-# Environment variables
-.env
-.env.local
+# npm debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# Hardhat
+
+# ═══════════════════════════════════════════════════════════════════════════
+# HARDHAT / ETHEREUM DEVELOPMENT
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Compilation artifacts
 cache/
 artifacts/
+build/
+dist/
+typechain/
+typechain-types/
+
+# Deployment records (contains deployed addresses)
+# ⚠️  Keep these if you want to track deployments, ignore if sensitive
 deployments/*.json
 !deployments/.gitkeep
+!deployments/README.md
 
-# TypeScript
-*.tsbuildinfo
+# Hardhat network files
+.openzeppelin/
 
-# Misc
-.DS_Store
-*.log
-gas-report.txt
+# Flatten output (may contain full source)
+flattened/
+*.flattened.sol
+
+# Coverage reports
 coverage/
 coverage.json
+.coverage_artifacts/
+.coverage_cache/
+.coverage_contracts/
 
-# IDE
+# Gas reports
+gas-report.txt
+gas-report.json
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TYPESCRIPT
+# ═══════════════════════════════════════════════════════════════════════════
+
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LOGS AND TEMPORARY FILES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Log files
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+.tmp/
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATING SYSTEM FILES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# macOS
+.DS_Store
+.DS_Store?
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+.nfs*
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# IDE / EDITOR FILES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# VSCode
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Cursor
+.cursor/
+
+# JetBrains IDEs (WebStorm, IntelliJ IDEA, etc.)
 .idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+.sublime-gulp.cache
+
+# Vim
 *.swp
 *.swo
+*.swn
 *~
+.*.sw?
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.#*
+.projectile
+
+# Atom
+.atom/
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DOCUMENTATION BUILD FILES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Docusaurus
+.docusaurus/
+build/
+
+# VuePress
+.vuepress/dist/
+
+# GitBook
+_book/
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TEST AND DEBUGGING
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Test coverage
+.nyc_output/
+coverage/
+*.lcov
+
+# Jest
+jest-cache/
+
+# Mocha
+.mocha-cache/
+
+# Debugging
+.vscode/launch.json
+chrome-debug/
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# MISCELLANEOUS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Environment info
+.envrc
+
+# Lock files (optional - uncomment if using specific package manager)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Local configuration
+.local/
+local/
+*.local
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Certificates (should never be in repo)
+*.crt
+*.cer
+*.der
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PROJECT-SPECIFIC IGNORES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Deployment scripts with sensitive data
+scripts/deploy-mainnet-*.js
+scripts/*-production.js
+
+# Local testing files
+test-local/
+playground/
+scratch/
+
+# Documentation drafts
+drafts/
+notes.md
+TODO.md
+NOTES.md
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ALWAYS KEEP THESE FILES
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Use ! to explicitly include files that would otherwise be ignored
+#
+# Examples:
+# !deployments/.gitkeep
+# !.vscode/settings.json
+#
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Keep example files
+!.env.example
+!config.example.js
+
+# Keep empty directories
+!.gitkeep
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# VERIFICATION CHECKLIST
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# Before committing, verify:
+#   ✅ No .env file in staging area: git status | grep .env
+#   ✅ No private keys: git diff | grep -i "private"
+#   ✅ No API keys: git diff | grep -i "api.*key"
+#   ✅ No wallet addresses with funds: git diff | grep "0x[a-fA-F0-9]\{40\}"
+#   ✅ Run: git secrets --scan (if installed)
+#
+# ═══════════════════════════════════════════════════════════════════════════
