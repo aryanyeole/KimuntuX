@@ -1,0 +1,112 @@
+[
+  {
+    "id": "l1",
+    "name": "Ava Thompson",
+    "email": "ava@example.com",
+    "source": "Facebook",
+    "score": 88,
+    "status": "New",
+    "lastContact": "2025-10-22T10:15:00.000Z",
+    "owner": "Maya",
+    "tags": ["enterprise", "priority"]
+  },
+  {
+    "id": "l2",
+    "name": "Noah Patel",
+    "email": "noah@example.com",
+    "source": "Google",
+    "score": 72,
+    "status": "Contacted",
+    "lastContact": "2025-10-20T14:30:00.000Z",
+    "owner": "Liam",
+    "tags": ["trial"]
+  },
+  {
+    "id": "l3",
+    "name": "Emma Garcia",
+    "email": "emma@example.com",
+    "source": "Referral",
+    "score": 95,
+    "status": "Engaged",
+    "lastContact": "2025-10-24T09:05:00.000Z",
+    "owner": "Maya",
+    "tags": ["vip"]
+  },
+  {
+    "id": "l4",
+    "name": "Liam Johnson",
+    "email": "liam@example.com",
+    "source": "Organic",
+    "score": 45,
+    "status": "New",
+    "lastContact": "2025-10-18T08:20:00.000Z",
+    "owner": "Ava",
+    "tags": ["cold"]
+  },
+  {
+    "id": "l5",
+    "name": "Olivia Brown",
+    "email": "olivia@example.com",
+    "source": "Email",
+    "score": 66,
+    "status": "Contacted",
+    "lastContact": "2025-10-21T13:00:00.000Z",
+    "owner": "Liam",
+    "tags": ["follow-up"]
+  },
+  {
+    "id": "l6",
+    "name": "Ethan Miller",
+    "email": "ethan@example.com",
+    "source": "Partner",
+    "score": 55,
+    "status": "Engaged",
+    "lastContact": "2025-10-19T11:40:00.000Z",
+    "owner": "Maya",
+    "tags": ["partner"]
+  },
+  {
+    "id": "l7",
+    "name": "Sophia Martinez",
+    "email": "sophia@example.com",
+    "source": "Facebook",
+    "score": 33,
+    "status": "Closed",
+    "lastContact": "2025-09-30T16:00:00.000Z",
+    "owner": "Ava",
+    "tags": ["lost"]
+  },
+  {
+    "id": "l8",
+    "name": "James Williams",
+    "email": "james@example.com",
+    "source": "Google",
+    "score": 78,
+    "status": "Converted",
+    "lastContact": "2025-10-23T12:25:00.000Z",
+    "owner": "Liam",
+    "tags": ["customer"]
+  },
+  {
+    "id": "l9",
+    "name": "Mia Davis",
+    "email": "mia@example.com",
+    "source": "Referral",
+    "score": 82,
+    "status": "Engaged",
+    "lastContact": "2025-10-24T15:45:00.000Z",
+    "owner": "Maya",
+    "tags": ["high-touch"]
+  },
+  {
+    "id": "l10",
+    "name": "Lucas Anderson",
+    "email": "lucas@example.com",
+    "source": "Organic",
+    "score": 50,
+    "status": "Contacted",
+    "lastContact": "2025-10-17T10:10:00.000Z",
+    "owner": "Ava",
+    "tags": ["warm"]
+  }
+]

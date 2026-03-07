@@ -1,0 +1,8 @@
+[
+  { "id": "c1", "name": "Q4 Promo", "channel": "Email", "budget": 5000, "spend": 3800, "impressions": 120000, "clicks": 4200, "ctr": 3.5, "leads": 220, "conversions": 45, "roi": 1.8 },
+  { "id": "c2", "name": "Holiday Social", "channel": "Facebook", "budget": 8000, "spend": 6200, "impressions": 240000, "clicks": 9200, "ctr": 3.83, "leads": 480, "conversions": 90, "roi": 2.1 },
+  { "id": "c3", "name": "Search Push", "channel": "Google", "budget": 10000, "spend": 8700, "impressions": 340000, "clicks": 11200, "ctr": 3.29, "leads": 620, "conversions": 140, "roi": 2.5 },
+  { "id": "c4", "name": "Partner Outreach", "channel": "Partner", "budget": 2000, "spend": 1200, "impressions": 30000, "clicks": 800, "ctr": 2.67, "leads": 60, "conversions": 10, "roi": 1.2 },
+  { "id": "c5", "name": "Referral Boost", "channel": "Referral", "budget": 1500, "spend": 900, "impressions": 18000, "clicks": 600, "ctr": 3.33, "leads": 40, "conversions": 12, "roi": 2.0 },
+  { "id": "c6", "name": "Retargeting", "channel": "Google", "budget": 3000, "spend": 2100, "impressions": 90000, "clicks": 2800, "ctr": 3.11, "leads": 130, "conversions": 30, "roi": 1.6 }
+]
