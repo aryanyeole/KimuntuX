@@ -1,79 +1,144 @@
-// Data repository for Content Scheduler.
-// Current mode: JSON (safe, existing behavior).
-// Future mode: DB/API (stubbed below).
+import { getAccessToken } from './authService';
 
-const JSON_ENDPOINT = '/data/scheduledContent.json';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
+
+// Canonical scheduler record contract used across UI and future API mode.
+export const SCHEDULER_RECURRENCE_OPTIONS = ['once', 'weekly', 'biweekly', 'monthly'];
+
+export const SCHEDULER_DEFAULTS = {
+  id: null,
+  title: '',
+  description: '',
+  sendDate: '',
+  sendTime: '',
+  recurrence: 'once',
+  endDate: '',
+  platforms: [],
+  cost: '',
+  color: null,
+};
 
 /**
  * Public API used by the scheduler page.
  * Keep this stable so UI code doesn't change when DB is added.
  */
 export async function listContentForScheduler({ userId, signal } = {}) {
-  // NOTE: userId is unused in JSON mode, but kept for DB readiness.
-  const raw = await listFromJson({ signal });
-  return raw.map(normalizeContentRecord);
+  // NOTE: userId is unused because ownership is derived from JWT auth.
+  const rows = await apiRequest('/scheduler', { signal });
+  return rows.map(mapApiRowToUiModel);
 }
 
-async function listFromJson({ signal } = {}) {
-  const res = await fetch(JSON_ENDPOINT, { signal });
-  const data = await res.json();
-  return data?.scheduled || [];
+export function normalizeSchedulerInput(item) {
+  return normalizeContentRecord(item);
+}
+
+export async function createContentForScheduler(item, { signal } = {}) {
+  const row = await apiRequest('/scheduler', {
+    method: 'POST',
+    signal,
+    body: mapUiModelToApiPayload(item),
+  });
+  return mapApiRowToUiModel(row);
+}
+
+export async function updateContentForScheduler(itemId, item, { signal } = {}) {
+  const row = await apiRequest(`/scheduler/${itemId}`, {
+    method: 'PUT',
+    signal,
+    body: mapUiModelToApiPayload(item),
+  });
+  return mapApiRowToUiModel(row);
+}
+
+export async function deleteContentForScheduler(itemId, { signal } = {}) {
+  await apiRequest(`/scheduler/${itemId}`, {
+    method: 'DELETE',
+    signal,
+  });
+}
+
+async function apiRequest(path, { method = 'GET', signal, body } = {}) {
+  const token = getAccessToken();
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers,
+    signal,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  const text = await response.text();
+  let payload = null;
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { detail: text };
+    }
+  }
+
+  if (!response.ok) {
+    const message = payload?.detail || 'Scheduler request failed';
+    throw new Error(message);
+  }
+
+  return payload;
 }
 
 function normalizeContentRecord(item) {
+  const recurrence = item?.recurrence || item?.interval || SCHEDULER_DEFAULTS.recurrence;
+
   return {
-    id: item.id,
-    title: item.title || '',
-    description: item.description || '',
-    sendDate: item.sendDate || '',
-    sendTime: item.sendTime || '',
-    recurrence: item.recurrence || 'once',
-    endDate: item.endDate || '',
-    platforms: Array.isArray(item.platforms) ? item.platforms : [],
-    cost: item.cost || '',
-    color: item.color || null
+    id: item?.id ?? SCHEDULER_DEFAULTS.id,
+    title: item?.title || item?.name || SCHEDULER_DEFAULTS.title,
+    description: item?.description || SCHEDULER_DEFAULTS.description,
+    sendDate: item?.sendDate || item?.startDate || SCHEDULER_DEFAULTS.sendDate,
+    sendTime: item?.sendTime || item?.timeOfDay || item?.startTime || SCHEDULER_DEFAULTS.sendTime,
+    recurrence: SCHEDULER_RECURRENCE_OPTIONS.includes(recurrence)
+      ? recurrence
+      : SCHEDULER_DEFAULTS.recurrence,
+    endDate: item?.endDate || SCHEDULER_DEFAULTS.endDate,
+    platforms: Array.isArray(item?.platforms) ? item.platforms : SCHEDULER_DEFAULTS.platforms,
+    cost: item?.cost ?? SCHEDULER_DEFAULTS.cost,
+    color: item?.color ?? SCHEDULER_DEFAULTS.color,
   };
 }
 
-/* ------------------------------------------------------------------
-   DB/API STUBS (intentionally not used yet)
-   Uncomment later once backend exists.
-
-async function listFromApi({ userId, signal } = {}) {
-  // Example only:
-  // const res = await fetch(`/api/users/${userId}/content-scheduler`, { signal });
-  // const rows = await res.json();
-  // return rows.map(mapDbRowToUiModel);
-  return [];
+function mapApiRowToUiModel(row) {
+  return normalizeContentRecord({
+    id: row?.id,
+    title: row?.name,
+    sendDate: row?.start_date,
+    sendTime: row?.send_time,
+    recurrence: row?.interval,
+    endDate: row?.end_date,
+    platforms: row?.platforms,
+    cost: row?.cost,
+    color: row?.color,
+  });
 }
 
-function mapDbRowToUiModel(row) {
+function mapUiModelToApiPayload(item) {
+  const normalized = normalizeContentRecord(item);
   return {
-    id: row.id,
-    title: row.name,
-    description: row.description,
-    sendDate: row.send_date,
-    sendTime: row.send_time,
-    recurrence: row.recurrence_rule,
-    endDate: row.end_date,
-    platforms: row.platforms || [],
-    cost: row.cost_cents ? String(row.cost_cents / 100) : '',
-    color: row.color_hex
+    name: normalized.title,
+    start_date: normalized.sendDate || null,
+    end_date: normalized.endDate || null,
+    send_time: normalized.sendTime || null,
+    interval: normalized.recurrence,
+    platforms: normalized.platforms,
+    cost: normalized.cost ? String(normalized.cost) : null,
+    color: normalized.color,
   };
 }
-
-function mapUiModelToDbPayload(item, userId) {
-  return {
-    user_id: userId,
-    name: item.title,
-    description: item.description,
-    send_date: item.sendDate || null,
-    send_time: item.sendTime || null,
-    recurrence_rule: item.recurrence,
-    end_date: item.endDate || null,
-    platforms: item.platforms,
-    cost_cents: item.cost ? Math.round(Number(item.cost) * 100) : 0,
-    color_hex: item.color
-  };
-}
------------------------------------------------------------------- */

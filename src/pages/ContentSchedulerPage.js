@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
-import { listContentForScheduler } from '../services/contentSchedulerRepository';
+import {
+  createContentForScheduler,
+  deleteContentForScheduler,
+  listContentForScheduler,
+  updateContentForScheduler,
+} from '../services/contentSchedulerRepository';
+import xLogo from '../assets/x.svg';
+import instagramLogo from '../assets/instagram.svg';
+import linkedinLogo from '../assets/icons8-linkedin.svg';
+import facebookLogo from '../assets/facebook.svg';
+import youtubeLogo from '../assets/youtube.svg';
+import emailLogo from '../assets/email-8-svgrepo-com.svg';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -18,7 +29,7 @@ const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0.9rem;
 `;
 
 const PageTitle = styled.h1`
@@ -29,27 +40,27 @@ const PageTitle = styled.h1`
 const CalendarControls = styled.div`
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.75rem;
 `;
 
 const MonthNavigator = styled.div`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.1rem;
 `;
 
 const NavButton = styled.button`
   background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
   border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
+  border-radius: 10px;
+  width: 46px;
+  height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: ${props => props.theme?.colors?.text || '#111111'};
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   transition: all 0.2s ease;
   
   &:hover {
@@ -60,10 +71,10 @@ const NavButton = styled.button`
 `;
 
 const MonthYearDisplay = styled.div`
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 600;
   color: ${props => props.theme?.colors?.text || '#111111'};
-  min-width: 200px;
+  min-width: 220px;
   text-align: center;
 `;
 
@@ -71,9 +82,10 @@ const TodayButton = styled.button`
   background: ${props => props.theme?.colors?.primary || '#00C896'};
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  padding: 0.7rem 1.25rem;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
   transition: opacity 0.2s ease;
   
@@ -87,6 +99,9 @@ const CalendarGrid = styled.div`
   border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
   border-radius: 12px;
   padding: 1.5rem;
+  box-shadow:
+    0 0 0 1px ${props => `${props.theme?.colors?.primary || '#00C896'}1A`},
+    0 0 22px ${props => `${props.theme?.colors?.primary || '#00C896'}1F`};
 `;
 
 const WeekdaysRow = styled.div`
@@ -175,11 +190,22 @@ const Layout = styled.div`
   display: grid;
   grid-template-columns: 1fr 340px;
   gap: 1.5rem;
-  align-items: start;
+  align-items: stretch;
 
   @media (max-width: 1100px) {
     grid-template-columns: 1fr;
   }
+`;
+
+const MainColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+`;
+
+const SidebarColumn = styled.div`
+  position: relative;
+  min-height: 0;
 `;
 
 const Sidebar = styled.aside`
@@ -187,11 +213,20 @@ const Sidebar = styled.aside`
   border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
   border-radius: 12px;
   padding: 1rem;
-  position: sticky;
-  top: 120px;
-  max-height: calc(100vh - 140px);
+  position: absolute;
+  inset: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px ${props => `${props.theme?.colors?.primary || '#00C896'}14`},
+    0 0 18px ${props => `${props.theme?.colors?.primary || '#00C896'}1A`};
+
+  @media (max-width: 1100px) {
+    position: relative;
+    inset: auto;
+  }
 `;
 
 const SidebarTitle = styled.h3`
@@ -287,6 +322,47 @@ const CardMeta = styled.div`
   flex-direction: column;
   gap: 0.2rem;
   margin-bottom: 0.5rem;
+`;
+
+const PlatformRow = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+`;
+
+const PlatformText = styled.span`
+  color: ${props => props.theme?.colors?.text || '#111111'};
+`;
+
+const PlatformIconWrap = styled.span`
+  width: 20px;
+  height: 20px;
+  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border-radius: 6px;
+  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+`;
+
+const PlatformIcon = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+`;
+
+const EmailBadge = styled.span`
+  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
 `;
 
 const CardFooter = styled.div`
@@ -512,6 +588,12 @@ const CheckboxLabel = styled.label`
   }
 `;
 
+const PlatformOptionText = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+`;
+
 const ModalActions = styled.div`
   display: flex;
   gap: 1rem;
@@ -638,6 +720,20 @@ const TimelineEventCard = styled.button`
   cursor: pointer;
 `;
 
+const TimelineEventTop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+`;
+
+const TimelinePlatformRow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+`;
+
 const DetailGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -694,6 +790,43 @@ export default function ContentSchedulerPage() {
     '#F97316', '#F472B6', '#A78BFA', '#FCD34D',
     '#EF4444', '#10B981', '#3B82F6', '#8B5CF6'
   ];
+
+  const platformOptions = [
+    { value: 'Email', label: 'Email', logo: emailLogo },
+    { value: 'YouTube', label: 'YouTube', logo: youtubeLogo },
+    { value: 'LinkedIn', label: 'LinkedIn', logo: linkedinLogo },
+    { value: 'X', label: 'X', logo: xLogo },
+    { value: 'Facebook', label: 'Facebook', logo: facebookLogo },
+    { value: 'Instagram', label: 'Instagram', logo: instagramLogo }
+  ];
+
+  const getNormalizedPlatform = (platform) => {
+    if (!platform) return '';
+    const value = String(platform).trim().toLowerCase();
+    if (value === 'youtube') return 'YouTube';
+    if (value === 'linkedin' || value === 'linked in') return 'LinkedIn';
+    if (value === 'x' || value === 'twitter') return 'X';
+    if (value === 'facebook') return 'Facebook';
+    if (value === 'instagram') return 'Instagram';
+    if (value === 'email' || value === 'e-mail') return 'Email';
+    return platform;
+  };
+
+  const getPlatformConfig = (platform) => {
+    const normalized = getNormalizedPlatform(platform);
+    return platformOptions.find((option) => option.value === normalized) || null;
+  };
+
+  const renderPlatformChip = (platform, keyPrefix = 'platform') => {
+    const platformConfig = getPlatformConfig(platform);
+    if (!platformConfig) return null;
+
+    return (
+      <PlatformIconWrap key={`${keyPrefix}-${platformConfig.value}`} title={platformConfig.label} aria-label={platformConfig.label}>
+        <PlatformIcon src={platformConfig.logo} alt={platformConfig.label} />
+      </PlatformIconWrap>
+    );
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -833,18 +966,30 @@ export default function ContentSchedulerPage() {
     setShowModal(true);
   };
 
-  const removeFromCalendar = (itemId) => {
-    setScheduledContent(prev =>
-      prev.map(item =>
-        item.id === itemId
-          ? { ...item, sendDate: '', endDate: '' }
-          : item
-      )
-    );
+  const removeFromCalendar = async (itemId) => {
+    const item = scheduledContent.find((entry) => entry.id === itemId);
+    if (!item) return;
+
+    try {
+      const updated = await updateContentForScheduler(itemId, {
+        ...item,
+        sendDate: '',
+        sendTime: '',
+        endDate: '',
+      });
+      setScheduledContent(prev => prev.map(entry => (entry.id === itemId ? updated : entry)));
+    } catch (err) {
+      window.alert(err.message || 'Unable to remove item from calendar');
+    }
   };
 
-  const removeUnusedItem = (itemId) => {
-    setScheduledContent(prev => prev.filter(item => item.id !== itemId));
+  const removeUnusedItem = async (itemId) => {
+    try {
+      await deleteContentForScheduler(itemId);
+      setScheduledContent(prev => prev.filter(item => item.id !== itemId));
+    } catch (err) {
+      window.alert(err.message || 'Unable to delete item');
+    }
   };
 
   const isOccurrenceOnDate = (item, date) => {
@@ -877,6 +1022,10 @@ export default function ContentSchedulerPage() {
     return diffDays === 0;
   };
 
+  const selectedDateContent = selectedDate
+    ? inCalendarContent.filter(item => isOccurrenceOnDate(item, selectedDate))
+    : inCalendarContent;
+
   const togglePlatform = (platform) => {
     setFormData(prev => ({
       ...prev,
@@ -886,44 +1035,38 @@ export default function ContentSchedulerPage() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name) return;
     if (modalMode === 'calendar' && !formData.startDate) return;
 
-    if (isEditMode && editingId) {
-      setScheduledContent(prev =>
-        prev.map(item =>
-          item.id === editingId
-            ? {
-                ...item,
-                title: formData.name,
-                sendDate: modalMode === 'calendar' ? formData.startDate : '',
-                sendTime: modalMode === 'calendar' ? formData.startTime : '',
-                recurrence: formData.interval,
-                endDate: modalMode === 'calendar' ? formData.endDate : '',
-                platforms: formData.platforms,
-                cost: formData.cost,
-                color: formData.color
-              }
-            : item
-        )
-      );
-    } else {
-      const newItem = {
-        id: Math.max(0, ...scheduledContent.map(i => i.id)) + 1,
-        title: formData.name,
-        sendDate: modalMode === 'calendar' ? formData.startDate : '',
-        sendTime: modalMode === 'calendar' ? formData.startTime : '',
-        recurrence: formData.interval,
-        endDate: modalMode === 'calendar' ? formData.endDate : '',
-        platforms: formData.platforms,
-        cost: formData.cost,
-        color: formData.color
-      };
-      setScheduledContent(prev => [...prev, newItem]);
-    }
+    const payload = {
+      title: formData.name,
+      sendDate: modalMode === 'calendar' ? formData.startDate : '',
+      sendTime: modalMode === 'calendar' ? formData.startTime : '',
+      recurrence: formData.interval,
+      endDate: modalMode === 'calendar' ? formData.endDate : '',
+      platforms: formData.platforms,
+      cost: formData.cost,
+      color: formData.color,
+    };
 
-    setShowModal(false);
+    try {
+      if (isEditMode && editingId) {
+        const existing = scheduledContent.find(item => item.id === editingId) || {};
+        const updated = await updateContentForScheduler(editingId, {
+          ...existing,
+          ...payload,
+        });
+        setScheduledContent(prev => prev.map(item => (item.id === editingId ? updated : item)));
+      } else {
+        const created = await createContentForScheduler(payload);
+        setScheduledContent(prev => [created, ...prev]);
+      }
+
+      setShowModal(false);
+    } catch (err) {
+      window.alert(err.message || 'Unable to save content');
+    }
   };
 
   const handleDragStart = (itemId) => {
@@ -934,22 +1077,27 @@ export default function ContentSchedulerPage() {
     setDraggingItemId(null);
   };
 
-  const handleCalendarDrop = () => {
+  const handleCalendarDrop = async () => {
     if (!draggingItemId) return;
 
     const startDate = window.prompt('Enter start date (YYYY-MM-DD):', '');
     if (!startDate) return;
     const endDate = window.prompt('Enter end date (YYYY-MM-DD) or leave blank:', '');
 
-    setScheduledContent(prev =>
-      prev.map(item =>
-        item.id === draggingItemId
-          ? { ...item, sendDate: startDate, endDate: endDate || '' }
-          : item
-      )
-    );
+    const item = scheduledContent.find(entry => entry.id === draggingItemId);
+    if (!item) return;
 
-    setDraggingItemId(null);
+    try {
+      const updated = await updateContentForScheduler(draggingItemId, {
+        ...item,
+        sendDate: startDate,
+        endDate: endDate || '',
+      });
+      setScheduledContent(prev => prev.map(entry => (entry.id === draggingItemId ? updated : entry)));
+      setDraggingItemId(null);
+    } catch (err) {
+      window.alert(err.message || 'Unable to schedule dragged content');
+    }
   };
 
   const handleDayClick = (date, hasEvents) => {
@@ -1014,142 +1162,150 @@ export default function ContentSchedulerPage() {
   return (
     <PageContainer>
       <Container>
-        <Header>
-          <PageTitle>Content Scheduler</PageTitle>
-          <CalendarControls>
-            <TodayButton onClick={goToToday}>Today</TodayButton>
-            <MonthNavigator>
-              <NavButton onClick={goToPreviousMonth}>‹</NavButton>
-              <MonthYearDisplay>
-                {monthNames[month]} {year}
-              </MonthYearDisplay>
-              <NavButton onClick={goToNextMonth}>›</NavButton>
-            </MonthNavigator>
-          </CalendarControls>
-        </Header>
-
         <Layout>
-          <CalendarGrid
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleCalendarDrop}
-          >
-            <WeekdaysRow>
-              {weekdays.map(day => (
-                <WeekdayLabel key={day}>{day}</WeekdayLabel>
-              ))}
-            </WeekdaysRow>
-            
-            <DaysGrid>
-              {calendarDays.map((dayInfo, index) => {
-                const events = getEventsForDate(dayInfo.date);
-                return (
-                  <DayCell
-                    key={index}
-                    isToday={isToday(dayInfo.date)}
-                    isOtherMonth={dayInfo.isOtherMonth}
-                    isSelected={isDateSelected(dayInfo.date)}
-                    onClick={() => handleDayClick(dayInfo.date, events.length > 0)}
-                  >
-                    <DayNumber
+          <MainColumn>
+            <Header>
+              <PageTitle>Content Scheduler</PageTitle>
+              <CalendarControls>
+                <TodayButton onClick={goToToday}>Today</TodayButton>
+                <MonthNavigator>
+                  <NavButton onClick={goToPreviousMonth}>‹</NavButton>
+                  <MonthYearDisplay>
+                    {monthNames[month]} {year}
+                  </MonthYearDisplay>
+                  <NavButton onClick={goToNextMonth}>›</NavButton>
+                </MonthNavigator>
+              </CalendarControls>
+            </Header>
+
+            <CalendarGrid
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleCalendarDrop}
+            >
+              <WeekdaysRow>
+                {weekdays.map(day => (
+                  <WeekdayLabel key={day}>{day}</WeekdayLabel>
+                ))}
+              </WeekdaysRow>
+              
+              <DaysGrid>
+                {calendarDays.map((dayInfo, index) => {
+                  const events = getEventsForDate(dayInfo.date);
+                  return (
+                    <DayCell
+                      key={index}
                       isToday={isToday(dayInfo.date)}
                       isOtherMonth={dayInfo.isOtherMonth}
+                      isSelected={isDateSelected(dayInfo.date)}
+                      onClick={() => handleDayClick(dayInfo.date, events.length > 0)}
                     >
-                      {dayInfo.day}
-                    </DayNumber>
-                    {events.length > 0 && (
-                      <EventBoxes>
-                        {events.slice(0, 6).map((event, idx) => (
-                          <EventBox
-                            key={`${event.id}-${idx}`}
-                            color={event.color}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openTimeline(dayInfo.date);
-                            }}
-                            aria-label={`Open timeline for ${dayInfo.date.toDateString()}`}
-                            title={`${event.title} (${event.sendTime || 'No time'})`}
-                            type="button"
-                          />
-                        ))}
-                      </EventBoxes>
-                    )}
-                  </DayCell>
-                );
-              })}
-            </DaysGrid>
-          </CalendarGrid>
+                      <DayNumber
+                        isToday={isToday(dayInfo.date)}
+                        isOtherMonth={dayInfo.isOtherMonth}
+                      >
+                        {dayInfo.day}
+                      </DayNumber>
+                      {events.length > 0 && (
+                        <EventBoxes>
+                          {events.slice(0, 6).map((event, idx) => (
+                            <EventBox
+                              key={`${event.id}-${idx}`}
+                              color={event.color}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openTimeline(dayInfo.date);
+                              }}
+                              aria-label={`Open timeline for ${dayInfo.date.toDateString()}`}
+                              title={`${event.title} (${event.sendTime || 'No time'})`}
+                              type="button"
+                            />
+                          ))}
+                        </EventBoxes>
+                      )}
+                    </DayCell>
+                  );
+                })}
+              </DaysGrid>
+            </CalendarGrid>
+          </MainColumn>
 
-          <Sidebar>
-            <SidebarTitle>Content Library</SidebarTitle>
-            <Tabs>
-              <TabGroup>
-                <TabButton
-                  active={sidebarTab === 'inMonth'}
-                  onClick={() => setSidebarTab('inMonth')}
-                >
-                  In Calendar
-                </TabButton>
-                <TabButton
-                  active={sidebarTab === 'unused'}
-                  onClick={() => setSidebarTab('unused')}
-                >
-                  Unused
-                </TabButton>
-              </TabGroup>
-              <AddButton onClick={() => openCreateModal(sidebarTab === 'unused' ? 'unused' : 'calendar')}>+</AddButton>
-            </Tabs>
+          <SidebarColumn>
+            <Sidebar>
+              <SidebarTitle>Content Library</SidebarTitle>
+              <Tabs>
+                <TabGroup>
+                  <TabButton
+                    active={sidebarTab === 'inMonth'}
+                    onClick={() => setSidebarTab('inMonth')}
+                  >
+                    In Calendar
+                  </TabButton>
+                  <TabButton
+                    active={sidebarTab === 'unused'}
+                    onClick={() => setSidebarTab('unused')}
+                  >
+                    Unused
+                  </TabButton>
+                </TabGroup>
+                <AddButton onClick={() => openCreateModal(sidebarTab === 'unused' ? 'unused' : 'calendar')}>+</AddButton>
+              </Tabs>
 
-            <SidebarList>
-              {(sidebarTab === 'inMonth' ? inCalendarContent : unusedContent).map(item => (
-                <ContentCard
-                  key={item.id}
-                  draggable={sidebarTab === 'unused'}
-                  onDragStart={() => handleDragStart(item.id)}
-                  onDragEnd={handleDragEnd}
-                  isHighlighted={isItemHighlighted(item)}
-                  color={item.color}
-                  onClick={() => jumpToItemDate(item)}
-                  title={item.sendDate ? 'Jump to date on calendar' : 'Not scheduled yet'}
-                >
-                  <CardHeader>
-                    <CardTitle>{item.title}</CardTitle>
-                    <RemoveFromCalendarButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (sidebarTab === 'unused') {
-                          removeUnusedItem(item.id);
-                        } else {
-                          removeFromCalendar(item.id);
-                        }
-                      }}
-                      aria-label={sidebarTab === 'unused' ? 'Remove item' : 'Remove from calendar'}
-                    >
-                      -
-                    </RemoveFromCalendarButton>
-                  </CardHeader>
-                  <CardMeta>
-                    {item.sendDate && (
-                      <>
-                        <div>Next date: {item.sendDate}</div>
-                        {item.sendTime && <div>Time: {item.sendTime}</div>}
-                      </>
-                    )}
-                    <div>Interval: {item.recurrence}</div>
-                  </CardMeta>
-                  <CardFooter>
-                    <EditButton
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditModal(item);
-                      }}
-                    >
-                      🔧 Edit
-                    </EditButton>
-                  </CardFooter>
-                </ContentCard>
-              ))}
-            </SidebarList>
-          </Sidebar>
+              <SidebarList>
+                {(sidebarTab === 'inMonth' ? selectedDateContent : unusedContent).map(item => (
+                  <ContentCard
+                    key={item.id}
+                    draggable={sidebarTab === 'unused'}
+                    onDragStart={() => handleDragStart(item.id)}
+                    onDragEnd={handleDragEnd}
+                    isHighlighted={isItemHighlighted(item)}
+                    color={item.color}
+                    onClick={() => jumpToItemDate(item)}
+                    title={item.sendDate ? 'Jump to date on calendar' : 'Not scheduled yet'}
+                  >
+                    <CardHeader>
+                      <CardTitle>{item.title}</CardTitle>
+                      <RemoveFromCalendarButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (sidebarTab === 'unused') {
+                            removeUnusedItem(item.id);
+                          } else {
+                            removeFromCalendar(item.id);
+                          }
+                        }}
+                        aria-label={sidebarTab === 'unused' ? 'Remove item' : 'Remove from calendar'}
+                      >
+                        -
+                      </RemoveFromCalendarButton>
+                    </CardHeader>
+                    <CardMeta>
+                      {item.sendDate && (
+                        <>
+                          <div>Next date: {item.sendDate}</div>
+                          {item.sendTime && <div>Time: {item.sendTime}</div>}
+                        </>
+                      )}
+                      <div>Interval: {item.recurrence}</div>
+                      <PlatformRow>
+                        <PlatformText>Platforms:</PlatformText>
+                        {(item.platforms || []).map((platform) => renderPlatformChip(platform, `card-${item.id}`))}
+                      </PlatformRow>
+                    </CardMeta>
+                    <CardFooter>
+                      <EditButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(item);
+                        }}
+                      >
+                        🔧 Edit
+                      </EditButton>
+                    </CardFooter>
+                  </ContentCard>
+                ))}
+              </SidebarList>
+            </Sidebar>
+          </SidebarColumn>
         </Layout>
       </Container>
 
@@ -1217,14 +1373,17 @@ export default function ContentSchedulerPage() {
               <FormGroup>
                 <Label>Platforms</Label>
                 <CheckboxRow>
-                  {['X', 'Instagram', 'LinkedIn', 'Email'].map(p => (
-                    <CheckboxLabel key={p}>
+                  {platformOptions.map((platform) => (
+                    <CheckboxLabel key={platform.value}>
                       <input
                         type="checkbox"
-                        checked={formData.platforms.includes(p)}
-                        onChange={() => togglePlatform(p)}
+                        checked={formData.platforms.includes(platform.value)}
+                        onChange={() => togglePlatform(platform.value)}
                       />
-                      {p}
+                      <PlatformOptionText>
+                        {renderPlatformChip(platform.value, 'modal')}
+                        <span>{platform.label}</span>
+                      </PlatformOptionText>
                     </CheckboxLabel>
                   ))}
                 </CheckboxRow>
@@ -1292,7 +1451,12 @@ export default function ContentSchedulerPage() {
                       style={{ top: `${mins + 10}px` }}
                       onClick={() => setDetailItem(item)}
                     >
-                      {(item.sendTime || '00:00')} • {item.title}
+                      <TimelineEventTop>
+                        <span>{(item.sendTime || '00:00')} • {item.title}</span>
+                        <TimelinePlatformRow>
+                          {(item.platforms || []).map((platform) => renderPlatformChip(platform, `timeline-${item.id}`))}
+                        </TimelinePlatformRow>
+                      </TimelineEventTop>
                     </TimelineEventCard>
                   );
                 })}

@@ -27,13 +27,13 @@ const Badge = styled.div`
   display: inline-block;
   background: ${props => props.theme?.colors?.primary || '#00C896'};
   color: white;
-  padding: 0.5rem 1.5rem;
-  border-radius: 25px;
+  padding: 0.8rem 3.5rem;
+  border-radius: 28px;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1.3rem;
   margin-bottom: 1.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.9px;
 `;
 
 const Title = styled.h1`
@@ -74,7 +74,10 @@ const FormCard = styled.div`
   border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
   border-radius: 16px;
   padding: 2.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px ${props => `${props.theme?.colors?.primary || '#00C896'}1A`},
+    0 0 24px ${props => `${props.theme?.colors?.primary || '#00C896'}26`};
   margin-bottom: 2rem;
   
   @media (max-width: 768px) {
@@ -411,6 +414,7 @@ export default function DigitalMarketingReportPage() {
   const [showReport, setShowReport] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchMode, setSearchMode] = useState('search');
+  const [businessSearchQuery, setBusinessSearchQuery] = useState('');
   const [showDownloadFormats, setShowDownloadFormats] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -790,11 +794,22 @@ export default function DigitalMarketingReportPage() {
                     name="searchMode"
                     value="manual"
                     checked={searchMode === 'manual'}
-                    onChange={(e) => setSearchMode(e.target.value)}
+                    onChange={(e) => {
+                      setSearchMode(e.target.value);
+                      setBusinessSearchQuery('');
+                    }}
                   />
                   Manually Enter Business
                 </RadioLabel>
               </RadioGroup>
+              {searchMode === 'search' && (
+                <Input
+                  type="text"
+                  value={businessSearchQuery}
+                  onChange={(e) => setBusinessSearchQuery(e.target.value)}
+                  placeholder="Search business name, phone, or address"
+                />
+              )}
             </FormGroup>
 
             <FormGroup>

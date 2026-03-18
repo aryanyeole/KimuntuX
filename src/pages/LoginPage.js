@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { loginWithPassword } from '../services/authService';
 
 const LoginContainer = styled.div`
   min-height: 100vh;
@@ -187,25 +188,18 @@ const LoginPage = () => {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      if (formData.email && formData.password) {
-        // Mock user data
-        const userData = {
-          id: '1',
-          name: formData.email.split('@')[0],
-          email: formData.email,
-          avatar: null,
-          joinDate: new Date().toISOString()
-        };
-        
-        login(userData);
-        navigate('/dashboard');
-      } else {
-        setError('Please fill in all fields');
-      }
+    try {
+      const { token, user } = await loginWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+      login(user, token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Unable to sign in');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

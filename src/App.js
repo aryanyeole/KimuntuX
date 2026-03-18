@@ -7,6 +7,7 @@ import { GlobalStyles } from './styles/GlobalStyles';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
+import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './components/LandingPage';
 import AboutPage from './pages/AboutPage';
 import PricingPage from './pages/PricingPage';
@@ -66,7 +67,14 @@ function App() {
               <Route path="/developer" element={<DeveloperPage />} />
               <Route path="/monetization" element={<MonetizationPage />} />
               <Route path="/usbh" element={<USBHPage />} />
-              <Route path="/content-scheduler" element={<ContentSchedulerPage />} />
+              <Route
+                path="/content-scheduler"
+                element={(
+                  <ProtectedRoute>
+                    <ContentSchedulerPage />
+                  </ProtectedRoute>
+                )}
+              />
               <Route path="/digital-marketing-report" element={<MarketingReportPage />} />
             </Routes>
             <Footer />

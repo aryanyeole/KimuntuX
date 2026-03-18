@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { signupWithPassword } from '../services/authService';
 
 const SignupContainer = styled.div`
   min-height: 100vh;
@@ -214,26 +215,23 @@ const SignupPage = () => {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      // Mock user data
-      const userData = {
-        id: Date.now().toString(),
-        name: formData.name,
+    try {
+      const { token, user } = await signupWithPassword({
+        fullName: formData.name,
         email: formData.email,
-        avatar: null,
-        joinDate: new Date().toISOString()
-      };
-      
-      login(userData);
+        password: formData.password,
+      });
+
+      login(user, token);
       setSuccess('Account created successfully! Redirecting...');
-      
       setTimeout(() => {
         navigate('/dashboard');
-      }, 1500);
-      
+      }, 1000);
+    } catch (err) {
+      setError(err.message || 'Unable to create account');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
