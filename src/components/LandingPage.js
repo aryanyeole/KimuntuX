@@ -1886,8 +1886,12 @@ const SliderContainer = styled.div`
 
 const LandingPage = () => {
   const theme = useTheme();
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
   const [showVideo, setShowVideo] = useState(false);
   const [openFaqPreview, setOpenFaqPreview] = useState(new Set());
+  const [isContactSubmitting, setIsContactSubmitting] = useState(false);
+  const [contactSubmitError, setContactSubmitError] = useState('');
+  const [contactSubmitSuccess, setContactSubmitSuccess] = useState('');
   const videoRef = useRef(null);
   const animationVideoRef = useRef(null);
 
@@ -2074,6 +2078,58 @@ const LandingPage = () => {
       }
       return next;
     });
+  };
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    const formElement = e.currentTarget;
+    setContactSubmitError('');
+    setContactSubmitSuccess('');
+    setIsContactSubmitting(true);
+
+    const formData = new FormData(formElement);
+    const fullName = `${formData.get('fullName') || ''}`.trim();
+    const email = `${formData.get('email') || ''}`.trim();
+
+    if (!fullName || !email) {
+      setContactSubmitError('Please provide your full name and email address.');
+      setIsContactSubmitting(false);
+      return;
+    }
+
+    const payload = {
+      full_name: fullName,
+      email,
+      company: `${formData.get('company') || ''}`.trim() || null,
+      country: `${formData.get('country') || ''}`.trim() || null,
+      company_size: `${formData.get('companySize') || ''}`.trim() || null,
+      primary_interest: `${formData.get('interest') || ''}`.trim() || null,
+      message: `${formData.get('message') || ''}`.trim() || null,
+      consent: formData.get('consent') === 'on',
+      source: 'landing-page-contact-form'
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || 'Unable to submit your request right now.');
+      }
+
+      formElement.reset();
+      setContactSubmitSuccess('Thanks! Your request has been received. Our team will contact you shortly.');
+    } catch (error) {
+      setContactSubmitError(error.message || 'Unable to submit your request right now.');
+    } finally {
+      setIsContactSubmitting(false);
+    }
   };
 
   return (
@@ -2364,11 +2420,7 @@ const LandingPage = () => {
           </ContactSubtitle>
         </ContactHeader>
         <ContactInner>
-          <ContactFormCard
-            onSubmit={(e) => {
-              e.preventDefault();
-            }}
-          >
+          <ContactFormCard onSubmit={handleContactSubmit}>
             <FormGrid>
               <FormField>
                 <FieldLabel htmlFor="fullName">
@@ -2461,9 +2513,17 @@ const LandingPage = () => {
             </ConsentBlock>
 
             <ContactButtonRow>
-              <ContactSubmitButton type="submit">
-                Request Demo / Contact Sales
+              <ContactSubmitButton type="submit" disabled={isContactSubmitting}>
+                {isContactSubmitting ? 'Submitting...' : 'Request Demo / Contact Sales'}
               </ContactSubmitButton>
+              {contactSubmitError && (
+                <ContactMicrocopy style={{ color: '#ffb3b3' }}>{contactSubmitError}</ContactMicrocopy>
+              )}
+              {contactSubmitSuccess && (
+                <ContactMicrocopy style={{ color: theme?.colors?.primary || '#00C896' }}>
+                  {contactSubmitSuccess}
+                </ContactMicrocopy>
+              )}
             </ContactButtonRow>
           </ContactFormCard>
           <ContactImageWrapper>

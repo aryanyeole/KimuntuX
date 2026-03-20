@@ -18,6 +18,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        enable_decoding=False,
     )
 
     @field_validator("cors_origins", mode="before")

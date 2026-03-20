@@ -13,8 +13,9 @@ from app.core.config import settings
 from app.core.database import get_db
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.api_v1_prefix}/auth/login")
+# Use a passlib-native scheme to avoid local bcrypt backend compatibility issues.
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.api_v1_prefix}/auth/token")
 
 
 def hash_password(password: str) -> str:

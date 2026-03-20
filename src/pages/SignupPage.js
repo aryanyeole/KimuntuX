@@ -178,6 +178,7 @@ const SuccessMessage = styled.div`
 const SignupPage = () => {
   const { login } = useUser();
   const navigate = useNavigate();
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -214,26 +215,40 @@ const SignupPage = () => {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      // Mock user data
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          full_name: formData.name,
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to create account');
+      }
+
       const userData = {
-        id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
-        avatar: null,
-        joinDate: new Date().toISOString()
+        id: data.user.id,
+        name: data.user.full_name,
+        email: data.user.email,
+        isActive: data.user.is_active,
+        joinDate: data.user.created_at
       };
-      
-      login(userData);
+
+      login(userData, data.access_token);
       setSuccess('Account created successfully! Redirecting...');
-      
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
-      
+      setTimeout(() => navigate('/dashboard'), 1200);
+    } catch (err) {
+      setError(err.message || 'Unable to create account. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

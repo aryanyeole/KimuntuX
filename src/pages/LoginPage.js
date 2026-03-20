@@ -168,6 +168,7 @@ const ErrorMessage = styled.div`
 const LoginPage = () => {
   const { login } = useUser();
   const navigate = useNavigate();
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -187,25 +188,44 @@ const LoginPage = () => {
     setIsLoading(true);
     setError('');
 
-    // Simulate API call
-    setTimeout(() => {
-      if (formData.email && formData.password) {
-        // Mock user data
-        const userData = {
-          id: '1',
-          name: formData.email.split('@')[0],
-          email: formData.email,
-          avatar: null,
-          joinDate: new Date().toISOString()
-        };
-        
-        login(userData);
-        navigate('/dashboard');
-      } else {
-        setError('Please fill in all fields');
-      }
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields');
       setIsLoading(false);
-    }, 1000);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || 'Invalid email or password');
+      }
+
+      const userData = {
+        id: data.user.id,
+        name: data.user.full_name,
+        email: data.user.email,
+        isActive: data.user.is_active,
+        joinDate: data.user.created_at
+      };
+
+      login(userData, data.access_token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Unable to sign in. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
