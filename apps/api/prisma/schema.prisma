@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum IntegrationType {
+  TRACKING
+  CRM
+  ADS
+  ANALYTICS
+}
+
+enum IntegrationStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+}
+
+enum TokenKind {
+  ACCESS
+  REFRESH
+  API_KEY
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+enum EventType {
+  LEAD
+  PIXEL
+}
+
+model Workspace {
+  id                  String               @id @default(cuid())
+  externalId          String               @unique
+  name                String
+  slug                String               @unique
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  leads               Lead[]
+  integrations        Integration[]
+  integrationAccounts IntegrationAccount[]
+  integrationTokens   IntegrationToken[]
+  integrationRuns     IntegrationRun[]
+  events              Event[]
+}
+
+model Lead {
+  id          String    @id @default(cuid())
+  workspaceId String
+  externalId  String?
+  email       String?
+  firstName   String?
+  lastName    String?
+  company     String?
+  source      String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@unique([workspaceId, externalId])
+  @@unique([workspaceId, email])
+}
+
+model Integration {
+  id          String               @id @default(cuid())
+  workspaceId String
+  key         String
+  name        String
+  type        IntegrationType
+  status      IntegrationStatus    @default(ACTIVE)
+  config      Json?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  workspace   Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  accounts    IntegrationAccount[]
+  tokens      IntegrationToken[]
+  runs        IntegrationRun[]
+  events      Event[]
+
+  @@index([workspaceId])
+  @@unique([workspaceId, key])
+}
+
+model IntegrationAccount {
+  id            String       @id @default(cuid())
+  workspaceId   String
+  integrationId String
+  externalId    String
+  displayName   String?
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  workspace     Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  integration   Integration  @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  tokens        IntegrationToken[]
+
+  @@index([workspaceId])
+  @@index([integrationId])
+  @@unique([integrationId, externalId])
+}
+
+model IntegrationToken {
+  id            String      @id @default(cuid())
+  workspaceId   String
+  integrationId String
+  accountId     String?
+  kind          TokenKind
+  value         String
+  expiresAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  account       IntegrationAccount? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId])
+  @@index([integrationId])
+  @@index([accountId])
+}
+
+model IntegrationRun {
+  id            String      @id @default(cuid())
+  workspaceId   String
+  integrationId String
+  status        RunStatus   @default(PENDING)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  details       Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([integrationId])
+}
+
+model Event {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  integrationId String?
+  type          EventType
+  source        String?
+  externalId    String?
+  leadId        String?
+  email         String?
+  name          String?
+  payload       Json
+  occurredAt    DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  integration   Integration? @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, type])
+  @@index([integrationId])
+  @@index([occurredAt])
+}
