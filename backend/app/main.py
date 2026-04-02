@@ -4,9 +4,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.core.database import engine
-from app.models.base import Base
-from app.models import ContactSubmission, User  # noqa: F401
 from app.routers import auth, contacts
 
 
@@ -23,11 +20,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def create_tables() -> None:
-    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health")
