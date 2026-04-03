@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import auth, contacts
+from app.routers import auth, contacts, crm
 
 
 app = FastAPI(
@@ -29,3 +29,4 @@ def health_check() -> dict[str, str]:
 
 app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(contacts.router, prefix=settings.api_v1_prefix)
+app.include_router(crm.router, prefix=settings.api_v1_prefix)

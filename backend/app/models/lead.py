@@ -84,11 +84,13 @@ class Lead(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     custom_fields: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
 
-    # Relationships (FKs stored as strings; Campaign FK added when Campaign model exists)
+    # Foreign keys
     assigned_to: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    campaign_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    campaign_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("campaigns.id", ondelete="SET NULL"), nullable=True
+    )
     affiliate_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Timestamps
@@ -106,8 +108,11 @@ class Lead(Base):
     last_contact_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     converted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    # Relationship back-ref to User (for assigned_to)
+    # ORM relationships
     assignee = relationship("User", foreign_keys=[assigned_to])
+    campaign = relationship("Campaign", foreign_keys=[campaign_id])
+    activities = relationship("Activity", back_populates="lead", cascade="all, delete-orphan")
+    communications = relationship("Communication", back_populates="lead", cascade="all, delete-orphan")
 
     __table_args__ = (
         Index("ix_leads_stage", "stage"),
