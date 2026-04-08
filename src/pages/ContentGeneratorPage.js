@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import CampaignPlatformPreview from '../components/CampaignPlatformPreview';
-import { createCampaignForScheduler, validateCampaignContract } from '../services/contentSchedulerRepository';
+import { createCampaignForScheduler } from '../services/contentSchedulerRepository';
 import { generateCampaign } from '../services/campaignGeneratorService';
 
 const PageContainer = styled.div`
@@ -449,49 +449,6 @@ function getPrimaryPiece(campaign) {
   return campaign.content_pieces[0] || null;
 }
 
-function getManualPresets(seedPrompt = '') {
-  const base = generateMockCampaignContract(seedPrompt, 1);
-
-  return {
-    valid: base,
-    missingAffiliate: {
-      ...base,
-      affiliate_product: {
-        ...base.affiliate_product,
-        product_id: '',
-        vendor: '',
-        offer_name: '',
-        hoplink: '',
-        commission: null,
-      },
-    },
-    missingPieceCopy: {
-      ...base,
-      content_pieces: [
-        {
-          ...base.content_pieces[0],
-          copy: {
-            hook: null,
-            headline: null,
-            body: null,
-            caption: null,
-            subject_line: null,
-            script: null,
-          },
-        },
-      ],
-    },
-    missingTrackingLink: {
-      ...base,
-      tracking: {
-        ...base.tracking,
-        base_hoplink: '',
-        tracking_links: [],
-      },
-    },
-  };
-}
-
 export default function ContentGeneratorPage() {
   const [mode, setMode] = useState('auto');
   const [prompt, setPrompt] = useState('');
@@ -499,7 +456,6 @@ export default function ContentGeneratorPage() {
   const [generationCount, setGenerationCount] = useState(0);
   const [campaign, setCampaign] = useState(null);
   const [manualJson, setManualJson] = useState('');
-  const [validationSummary, setValidationSummary] = useState(null);
   const [statusMessage, setStatusMessage] = useState('Ready to generate a campaign.');
   const [saveMessage, setSaveMessage] = useState('');
   const [saveErrors, setSaveErrors] = useState([]);
@@ -588,41 +544,6 @@ export default function ContentGeneratorPage() {
     }
   };
 
-  const applyPreset = (presetName) => {
-    const presets = getManualPresets(prompt);
-    const selected = presets[presetName];
-    if (!selected) return;
-
-    setCampaign(selected);
-    setManualJson(JSON.stringify(selected, null, 2));
-    setValidationSummary(null);
-    setSaveMessage('');
-    setSaveErrors([]);
-    setStatusMessage(`Loaded preset: ${presetName}`);
-  };
-
-  const validateManual = () => {
-    try {
-      const parsed = JSON.parse(manualJson || '{}');
-      const validation = validateCampaignContract(parsed);
-      setValidationSummary(validation);
-      setCampaign(parsed);
-
-      if (validation.isValid) {
-        setStatusMessage('Manual campaign is valid for current contract checks.');
-      } else {
-        setStatusMessage('Manual campaign has validation errors.');
-      }
-    } catch (error) {
-      setValidationSummary({
-        isValid: false,
-        errors: [error?.message || 'Invalid JSON'],
-        warnings: [],
-      });
-      setStatusMessage('Manual campaign JSON is invalid.');
-    }
-  };
-
   const activateManual = () => {
     setMode('manual');
     if (!manualJson) {
@@ -630,7 +551,6 @@ export default function ContentGeneratorPage() {
       setCampaign(starter);
       setManualJson(JSON.stringify(starter, null, 2));
     }
-    setValidationSummary(null);
     setSaveMessage('');
     setSaveErrors([]);
   };
@@ -791,13 +711,6 @@ export default function ContentGeneratorPage() {
 
             {mode === 'manual' && (
               <>
-                <ActionRow>
-                  <Button onClick={() => applyPreset('valid')}>Preset: Valid</Button>
-                  <Button variant="secondary" onClick={() => applyPreset('missingAffiliate')}>Preset: Missing Affiliate</Button>
-                  <Button variant="secondary" onClick={() => applyPreset('missingPieceCopy')}>Preset: Missing Piece Copy</Button>
-                  <Button variant="secondary" onClick={() => applyPreset('missingTrackingLink')}>Preset: Missing Tracking</Button>
-                </ActionRow>
-
                 <FieldLabel htmlFor="manual-json" style={{ marginTop: '0.9rem' }}>Campaign JSON</FieldLabel>
                 <JsonArea
                   id="manual-json"
@@ -807,29 +720,8 @@ export default function ContentGeneratorPage() {
                 />
 
                 <ActionRow>
-                  <Button onClick={validateManual}>Validate</Button>
                   <Button variant="ghost" onClick={sendToScheduler} disabled={!manualJson.trim()}>Send To Scheduler</Button>
                 </ActionRow>
-
-                {validationSummary && (
-                  <Notice>
-                    <strong>{validationSummary.isValid ? 'Validation passed' : 'Validation failed'}</strong>
-                    {!!validationSummary.errors.length && (
-                      <List>
-                        {validationSummary.errors.map((err) => (
-                          <li key={err}>{err}</li>
-                        ))}
-                      </List>
-                    )}
-                    {!!validationSummary.warnings.length && (
-                      <List>
-                        {validationSummary.warnings.map((warn) => (
-                          <li key={warn}>{warn}</li>
-                        ))}
-                      </List>
-                    )}
-                  </Notice>
-                )}
               </>
             )}
 

@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
+# Shared literals used across campaign request/response contracts.
 CampaignStatus = Literal[
     "draft",
     "generating",
@@ -217,7 +218,7 @@ class ContentPiece(BaseModel):
     schedule: dict[str, str | None] | None = None
     publish_result: dict[str, str | None] | None = None
 
-
+# Core campaign payload shared by create and response models.
 class CampaignBase(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     status: CampaignStatus = "draft"
@@ -248,11 +249,12 @@ class CampaignBase(BaseModel):
             raise ValueError("Platforms must be non-empty strings")
         return cleaned
 
-
+# Create payload currently mirrors CampaignBase.
 class CampaignCreate(CampaignBase):
     pass
 
 
+# Partial-update payload for campaign edits and scheduling changes.
 class CampaignUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     status: CampaignStatus | None = None
@@ -287,6 +289,7 @@ class CampaignUpdate(BaseModel):
         return cleaned
 
 
+# Request body accepted by POST /campaigns/generate.
 class CampaignGenerateRequest(BaseModel):
     prompt: str = Field(min_length=1)
     platforms: list[str]
@@ -307,6 +310,7 @@ class CampaignGenerateRequest(BaseModel):
         return cleaned
 
 
+# Response model with immutable identity and timestamps.
 class CampaignResponse(CampaignBase):
     model_config = ConfigDict(from_attributes=True)
 
@@ -360,6 +364,7 @@ class CampaignResponse(CampaignBase):
     is_used: bool = False
 
 
+# Paginated campaigns list envelope for CRM list endpoints.
 class CampaignListResponse(BaseModel):
     items: list[CampaignResponse]
     total: int

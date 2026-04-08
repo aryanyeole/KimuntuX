@@ -2,6 +2,7 @@ import { getAccessToken } from './authService';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
 
+// Normalize optional fields so the backend always gets a stable payload shape.
 export async function generateCampaign(payload) {
   const requestPayload = {
     prompt: payload?.prompt || '',
@@ -19,6 +20,7 @@ export async function generateCampaign(payload) {
   });
 }
 
+// Shared fetch helper with auth header and backend-style error parsing.
 async function apiRequest(path, { method = 'GET', signal, body } = {}) {
   const token = getAccessToken();
   const headers = {

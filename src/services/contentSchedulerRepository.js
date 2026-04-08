@@ -1,4 +1,4 @@
-import { getAccessToken } from './authService';
+import { clearAccessToken, getAccessToken } from './authService';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
 
@@ -222,6 +222,11 @@ export async function createCampaignForScheduler(campaign, { strict = true, sign
 
 async function apiRequest(path, { method = 'GET', signal, body } = {}) {
   const token = getAccessToken();
+
+  if (!token) {
+    throw new Error('Your session has expired. Please log in again.');
+  }
+
   const headers = {
     'Content-Type': 'application/json',
   };
@@ -254,6 +259,11 @@ async function apiRequest(path, { method = 'GET', signal, body } = {}) {
   if (!response.ok) {
     const detail = payload?.detail;
     let message = 'Scheduler request failed';
+
+    if (response.status === 401) {
+      clearAccessToken();
+      throw new Error('Your session has expired. Please log in again.');
+    }
 
     if (Array.isArray(detail)) {
       const formatted = detail

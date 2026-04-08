@@ -15,7 +15,7 @@ SYSTEM_PROMPT = (
 
 GEMINI_MODEL = "gemini-1.5-flash"
 
-
+# Lightweight schema blueprint used to constrain LLM output shape.
 def _expected_campaign_schema() -> dict:
     return {
         "name": "string",
@@ -150,7 +150,7 @@ def _expected_campaign_schema() -> dict:
         },
     }
 
-
+# Gemini may wrap JSON in markdown fences; normalize before parsing.
 def _strip_markdown_fences(text: str) -> str:
     cleaned = (text or "").strip()
     if cleaned.startswith("```"):
@@ -164,9 +164,9 @@ def _strip_markdown_fences(text: str) -> str:
 
 
 class CampaignGeneratorService:
+    # Route requests through mock mode or Gemini, then enforce required defaults.
     async def generate(self, request: CampaignGenerateRequest) -> dict:
         mock_mode = self._resolve_mock_mode(request.mock_mode)
-
         if mock_mode:
             payload = self._build_mock_contract(request)
         else:
@@ -194,6 +194,7 @@ class CampaignGeneratorService:
 
         return payload
 
+    # Request flag overrides env; env defaults to mock mode enabled.
     @staticmethod
     def _resolve_mock_mode(request_value: bool | None) -> bool:
         if request_value is not None:
@@ -202,6 +203,7 @@ class CampaignGeneratorService:
         env_value = os.getenv("GEMINI_MOCK_MODE", "true")
         return str(env_value).strip().lower() != "false"
 
+    # Deterministic local payload for development and offline testing.
     @staticmethod
     def _build_mock_contract(request: CampaignGenerateRequest) -> dict:
         prompt = request.prompt.strip()
@@ -317,6 +319,7 @@ class CampaignGeneratorService:
             "deleted_at": None,
         }
 
+    # Production generation path with retry when JSON parse fails.
     async def _generate_with_gemini(self, request: CampaignGenerateRequest) -> dict:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
@@ -352,6 +355,7 @@ class CampaignGeneratorService:
             detail="Campaign generation failed: Gemini returned invalid JSON after retry.",
         )
 
+    # Raw Gemini API caller; returns response text field only.
     async def _call_gemini(self, api_key: str, user_prompt: str) -> str:
         endpoint = (
             f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
@@ -412,6 +416,7 @@ class CampaignGeneratorService:
 
         return await asyncio.to_thread(_make_request)
 
+    # Accept only JSON objects to match campaign contract expectations.
     @staticmethod
     def _try_parse_json(candidate_text: str) -> dict | None:
         cleaned = _strip_markdown_fences(candidate_text)

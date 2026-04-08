@@ -10,6 +10,8 @@ from app.models.base import Base
 
 import enum
 
+
+# Campaign lifecycle states used by both generation and CRM workflows.
 class CampaignStatus(str, enum.Enum):
     draft = "draft"
     generating = "generating"
@@ -21,6 +23,7 @@ class CampaignStatus(str, enum.Enum):
     paused = "paused"
     archived = "archived"
 
+# DB-level default budget payload for newly created campaigns.
 def _default_budget() -> dict:
     return {
         "daily_limit": None,
@@ -30,7 +33,7 @@ def _default_budget() -> dict:
         "currency": "USD",
     }
 
-
+# DB-level default AI generation settings for newly created campaigns.
 def _default_generation_config() -> dict:
     return {
         "topic": None,
@@ -41,7 +44,7 @@ def _default_generation_config() -> dict:
         "gemini_model": None,
     }
 
-
+# Canonical campaign storage model for generated and scheduled campaigns.
 class Campaign(Base):
     __tablename__ = "campaigns"
 

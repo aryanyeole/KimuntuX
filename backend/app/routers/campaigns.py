@@ -14,7 +14,7 @@ from app.services.campaign_generator import CampaignGeneratorService
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 
-
+# Return current user's campaigns, newest first.
 @router.get("", response_model=list[CampaignResponse])
 def list_campaigns(
     db: Session = Depends(get_db),
@@ -27,7 +27,7 @@ def list_campaigns(
     ).all()
     return list(items)
 
-
+# Build a campaign contract with mock mode or Gemini.
 @router.post("/generate")
 async def generate_campaign(
     payload: CampaignGenerateRequest,
@@ -45,7 +45,7 @@ async def generate_campaign(
             detail=f"Campaign generation failed: {exc}",
         ) from exc
 
-
+# Persist a new campaign owned by the authenticated user.
 @router.post("", response_model=CampaignResponse, status_code=status.HTTP_201_CREATED)
 def create_campaign(
     payload: CampaignCreate,
@@ -62,7 +62,7 @@ def create_campaign(
     db.refresh(item)
     return item
 
-
+# Update mutable campaign fields and bump version when omitted.
 @router.put("/{campaign_id}", response_model=CampaignResponse)
 def update_campaign(
     campaign_id: str,
@@ -94,7 +94,7 @@ def update_campaign(
     db.refresh(item)
     return item
 
-
+# Hard-delete campaign currently scoped to authenticated user.
 @router.delete("/{campaign_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_campaign(
     campaign_id: str,
