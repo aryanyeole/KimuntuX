@@ -33,6 +33,7 @@ import DeveloperPage from './pages/DeveloperPage';
 import MonetizationPage from './pages/MonetizationPage';
 import USBHPage from './pages/USBHPage';
 import ContentSchedulerPage from './pages/ContentSchedulerPage';
+import ContentGeneratorPage from './pages/ContentGeneratorPage';
 import MarketingReportPage from './pages/MarketingReportPage';
 
 function App() {
@@ -72,6 +73,14 @@ function App() {
                 element={(
                   <ProtectedRoute>
                     <ContentSchedulerPage />
+                  </ProtectedRoute>
+                )}
+              />
+              <Route
+                path="/content-gen"
+                element={(
+                  <ProtectedRoute>
+                    <ContentGeneratorPage />
                   </ProtectedRoute>
                 )}
               />

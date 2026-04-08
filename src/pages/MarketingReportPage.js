@@ -13,7 +13,7 @@ const PageContainer = styled.div`
 `;
 
 const Container = styled.div`
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 `;
@@ -202,6 +202,71 @@ const ReportCard = styled.div`
   }
 `;
 
+const ReportLayout = styled.div`
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 1.5rem;
+
+  @media (max-width: 1080px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Sidebar = styled.aside`
+  position: sticky;
+  top: 110px;
+  align-self: start;
+  z-index: 3;
+  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
+  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+
+  @media (max-width: 1080px) {
+    position: static;
+  }
+`;
+
+const SidebarTitle = styled.h3`
+  margin: 0 0 0.9rem 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+`;
+
+const SidebarList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+`;
+
+const SidebarButton = styled.button`
+  text-align: left;
+  width: 100%;
+  border: 1px solid ${props => props.active ? (props.theme?.colors?.primary || '#00C896') : (props.theme?.colors?.border || '#e5e5e5')};
+  background: ${props => props.active ? `${props.theme?.colors?.primary || '#00C896'}14` : 'transparent'};
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.theme?.colors?.primary || '#00C896'};
+    background: ${props => `${props.theme?.colors?.primary || '#00C896'}10`};
+  }
+`;
+
+const ReportMain = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+`;
+
 const ReportHeader = styled.div`
   text-align: center;
   padding-bottom: 2rem;
@@ -233,38 +298,115 @@ const OverallScore = styled.div`
   font-weight: 800;
 `;
 
-const Section = styled.div`
-  margin-bottom: 2.5rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const SectionGrid = styled.div`
+const ScorePanel = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  
-  @media (max-width: 968px) {
+  gap: 1rem;
+  margin-top: 1.2rem;
+
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const GridSection = styled.div`
-  /* No bottom border or margin as parent handles it */
+const MiniMetric = styled.div`
+  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: left;
+`;
+
+const MiniMetricLabel = styled.p`
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+`;
+
+const MiniMetricValue = styled.p`
+  margin: 0.35rem 0 0 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+`;
+
+const GaugeWrap = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5rem;
+`;
+
+const Gauge = styled.div`
+  width: 220px;
+  height: 120px;
+  border-radius: 220px 220px 0 0;
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(
+    from 180deg,
+    #e74c3c 0deg,
+    #e74c3c 45deg,
+    #f4b942 95deg,
+    #1dd1a1 180deg
+  );
+`;
+
+const GaugeInner = styled.div`
+  position: absolute;
+  inset: 16px 16px 0 16px;
+  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
+  border-radius: 190px 190px 0 0;
+`;
+
+const GaugeNeedle = styled.div`
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 3px;
+  height: 90px;
+  background: ${props => props.theme?.colors?.text || '#111111'};
+  transform-origin: bottom center;
+  transform: translateX(-50%) rotate(${props => props.angle}deg);
+  border-radius: 999px;
+`;
+
+const GaugeLabel = styled.div`
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: ${props => props.color};
+`;
+
+const Section = styled.div`
+  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
+  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border-radius: 14px;
+  padding: 1.35rem;
+  margin-top: 0.55rem;
+  scroll-margin-top: 110px;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
+`;
+
+const SectionHeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+`;
+
+const SectionActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 `;
 
 const SectionTitle = styled.h3`
@@ -281,6 +423,27 @@ const SectionScore = styled.div`
   border-radius: 20px;
   font-weight: 700;
   font-size: 0.9rem;
+`;
+
+const WhyToggle = styled.button`
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1px solid ${props => props.theme?.colors?.primary || '#00C896'};
+  background: ${props => props.active ? `${props.theme?.colors?.primary || '#00C896'}22` : 'transparent'};
+  color: ${props => props.theme?.colors?.text || '#111111'};
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => `${props.theme?.colors?.primary || '#00C896'}1A`};
+  }
 `;
 
 const SectionSubtitle = styled.p`
@@ -302,6 +465,56 @@ const Finding = styled.div`
   align-items: center;
   gap: 0.5rem;
   font-size: 0.95rem;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+`;
+
+const VisualRow = styled.div`
+  margin: 1rem 0;
+`;
+
+const BarsWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+`;
+
+const BarItem = styled.div`
+  display: grid;
+  grid-template-columns: 140px 1fr 48px;
+  gap: 0.7rem;
+  align-items: center;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+`;
+
+const BarLabel = styled.span`
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: ${props => props.theme?.colors?.text || '#111111'};
+`;
+
+const BarTrack = styled.div`
+  width: 100%;
+  height: 8px;
+  background: ${props => props.theme?.colors?.background || '#f3f4f6'};
+  border-radius: 999px;
+  overflow: hidden;
+`;
+
+const BarFill = styled.div`
+  height: 100%;
+  width: ${props => props.value}%;
+  background: ${props => props.color};
+  border-radius: 999px;
+`;
+
+const BarValue = styled.span`
+  text-align: right;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: ${props => props.theme?.colors?.text || '#111111'};
 `;
 
@@ -416,6 +629,8 @@ export default function DigitalMarketingReportPage() {
   const [searchMode, setSearchMode] = useState('search');
   const [businessSearchQuery, setBusinessSearchQuery] = useState('');
   const [showDownloadFormats, setShowDownloadFormats] = useState(false);
+  const [activeSection, setActiveSection] = useState(0);
+  const [openWhyCards, setOpenWhyCards] = useState({});
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -443,6 +658,23 @@ export default function DigitalMarketingReportPage() {
       setShowReport(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 3000);
+  };
+
+  const toggleWhyCard = (index) => {
+    setOpenWhyCards(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
+  const goToSection = (index) => {
+    const sectionId = `report-section-${index + 1}`;
+    const target = document.getElementById(sectionId);
+
+    if (target) {
+      setActiveSection(index);
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const mockReportData = {
@@ -531,181 +763,154 @@ export default function DigitalMarketingReportPage() {
     ]
   };
 
+  const performanceSpeed = 74;
+  const gaugeAngle = -90 + (performanceSpeed / 100) * 180;
+  const getPerformanceColor = (value) => {
+    if (value < 30) return '#e74c3c';
+    if (value < 70) return '#f4b942';
+    return '#1dd1a1';
+  };
+  const speedColor = getPerformanceColor(performanceSpeed);
+  const progressBarsBySection = {
+    1: [
+      { label: 'Tracking Coverage', value: 46 },
+      { label: 'Pixel Completeness', value: 38 },
+      { label: 'Campaign Readiness', value: 52 }
+    ],
+    3: [
+      { label: 'Accurate Listings', value: 4 },
+      { label: 'Partial Matches', value: 4 },
+      { label: 'Missing Listings', value: 91 }
+    ],
+    4: [
+      { label: 'Review Response Rate', value: 12 },
+      { label: 'Sentiment Confidence', value: 61 },
+      { label: 'Social Presence', value: 18 }
+    ],
+    6: [
+      { label: 'Keyword Visibility', value: 19 },
+      { label: 'Metadata Health', value: 28 },
+      { label: 'Content Depth', value: 24 }
+    ]
+  };
+
   if (showReport) {
     return (
       <PageContainer>
         <Container>
-          <ReportCard>
-            <ReportHeader>
-              <ReportTitle>Your Digital Marketing Report Is Ready</ReportTitle>
-              <BusinessName>{mockReportData.businessName}</BusinessName>
-              <OverallScore>{mockReportData.overallScore}%</OverallScore>
-            </ReportHeader>
-
-            {/* Business Details - Full Width */}
-            <Section>
-              <SectionHeader>
-                <SectionTitle>1. {mockReportData.sections[0].title}</SectionTitle>
-                <SectionScore score={mockReportData.sections[0].score}>{mockReportData.sections[0].score}%</SectionScore>
-              </SectionHeader>
-              <SectionSubtitle>{mockReportData.sections[0].subtitle}</SectionSubtitle>
-              <FindingsList>
-                {mockReportData.sections[0].findings.map((finding, fIndex) => (
-                  <Finding key={fIndex}>
-                    <span>{finding.positive ? '✔' : '❌'}</span>
-                    <span>{finding.text}</span>
-                  </Finding>
+          <ReportLayout>
+            <Sidebar>
+              <SidebarTitle>Report Sections</SidebarTitle>
+              <SidebarList>
+                {mockReportData.sections.map((section, index) => (
+                  <SidebarButton
+                    key={section.title}
+                    active={activeSection === index}
+                    onClick={() => goToSection(index)}
+                  >
+                    {index + 1}. {section.title}
+                  </SidebarButton>
                 ))}
-              </FindingsList>
-              <WhyMatters>
-                <WhyMattersTitle>Why It Matters</WhyMattersTitle>
-                <WhyMattersText>{mockReportData.sections[0].whyMatters}</WhyMattersText>
-              </WhyMatters>
-            </Section>
+              </SidebarList>
+            </Sidebar>
 
-            {/* Tech Stack Analysis - Full Width */}
-            <Section>
-              <SectionHeader>
-                <SectionTitle>2. {mockReportData.sections[1].title}</SectionTitle>
-                <SectionScore score={mockReportData.sections[1].score}>{mockReportData.sections[1].score}%</SectionScore>
-              </SectionHeader>
-              <SectionSubtitle>{mockReportData.sections[1].subtitle}</SectionSubtitle>
-              <FindingsList>
-                {mockReportData.sections[1].findings.map((finding, fIndex) => (
-                  <Finding key={fIndex}>
-                    <span>{finding.positive ? '✔' : '❌'}</span>
-                    <span>{finding.text}</span>
-                  </Finding>
+            <ReportMain>
+              <ReportCard>
+                <ReportHeader>
+                  <ReportTitle>Your Digital Marketing Report Is Ready</ReportTitle>
+                  <BusinessName>{mockReportData.businessName}</BusinessName>
+                  <OverallScore>{mockReportData.overallScore}%</OverallScore>
+
+                  <ScorePanel>
+                    <MiniMetric>
+                      <MiniMetricLabel>Growth Readiness Index</MiniMetricLabel>
+                      <MiniMetricValue>{performanceSpeed}%</MiniMetricValue>
+                    </MiniMetric>
+                    <MiniMetric>
+                      <MiniMetricLabel>Lead Capture Confidence</MiniMetricLabel>
+                      <MiniMetricValue>63%</MiniMetricValue>
+                    </MiniMetric>
+                  </ScorePanel>
+
+                  <GaugeWrap>
+                    <Gauge>
+                      <GaugeInner />
+                      <GaugeNeedle angle={gaugeAngle} />
+                      <GaugeLabel color={speedColor}>{performanceSpeed}%</GaugeLabel>
+                    </Gauge>
+                  </GaugeWrap>
+                </ReportHeader>
+
+                {mockReportData.sections.map((section, index) => (
+                  <Section key={section.title} id={`report-section-${index + 1}`}>
+                    <SectionHeader>
+                      <SectionHeaderLeft>
+                        <SectionTitle>{index + 1}. {section.title}</SectionTitle>
+                        <SectionScore score={section.score}>{section.score}%</SectionScore>
+                      </SectionHeaderLeft>
+                      <SectionActions>
+                        <WhyToggle
+                          type="button"
+                          aria-label={`Toggle why it matters for ${section.title}`}
+                          active={!!openWhyCards[index]}
+                          onClick={() => toggleWhyCard(index)}
+                        >
+                          ?
+                        </WhyToggle>
+                      </SectionActions>
+                    </SectionHeader>
+
+                    <SectionSubtitle>{section.subtitle}</SectionSubtitle>
+
+                    {progressBarsBySection[index] && (
+                      <VisualRow>
+                        <BarsWrap>
+                          {progressBarsBySection[index].map((bar) => (
+                            <BarItem key={bar.label}>
+                              <BarLabel>{bar.label}</BarLabel>
+                              <BarTrack>
+                                <BarFill value={bar.value} color={getPerformanceColor(bar.value)} />
+                              </BarTrack>
+                              <BarValue>{bar.value}%</BarValue>
+                            </BarItem>
+                          ))}
+                        </BarsWrap>
+                      </VisualRow>
+                    )}
+
+                    <FindingsList>
+                      {section.findings.map((finding, fIndex) => (
+                        <Finding key={fIndex}>
+                          <span>{finding.positive ? '✔' : 'X'}</span>
+                          <span>{finding.text}</span>
+                        </Finding>
+                      ))}
+                    </FindingsList>
+
+                    {openWhyCards[index] && (
+                      <WhyMatters>
+                        <WhyMattersTitle>Why It Matters</WhyMattersTitle>
+                        <WhyMattersText>{section.whyMatters}</WhyMattersText>
+                      </WhyMatters>
+                    )}
+                  </Section>
                 ))}
-              </FindingsList>
-              <WhyMatters>
-                <WhyMattersTitle>Why It Matters</WhyMattersTitle>
-                <WhyMattersText>{mockReportData.sections[1].whyMatters}</WhyMattersText>
-              </WhyMatters>
-            </Section>
 
-            {/* Google Business Profile & Directory Listings - Side by Side */}
-            <SectionGrid>
-              <GridSection>
-                <SectionHeader>
-                  <SectionTitle>3. {mockReportData.sections[2].title}</SectionTitle>
-                  <SectionScore score={mockReportData.sections[2].score}>{mockReportData.sections[2].score}%</SectionScore>
-                </SectionHeader>
-                <SectionSubtitle>{mockReportData.sections[2].subtitle}</SectionSubtitle>
-                <FindingsList>
-                  {mockReportData.sections[2].findings.map((finding, fIndex) => (
-                    <Finding key={fIndex}>
-                      <span>{finding.positive ? '✔' : '❌'}</span>
-                      <span>{finding.text}</span>
-                    </Finding>
-                  ))}
-                </FindingsList>
-                <WhyMatters>
-                  <WhyMattersTitle>Why It Matters</WhyMattersTitle>
-                  <WhyMattersText>{mockReportData.sections[2].whyMatters}</WhyMattersText>
-                </WhyMatters>
-              </GridSection>
+                <DownloadSection>
+                  <DownloadButton onClick={() => setShowDownloadFormats(prev => !prev)}>
+                    Download Report
+                  </DownloadButton>
+                  {showDownloadFormats && (
+                    <DownloadFormats>
+                      <FormatChip>PDF</FormatChip>
+                      <FormatChip>DOCX</FormatChip>
+                      <FormatChip>CSV</FormatChip>
+                    </DownloadFormats>
+                  )}
+                </DownloadSection>
+              </ReportCard>
 
-              <GridSection>
-                <SectionHeader>
-                  <SectionTitle>4. {mockReportData.sections[3].title}</SectionTitle>
-                  <SectionScore score={mockReportData.sections[3].score}>{mockReportData.sections[3].score}%</SectionScore>
-                </SectionHeader>
-                <SectionSubtitle>{mockReportData.sections[3].subtitle}</SectionSubtitle>
-                <FindingsList>
-                  {mockReportData.sections[3].findings.map((finding, fIndex) => (
-                    <Finding key={fIndex}>
-                      <span>{finding.positive ? '✔' : '❌'}</span>
-                      <span>{finding.text}</span>
-                    </Finding>
-                  ))}
-                </FindingsList>
-                <WhyMatters>
-                  <WhyMattersTitle>Why It Matters</WhyMattersTitle>
-                  <WhyMattersText>{mockReportData.sections[3].whyMatters}</WhyMattersText>
-                </WhyMatters>
-              </GridSection>
-            </SectionGrid>
-
-            {/* Online Reputation & Website Performance - Side by Side */}
-            <SectionGrid>
-              <GridSection>
-                <SectionHeader>
-                  <SectionTitle>5. {mockReportData.sections[4].title}</SectionTitle>
-                  <SectionScore score={mockReportData.sections[4].score}>{mockReportData.sections[4].score}%</SectionScore>
-                </SectionHeader>
-                <SectionSubtitle>{mockReportData.sections[4].subtitle}</SectionSubtitle>
-                <FindingsList>
-                  {mockReportData.sections[4].findings.map((finding, fIndex) => (
-                    <Finding key={fIndex}>
-                      <span>{finding.positive ? '✔' : '❌'}</span>
-                      <span>{finding.text}</span>
-                    </Finding>
-                  ))}
-                </FindingsList>
-                <WhyMatters>
-                  <WhyMattersTitle>Why It Matters</WhyMattersTitle>
-                  <WhyMattersText>{mockReportData.sections[4].whyMatters}</WhyMattersText>
-                </WhyMatters>
-              </GridSection>
-
-              <GridSection>
-                <SectionHeader>
-                  <SectionTitle>6. {mockReportData.sections[5].title}</SectionTitle>
-                  <SectionScore score={mockReportData.sections[5].score}>{mockReportData.sections[5].score}%</SectionScore>
-                </SectionHeader>
-                <SectionSubtitle>{mockReportData.sections[5].subtitle}</SectionSubtitle>
-                <FindingsList>
-                  {mockReportData.sections[5].findings.map((finding, fIndex) => (
-                    <Finding key={fIndex}>
-                      <span>{finding.positive ? '✔' : '❌'}</span>
-                      <span>{finding.text}</span>
-                    </Finding>
-                  ))}
-                </FindingsList>
-                <WhyMatters>
-                  <WhyMattersTitle>Why It Matters</WhyMattersTitle>
-                  <WhyMattersText>{mockReportData.sections[5].whyMatters}</WhyMattersText>
-                </WhyMatters>
-              </GridSection>
-            </SectionGrid>
-
-            {/* SEO Analysis - Full Width */}
-            <Section>
-              <SectionHeader>
-                <SectionTitle>7. {mockReportData.sections[6].title}</SectionTitle>
-                <SectionScore score={mockReportData.sections[6].score}>{mockReportData.sections[6].score}%</SectionScore>
-              </SectionHeader>
-              <SectionSubtitle>{mockReportData.sections[6].subtitle}</SectionSubtitle>
-              <FindingsList>
-                {mockReportData.sections[6].findings.map((finding, fIndex) => (
-                  <Finding key={fIndex}>
-                    <span>{finding.positive ? '✔' : '❌'}</span>
-                    <span>{finding.text}</span>
-                  </Finding>
-                ))}
-              </FindingsList>
-              <WhyMatters>
-                <WhyMattersTitle>Why It Matters</WhyMattersTitle>
-                <WhyMattersText>{mockReportData.sections[6].whyMatters}</WhyMattersText>
-              </WhyMatters>
-            </Section>
-
-            <DownloadSection>
-              <DownloadButton onClick={() => setShowDownloadFormats(prev => !prev)}>
-                Download Report
-              </DownloadButton>
-              {showDownloadFormats && (
-                <DownloadFormats>
-                  <FormatChip>PDF</FormatChip>
-                  <FormatChip>DOCX</FormatChip>
-                  <FormatChip>CSV</FormatChip>
-                </DownloadFormats>
-              )}
-            </DownloadSection>
-          </ReportCard>
-
-          <ReportCard>
+              <ReportCard>
             <SummaryCard>
               <SummaryTitle>Summary</SummaryTitle>
               <SummaryText>
@@ -718,7 +923,9 @@ export default function DigitalMarketingReportPage() {
                 Get Started with KimuX
               </CTAButton>
             </SummaryCard>
-          </ReportCard>
+              </ReportCard>
+            </ReportMain>
+          </ReportLayout>
         </Container>
       </PageContainer>
     );

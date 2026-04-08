@@ -4,10 +4,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.core.database import engine
+from app.core.database import engine, ensure_sqlite_campaign_columns
 from app.models.base import Base
-from app.models import ContactSubmission, SchedulerItem, User  # noqa: F401
-from app.routers import auth, contacts, scheduler
+from app.models import Campaign, ContactSubmission, User  # noqa: F401
+from app.routers import auth, campaigns, contacts
 
 
 app = FastAPI(
@@ -28,6 +28,7 @@ app.add_middleware(
 @app.on_event("startup")
 def create_tables() -> None:
     Base.metadata.create_all(bind=engine)
+    ensure_sqlite_campaign_columns()
 
 
 @app.get("/health")
@@ -37,4 +38,4 @@ def health_check() -> dict[str, str]:
 
 app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(contacts.router, prefix=settings.api_v1_prefix)
-app.include_router(scheduler.router, prefix=settings.api_v1_prefix)
+app.include_router(campaigns.router, prefix=settings.api_v1_prefix)

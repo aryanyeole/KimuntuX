@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useTheme } from '../contexts/ThemeContext';
 import {
-  createContentForScheduler,
-  deleteContentForScheduler,
   listContentForScheduler,
-  updateContentForScheduler,
+  mapSchedulerCardToCampaignPayload,
+  deleteCampaignRecord,
+  updateCampaignRecord,
 } from '../services/contentSchedulerRepository';
 import xLogo from '../assets/x.svg';
 import instagramLogo from '../assets/instagram.svg';
@@ -368,26 +368,42 @@ const EmailBadge = styled.span`
 const CardFooter = styled.div`
   display: flex;
   justify-content: flex-end;
+  gap: 0.75rem;
   margin-top: 0.5rem;
 `;
 
-const EditButton = styled.button`
+const IconButton = styled.button`
   background: ${props => props.theme?.colors?.primary || '#00C896'};
   color: white;
   border: none;
   border-radius: 6px;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8rem;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
   
   &:hover {
     opacity: 0.9;
     transform: translateY(-1px);
+  }
+`;
+
+const EditButton = styled(IconButton)`
+  background: ${props => props.theme?.colors?.primary || '#00C896'};
+`;
+
+const ViewButton = styled(IconButton)`
+  background: #3B82F6;
+  
+  &:hover {
+    background: #2563EB;
   }
 `;
 
@@ -460,24 +476,12 @@ const AddButton = styled.button`
   }
 `;
 
-const RemoveFromCalendarButton = styled.button`
-  background: ${props => props.theme?.colors?.accent || '#DAA520'};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  width: 24px;
-  height: 24px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  
+const DangerSquareButton = styled(IconButton)`
+  background: #DC2626;
+  margin-left: auto;
+
   &:hover {
-    opacity: 0.8;
+    background: #B91C1C;
   }
 `;
 
@@ -929,25 +933,8 @@ export default function ContentSchedulerPage() {
   const isInCurrentMonth = (date) =>
     date.getFullYear() === year && date.getMonth() === month;
 
-  const inCalendarContent = scheduledContent.filter(item => !!item.sendDate);
-  const unusedContent = scheduledContent.filter(item => !item.sendDate);
-
-  const openCreateModal = (mode) => {
-    setIsEditMode(false);
-    setEditingId(null);
-    setModalMode(mode);
-    setFormData({
-      name: '',
-      startDate: '',
-      startTime: '09:00',
-      interval: 'once',
-      endDate: '',
-      platforms: [],
-      cost: '',
-      color: '#00C896'
-    });
-    setShowModal(true);
-  };
+  const inCalendarContent = scheduledContent.filter(item => item.isUsed);
+  const unusedContent = scheduledContent.filter(item => !item.isUsed);
 
   const openEditModal = (item) => {
     setIsEditMode(true);
@@ -964,32 +951,6 @@ export default function ContentSchedulerPage() {
       color: item.color || '#00C896'
     });
     setShowModal(true);
-  };
-
-  const removeFromCalendar = async (itemId) => {
-    const item = scheduledContent.find((entry) => entry.id === itemId);
-    if (!item) return;
-
-    try {
-      const updated = await updateContentForScheduler(itemId, {
-        ...item,
-        sendDate: '',
-        sendTime: '',
-        endDate: '',
-      });
-      setScheduledContent(prev => prev.map(entry => (entry.id === itemId ? updated : entry)));
-    } catch (err) {
-      window.alert(err.message || 'Unable to remove item from calendar');
-    }
-  };
-
-  const removeUnusedItem = async (itemId) => {
-    try {
-      await deleteContentForScheduler(itemId);
-      setScheduledContent(prev => prev.filter(item => item.id !== itemId));
-    } catch (err) {
-      window.alert(err.message || 'Unable to delete item');
-    }
   };
 
   const isOccurrenceOnDate = (item, date) => {
@@ -1035,38 +996,8 @@ export default function ContentSchedulerPage() {
     }));
   };
 
-  const handleSave = async () => {
-    if (!formData.name) return;
-    if (modalMode === 'calendar' && !formData.startDate) return;
-
-    const payload = {
-      title: formData.name,
-      sendDate: modalMode === 'calendar' ? formData.startDate : '',
-      sendTime: modalMode === 'calendar' ? formData.startTime : '',
-      recurrence: formData.interval,
-      endDate: modalMode === 'calendar' ? formData.endDate : '',
-      platforms: formData.platforms,
-      cost: formData.cost,
-      color: formData.color,
-    };
-
-    try {
-      if (isEditMode && editingId) {
-        const existing = scheduledContent.find(item => item.id === editingId) || {};
-        const updated = await updateContentForScheduler(editingId, {
-          ...existing,
-          ...payload,
-        });
-        setScheduledContent(prev => prev.map(item => (item.id === editingId ? updated : item)));
-      } else {
-        const created = await createContentForScheduler(payload);
-        setScheduledContent(prev => [created, ...prev]);
-      }
-
-      setShowModal(false);
-    } catch (err) {
-      window.alert(err.message || 'Unable to save content');
-    }
+  const handleSave = () => {
+    setShowModal(false);
   };
 
   const handleDragStart = (itemId) => {
@@ -1077,26 +1008,64 @@ export default function ContentSchedulerPage() {
     setDraggingItemId(null);
   };
 
-  const handleCalendarDrop = async () => {
-    if (!draggingItemId) return;
+  const handleCalendarDrop = async (dropDate, event) => {
+    event?.preventDefault();
+    if (!draggingItemId || !dropDate) return;
 
-    const startDate = window.prompt('Enter start date (YYYY-MM-DD):', '');
-    if (!startDate) return;
+    const startDate = `${dropDate.getFullYear()}-${String(dropDate.getMonth() + 1).padStart(2, '0')}-${String(dropDate.getDate()).padStart(2, '0')}`;
     const endDate = window.prompt('Enter end date (YYYY-MM-DD) or leave blank:', '');
 
     const item = scheduledContent.find(entry => entry.id === draggingItemId);
     if (!item) return;
 
     try {
-      const updated = await updateContentForScheduler(draggingItemId, {
-        ...item,
-        sendDate: startDate,
+      const payload = mapSchedulerCardToCampaignPayload(item, {
+        campaignId: item.id,
+        used: true,
+        startDate,
         endDate: endDate || '',
       });
-      setScheduledContent(prev => prev.map(entry => (entry.id === draggingItemId ? updated : entry)));
+      const updated = await updateCampaignRecord(item.id, payload);
+      setScheduledContent(prev => prev.map(entry => (entry.id === item.id ? updated : entry)));
+      setSelectedDate(dropDate);
+      setSidebarTab('inMonth');
       setDraggingItemId(null);
     } catch (err) {
-      window.alert(err.message || 'Unable to schedule dragged content');
+      window.alert(err.message || 'Unable to schedule campaign');
+    }
+  };
+
+  const handleRemoveFromCalendar = async (item) => {
+    try {
+      const payload = mapSchedulerCardToCampaignPayload(item, {
+        campaignId: item.id,
+        used: false,
+        startDate: '',
+        endDate: '',
+      });
+      const updated = await updateCampaignRecord(item.id, payload);
+      setScheduledContent(prev => prev.map(entry => (entry.id === item.id ? updated : entry)));
+      setSidebarTab('unused');
+    } catch (err) {
+      window.alert(err.message || 'Unable to remove campaign from calendar');
+    }
+  };
+
+  const handleDeleteCampaign = async (item) => {
+    const confirmed = window.confirm(`Delete "${item.title}" permanently? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      await deleteCampaignRecord(item.id);
+      setScheduledContent(prev => prev.filter(entry => entry.id !== item.id));
+      if (viewingItem?.id === item.id) {
+        setViewingItem(null);
+      }
+      if (detailItem?.id === item.id) {
+        setDetailItem(null);
+      }
+    } catch (err) {
+      window.alert(err.message || 'Unable to delete campaign');
     }
   };
 
@@ -1122,6 +1091,7 @@ export default function ContentSchedulerPage() {
   const [showTimeline, setShowTimeline] = useState(false);
   const [timelineDate, setTimelineDate] = useState(null);
   const [detailItem, setDetailItem] = useState(null);
+  const [viewingItem, setViewingItem] = useState(null);
 
   const parseLocalDate = (dateString) => {
     if (!dateString) return null;
@@ -1141,6 +1111,12 @@ export default function ContentSchedulerPage() {
   const openTimeline = (date) => {
     setTimelineDate(date);
     setShowTimeline(true);
+  };
+
+  const openCampaignModal = (item) => {
+    setViewingItem(item);
+    setDetailItem(null);
+    setShowTimeline(false);
   };
 
   const timelineEvents = (timelineDate ? getEventsForDate(timelineDate) : [])
@@ -1179,8 +1155,6 @@ export default function ContentSchedulerPage() {
             </Header>
 
             <CalendarGrid
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleCalendarDrop}
             >
               <WeekdaysRow>
                 {weekdays.map(day => (
@@ -1197,6 +1171,8 @@ export default function ContentSchedulerPage() {
                       isToday={isToday(dayInfo.date)}
                       isOtherMonth={dayInfo.isOtherMonth}
                       isSelected={isDateSelected(dayInfo.date)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => handleCalendarDrop(dayInfo.date, e)}
                       onClick={() => handleDayClick(dayInfo.date, events.length > 0)}
                     >
                       <DayNumber
@@ -1247,7 +1223,6 @@ export default function ContentSchedulerPage() {
                     Unused
                   </TabButton>
                 </TabGroup>
-                <AddButton onClick={() => openCreateModal(sidebarTab === 'unused' ? 'unused' : 'calendar')}>+</AddButton>
               </Tabs>
 
               <SidebarList>
@@ -1264,19 +1239,6 @@ export default function ContentSchedulerPage() {
                   >
                     <CardHeader>
                       <CardTitle>{item.title}</CardTitle>
-                      <RemoveFromCalendarButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (sidebarTab === 'unused') {
-                            removeUnusedItem(item.id);
-                          } else {
-                            removeFromCalendar(item.id);
-                          }
-                        }}
-                        aria-label={sidebarTab === 'unused' ? 'Remove item' : 'Remove from calendar'}
-                      >
-                        -
-                      </RemoveFromCalendarButton>
                     </CardHeader>
                     <CardMeta>
                       {item.sendDate && (
@@ -1292,14 +1254,42 @@ export default function ContentSchedulerPage() {
                       </PlatformRow>
                     </CardMeta>
                     <CardFooter>
-                      <EditButton
+                      <ViewButton
                         onClick={(e) => {
                           e.stopPropagation();
-                          openEditModal(item);
+                          setViewingItem(item);
                         }}
+                        title="View details"
+                        aria-label="View item details"
                       >
-                        🔧 Edit
-                      </EditButton>
+                        👁
+                      </ViewButton>
+
+                      {sidebarTab === 'inMonth' && (
+                        <DangerSquareButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveFromCalendar(item);
+                          }}
+                          title="Remove from calendar"
+                          aria-label="Remove from calendar"
+                        >
+                          -
+                        </DangerSquareButton>
+                      )}
+
+                      {sidebarTab === 'unused' && (
+                        <DangerSquareButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCampaign(item);
+                          }}
+                          title="Delete campaign"
+                          aria-label="Delete campaign"
+                        >
+                          🗑
+                        </DangerSquareButton>
+                      )}
                     </CardFooter>
                   </ContentCard>
                 ))}
@@ -1449,7 +1439,7 @@ export default function ContentSchedulerPage() {
                       key={item.id}
                       color={item.color}
                       style={{ top: `${mins + 10}px` }}
-                      onClick={() => setDetailItem(item)}
+                      onClick={() => setViewingItem(item)}
                     >
                       <TimelineEventTop>
                         <span>{(item.sendTime || '00:00')} • {item.title}</span>
@@ -1488,15 +1478,104 @@ export default function ContentSchedulerPage() {
 
             <ModalActions>
               <Button variant="secondary" onClick={() => setDetailItem(null)}>Close</Button>
-              <Button
-                onClick={() => {
-                  setDetailItem(null);
-                  setShowTimeline(false);
-                  openEditModal(detailItem);
-                }}
-              >
-                Edit
-              </Button>
+            </ModalActions>
+          </ModalCard>
+        </ModalBackdrop>
+      )}
+
+      {viewingItem && (
+        <ModalBackdrop onClick={() => setViewingItem(null)}>
+          <ModalCard onClick={(e) => e.stopPropagation()} style={{maxWidth: '700px', maxHeight: '80vh', overflowY: 'auto'}}>
+            <ModalTitle>{viewingItem.title}</ModalTitle>
+
+            <DetailGrid>
+              {/* Campaign Data (if linked) */}
+              {viewingItem._campaign && (
+                <>
+                  <DetailItem><strong>Campaign ID:</strong> {viewingItem._campaign.id}</DetailItem>
+                  {viewingItem._campaign.status && <DetailItem><strong>Status:</strong> <span style={{textTransform: 'capitalize', color: viewingItem._campaign.status === 'active' ? '#00C896' : '#DAA520'}}>{viewingItem._campaign.status}</span></DetailItem>}
+                  {viewingItem._campaign.version && <DetailItem><strong>Version:</strong> {viewingItem._campaign.version}</DetailItem>}
+                  
+                  <hr style={{gridColumn: '1 / -1', border: 'none', borderTop: '1px solid #e5e5e5', margin: '0.5rem 0'}} />
+                  
+                  {/* Affiliate Product */}
+                  {viewingItem._campaign.affiliate_product && <DetailItem><strong>Affiliate Product</strong></DetailItem>}
+                  {viewingItem._campaign.affiliate_product?.product_id && <DetailItem style={{paddingLeft: '1rem'}}><strong>Product ID:</strong> {viewingItem._campaign.affiliate_product.product_id}</DetailItem>}
+                  {viewingItem._campaign.affiliate_product?.offer_name && <DetailItem style={{paddingLeft: '1rem'}}><strong>Offer:</strong> {viewingItem._campaign.affiliate_product.offer_name}</DetailItem>}
+                  {viewingItem._campaign.affiliate_product?.vendor && <DetailItem style={{paddingLeft: '1rem'}}><strong>Vendor:</strong> {viewingItem._campaign.affiliate_product.vendor}</DetailItem>}
+                  {viewingItem._campaign.affiliate_product?.hoplink && <DetailItem style={{paddingLeft: '1rem', wordBreak: 'break-all'}}><strong>Hoplink:</strong> {viewingItem._campaign.affiliate_product.hoplink}</DetailItem>}
+                  
+                  <hr style={{gridColumn: '1 / -1', border: 'none', borderTop: '1px solid #e5e5e5', margin: '0.5rem 0'}} />
+                  
+                  {/* Audience */}
+                  {viewingItem._campaign.audience && Object.keys(viewingItem._campaign.audience).length > 0 && <DetailItem><strong>Audience</strong></DetailItem>}
+                  {viewingItem._campaign.audience?.demographics && <DetailItem style={{paddingLeft: '1rem'}}><strong>Demographics:</strong> {JSON.stringify(viewingItem._campaign.audience.demographics)}</DetailItem>}
+                  {viewingItem._campaign.audience?.interests && <DetailItem style={{paddingLeft: '1rem'}}><strong>Interests:</strong> {Array.isArray(viewingItem._campaign.audience.interests) ? viewingItem._campaign.audience.interests.join(', ') : viewingItem._campaign.audience.interests}</DetailItem>}
+                  {viewingItem._campaign.audience?.behaviors && <DetailItem style={{paddingLeft: '1rem'}}><strong>Behaviors:</strong> {Array.isArray(viewingItem._campaign.audience.behaviors) ? viewingItem._campaign.audience.behaviors.join(', ') : viewingItem._campaign.audience.behaviors}</DetailItem>}
+                  
+                  {viewingItem._campaign.audience && Object.keys(viewingItem._campaign.audience).length > 0 && <hr style={{gridColumn: '1 / -1', border: 'none', borderTop: '1px solid #e5e5e5', margin: '0.5rem 0'}} />}
+                  
+                  
+                  {/* Content Pieces */}
+                  {viewingItem._campaign.content_pieces && viewingItem._campaign.content_pieces.length > 0 && <DetailItem><strong>Content Pieces ({viewingItem._campaign.content_pieces.length})</strong></DetailItem>}
+                  {viewingItem._campaign.content_pieces && viewingItem._campaign.content_pieces.length > 0 && viewingItem._campaign.content_pieces.map((piece, idx) => (
+                    <DetailItem key={idx} style={{paddingLeft: '1rem', fontSize: '0.9rem'}}>
+                      <strong>Piece {idx + 1}:</strong><br />
+                      {piece.copy?.caption && <div>Caption: {piece.copy.caption.substring(0, 80)}...</div>}
+                      {piece.copy?.body && <div>Body: {piece.copy.body.substring(0, 80)}...</div>}
+                      {piece.platform && <div>Platform: {piece.platform}</div>}
+                    </DetailItem>
+                  ))}
+                  
+                  {viewingItem._campaign.content_pieces && viewingItem._campaign.content_pieces.length > 0 && <hr style={{gridColumn: '1 / -1', border: 'none', borderTop: '1px solid #e5e5e5', margin: '0.5rem 0'}} />}
+                  
+                  {/* Tags */}
+                  {viewingItem._campaign.tags && viewingItem._campaign.tags.length > 0 && <DetailItem><strong>Tags:</strong> {viewingItem._campaign.tags.join(', ')}</DetailItem>}
+                  
+                  {/* Notes */}
+                  {viewingItem._campaign.notes && <DetailItem><strong>Notes:</strong> {viewingItem._campaign.notes}</DetailItem>}
+                  
+                  <hr style={{gridColumn: '1 / -1', border: 'none', borderTop: '1px solid #e5e5e5', margin: '0.5rem 0'}} />
+                </>
+              )}
+              
+              {/* Scheduler-specific data */}
+              <DetailItem><strong>Scheduling</strong></DetailItem>
+              {viewingItem.sendDate && <DetailItem style={{paddingLeft: '1rem'}}><strong>Start Date:</strong> {viewingItem.sendDate}</DetailItem>}
+              {viewingItem.sendTime && <DetailItem style={{paddingLeft: '1rem'}}><strong>Send Time:</strong> {viewingItem.sendTime}</DetailItem>}
+              {viewingItem.recurrence && <DetailItem style={{paddingLeft: '1rem'}}><strong>Recurrence:</strong> {viewingItem.recurrence}</DetailItem>}
+              {viewingItem.endDate && <DetailItem style={{paddingLeft: '1rem'}}><strong>End Date:</strong> {viewingItem.endDate}</DetailItem>}
+              
+              <hr style={{gridColumn: '1 / -1', border: 'none', borderTop: '1px solid #e5e5e5', margin: '0.5rem 0'}} />
+              
+              <DetailItem><strong>Distribution</strong></DetailItem>
+              <DetailItem style={{paddingLeft: '1rem'}}>
+                <strong>Platforms:</strong>
+                <PlatformRow>
+                  {(viewingItem.platforms || []).length > 0 ? (
+                    (viewingItem.platforms || []).map((platform) => renderPlatformChip(platform, `detail-${viewingItem.id}`))
+                  ) : (
+                    <span>-</span>
+                  )}
+                </PlatformRow>
+              </DetailItem>
+              {viewingItem.cost && <DetailItem style={{paddingLeft: '1rem'}}><strong>Budget:</strong> ${viewingItem.cost}</DetailItem>}
+              
+              <hr style={{gridColumn: '1 / -1', border: 'none', borderTop: '1px solid #e5e5e5', margin: '0.5rem 0'}} />
+              
+              <DetailItem style={{paddingLeft: '1rem'}}>
+                <strong>Color:</strong>
+                <ColorSwatch color={viewingItem.color} />
+              </DetailItem>
+              
+              <hr style={{gridColumn: '1 / -1', border: 'none', borderTop: '1px solid #e5e5e5', margin: '0.5rem 0'}} />
+              
+              <DetailItem><strong>Created:</strong> {new Date(viewingItem._raw?.created_at || viewingItem.created_at || new Date()).toLocaleString()}</DetailItem>
+              {viewingItem._raw?.updated_at && <DetailItem><strong>Updated:</strong> {new Date(viewingItem._raw.updated_at).toLocaleString()}</DetailItem>}
+            </DetailGrid>
+
+            <ModalActions>
+              <Button variant="secondary" onClick={() => setViewingItem(null)}>Close</Button>
             </ModalActions>
           </ModalCard>
         </ModalBackdrop>
