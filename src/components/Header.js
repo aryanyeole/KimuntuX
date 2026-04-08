@@ -186,6 +186,8 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
+  const isAdminUser = !!(user?.isAdmin ?? user?.is_admin);
+
   const mainNavItems = [
     { path: '/about', label: 'About' },
     { path: '/pricing', label: 'Price' },
@@ -194,7 +196,8 @@ const Header = () => {
     { path: '/crm', label: 'CRM' },
     { path: '/products', label: 'Products' },
     { path: '/faq', label: 'FAQ' },
-    { path: '/blog', label: 'Blog' }
+    { path: '/blog', label: 'Blog' },
+    ...(isAdminUser ? [{ path: '/admin', label: 'Admin' }] : [])
   ];
 
   const handleLogout = () => {

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import transparentLogo from '../assets/dark_new_logo.jpeg';
 
 const SignupContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}10, ${props => props.theme?.colors?.accent || '#DAA520'}10);
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,10 +14,11 @@ const SignupContainer = styled.div`
 `;
 
 const SignupCard = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.background || '#FFFFFF'}, ${props => props.theme?.colors?.cardBackground || '#f8f9fa'});
-  border-radius: 20px;
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   padding: 3rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
   width: 100%;
   max-width: 450px;
   position: relative;
@@ -30,18 +31,19 @@ const SignupCard = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}, ${props => props.theme?.colors?.accent || '#DAA520'});
+    background: linear-gradient(135deg, #00c896, #daa520);
   }
 `;
 
 const Logo = styled.div`
   text-align: center;
   margin-bottom: 2rem;
-  
+
   img {
-    height: 60px;
+    height: 72px;
     width: auto;
-    margin-bottom: 1rem;
+    display: inline-block;
+    background: transparent;
   }
 `;
 
@@ -59,8 +61,7 @@ const Title = styled.h1`
 
 const Subtitle = styled.p`
   text-align: center;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.72);
   margin-bottom: 2rem;
 `;
 
@@ -78,24 +79,46 @@ const InputGroup = styled.div`
 
 const Label = styled.label`
   font-weight: 500;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  color: rgba(255, 255, 255, 0.92);
   font-size: 0.9rem;
 `;
 
 const Input = styled.input`
   padding: 1rem;
-  border: 2px solid ${props => props.theme?.colors?.border || '#E5E5E5'};
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: ${props => props.theme?.colors?.background || '#FFFFFF'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  background: #0d0d0d;
+  color: #ffffff;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
 
   &:focus {
     outline: none;
-    border-color: ${props => props.theme?.colors?.primary || '#00C896'};
-    box-shadow: 0 0 0 3px ${props => props.theme?.colors?.primary || '#00C896'}20;
+    border-color: #00c896;
+    box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.2);
   }
+`;
+
+const ShowPasswordRow = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  user-select: none;
+  margin-top: -0.25rem;
+`;
+
+const ShowPasswordCheckbox = styled.input`
+  accent-color: #00c896;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
 `;
 
 const Button = styled.button`
@@ -141,36 +164,35 @@ const Button = styled.button`
 const LinkText = styled.p`
   text-align: center;
   margin-top: 1.5rem;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.65);
 `;
 
 const StyledLink = styled(Link)`
-  color: ${props => props.theme?.colors?.primary || '#00C896'};
+  color: #00c896;
   text-decoration: none;
   font-weight: 600;
-  
+
   &:hover {
     text-decoration: underline;
   }
 `;
 
 const ErrorMessage = styled.div`
-  background: #fee;
-  color: #c33;
+  background: rgba(204, 51, 51, 0.15);
+  color: #ff8a8a;
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #fcc;
+  border: 1px solid rgba(255, 100, 100, 0.35);
   margin-bottom: 1rem;
   text-align: center;
 `;
 
 const SuccessMessage = styled.div`
-  background: #efe;
-  color: #363;
+  background: rgba(0, 200, 150, 0.12);
+  color: #7dffc8;
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #cfc;
+  border: 1px solid rgba(0, 200, 150, 0.35);
   margin-bottom: 1rem;
   text-align: center;
 `;
@@ -188,6 +210,7 @@ const SignupPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -238,12 +261,19 @@ const SignupPage = () => {
         name: data.user.full_name,
         email: data.user.email,
         isActive: data.user.is_active,
+        isAdmin: !!(data.user?.is_admin ?? data.user?.isAdmin),
         joinDate: data.user.created_at
       };
 
       login(userData, data.access_token);
       setSuccess('Account created successfully! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 1200);
+      setTimeout(
+        () =>
+          navigate(
+            data.user?.is_admin || data.user?.isAdmin ? '/admin' : '/dashboard'
+          ),
+        1200
+      );
     } catch (err) {
       setError(err.message || 'Unable to create account. Please try again.');
     } finally {
@@ -255,7 +285,7 @@ const SignupPage = () => {
     <SignupContainer>
       <SignupCard>
         <Logo>
-          <img src="/light_logo.jpg" alt="KimuntuX" />
+          <img src={transparentLogo} alt="KimuX" style={{ background: 'transparent' }} />
         </Logo>
         <Title>Create Account</Title>
         <Subtitle>Join the KimuntuX intelligent brokerage universe</Subtitle>
@@ -293,26 +323,37 @@ const SignupPage = () => {
           <InputGroup>
             <Label htmlFor="password">Password</Label>
             <Input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               placeholder="Create a password"
               required
+              autoComplete="new-password"
             />
+            <ShowPasswordRow htmlFor="show-password-signup">
+              <ShowPasswordCheckbox
+                type="checkbox"
+                id="show-password-signup"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+              />
+              Show password
+            </ShowPasswordRow>
           </InputGroup>
-          
+
           <InputGroup>
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="confirmPassword"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Confirm your password"
               required
+              autoComplete="new-password"
             />
           </InputGroup>
           
