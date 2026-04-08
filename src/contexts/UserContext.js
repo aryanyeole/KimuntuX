@@ -12,35 +12,50 @@ export const useUser = () => {
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in from localStorage
+    // Restore persisted auth state on app load.
     const savedUser = localStorage.getItem('kimuntu_user');
+    const savedToken = localStorage.getItem('kimuntu_token');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
+    }
+    if (savedToken) {
+      setToken(savedToken);
     }
     setIsLoading(false);
   }, []);
 
-  const login = (userData) => {
+  const login = (userData, accessToken = null) => {
     setUser(userData);
     localStorage.setItem('kimuntu_user', JSON.stringify(userData));
+    localStorage.setItem('kimuntu_current_user', JSON.stringify(userData));
+    if (accessToken) {
+      setToken(accessToken);
+      localStorage.setItem('kimuntu_token', accessToken);
+    }
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('kimuntu_user');
+    localStorage.removeItem('kimuntu_current_user');
+    localStorage.removeItem('kimuntu_token');
   };
 
   const updateUser = (updatedData) => {
     const newUser = { ...user, ...updatedData };
     setUser(newUser);
     localStorage.setItem('kimuntu_user', JSON.stringify(newUser));
+    localStorage.setItem('kimuntu_current_user', JSON.stringify(newUser));
   };
 
   const value = {
     user,
+    token,
     login,
     logout,
     updateUser,

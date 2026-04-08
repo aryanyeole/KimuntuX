@@ -6,7 +6,11 @@ import { useUser } from '../contexts/UserContext';
 const DashboardContainer = styled.div`
   min-height: 100vh;
   background: linear-gradient(135deg, ${props => props.theme?.colors?.background || '#FFFFFF'}, ${props => props.theme?.colors?.cardBackground || '#f8f9fa'});
-  padding: 2rem;
+  padding: 120px 2rem 2rem 2rem;
+  
+  @media (max-width: 768px) {
+    padding-top: 100px;
+  }
 `;
 
 const DashboardHeader = styled.div`
