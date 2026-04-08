@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import { loginWithPassword } from '../services/authService';
 
 const LoginContainer = styled.div`
   min-height: 100vh;
@@ -169,6 +168,7 @@ const ErrorMessage = styled.div`
 const LoginPage = () => {
   const { login } = useUser();
   const navigate = useNavigate();
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -188,15 +188,41 @@ const LoginPage = () => {
     setIsLoading(true);
     setError('');
 
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { token, user } = await loginWithPassword({
-        email: formData.email,
-        password: formData.password,
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
       });
-      login(user, token);
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || 'Invalid email or password');
+      }
+
+      const userData = {
+        id: data.user.id,
+        name: data.user.full_name,
+        email: data.user.email,
+        isActive: data.user.is_active,
+        joinDate: data.user.created_at
+      };
+
+      login(userData, data.access_token);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Unable to sign in');
+      setError(err.message || 'Unable to sign in. Please try again.');
     } finally {
       setIsLoading(false);
     }

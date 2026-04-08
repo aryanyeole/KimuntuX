@@ -301,7 +301,7 @@ function normalizeContentRecord(item) {
     platforms: Array.isArray(item?.platforms) ? item.platforms : SCHEDULER_DEFAULTS.platforms,
     cost: item?.cost ?? SCHEDULER_DEFAULTS.cost,
     color: item?.color ?? SCHEDULER_DEFAULTS.color,
-    isUsed: Boolean(item?.isUsed),
+    isUsed: Boolean(item?.isUsed ?? item?.is_used),
   };
 }
 

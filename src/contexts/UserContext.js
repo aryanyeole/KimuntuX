@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { clearAccessToken, fetchCurrentUser, getAccessToken, setAccessToken } from '../services/authService';
 
 const UserContext = createContext();
 
@@ -17,39 +16,25 @@ export const UserProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const savedUser = localStorage.getItem('kimuntu_user');
-      const savedToken = getAccessToken();
-
-      if (savedToken) {
-        setToken(savedToken);
-        try {
-          const backendUser = await fetchCurrentUser({ token: savedToken });
-          setUser(backendUser);
-          localStorage.setItem('kimuntu_user', JSON.stringify(backendUser));
-        } catch {
-          clearAccessToken();
-          localStorage.removeItem('kimuntu_user');
-          setToken(null);
-          setUser(null);
-        }
-      } else if (savedUser) {
-        setUser(JSON.parse(savedUser));
-      }
-
-      setIsLoading(false);
-    };
-
-    initializeAuth();
+    // Restore persisted auth state on app load.
+    const savedUser = localStorage.getItem('kimuntu_user');
+    const savedToken = localStorage.getItem('kimuntu_token');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+    if (savedToken) {
+      setToken(savedToken);
+    }
+    setIsLoading(false);
   }, []);
 
-  const login = (userData, accessToken) => {
+  const login = (userData, accessToken = null) => {
     setUser(userData);
     localStorage.setItem('kimuntu_user', JSON.stringify(userData));
-
+    localStorage.setItem('kimuntu_current_user', JSON.stringify(userData));
     if (accessToken) {
-      setAccessToken(accessToken);
       setToken(accessToken);
+      localStorage.setItem('kimuntu_token', accessToken);
     }
   };
 
@@ -57,13 +42,15 @@ export const UserProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('kimuntu_user');
-    clearAccessToken();
+    localStorage.removeItem('kimuntu_current_user');
+    localStorage.removeItem('kimuntu_token');
   };
 
   const updateUser = (updatedData) => {
     const newUser = { ...user, ...updatedData };
     setUser(newUser);
     localStorage.setItem('kimuntu_user', JSON.stringify(newUser));
+    localStorage.setItem('kimuntu_current_user', JSON.stringify(newUser));
   };
 
   const value = {

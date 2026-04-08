@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
-import { signupWithPassword } from '../services/authService';
 
 const SignupContainer = styled.div`
   min-height: 100vh;
@@ -179,6 +178,7 @@ const SuccessMessage = styled.div`
 const SignupPage = () => {
   const { login } = useUser();
   const navigate = useNavigate();
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -216,19 +216,36 @@ const SignupPage = () => {
     }
 
     try {
-      const { token, user } = await signupWithPassword({
-        fullName: formData.name,
-        email: formData.email,
-        password: formData.password,
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          full_name: formData.name,
+          email: formData.email,
+          password: formData.password
+        })
       });
 
-      login(user, token);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to create account');
+      }
+
+      const userData = {
+        id: data.user.id,
+        name: data.user.full_name,
+        email: data.user.email,
+        isActive: data.user.is_active,
+        joinDate: data.user.created_at
+      };
+
+      login(userData, data.access_token);
       setSuccess('Account created successfully! Redirecting...');
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+      setTimeout(() => navigate('/dashboard'), 1200);
     } catch (err) {
-      setError(err.message || 'Unable to create account');
+      setError(err.message || 'Unable to create account. Please try again.');
     } finally {
       setIsLoading(false);
     }

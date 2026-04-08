@@ -1141,7 +1141,7 @@ export default function ContentSchedulerPage() {
         <Layout>
           <MainColumn>
             <Header>
-              <PageTitle>Content Scheduler</PageTitle>
+              <PageTitle>Campaign Scheduler</PageTitle>
               <CalendarControls>
                 <TodayButton onClick={goToToday}>Today</TodayButton>
                 <MonthNavigator>
@@ -1207,7 +1207,7 @@ export default function ContentSchedulerPage() {
 
           <SidebarColumn>
             <Sidebar>
-              <SidebarTitle>Content Library</SidebarTitle>
+              <SidebarTitle>Campaign Library</SidebarTitle>
               <Tabs>
                 <TabGroup>
                   <TabButton

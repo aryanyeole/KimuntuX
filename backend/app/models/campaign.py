@@ -3,11 +3,23 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
 
+import enum
+
+class CampaignStatus(str, enum.Enum):
+    draft = "draft"
+    generating = "generating"
+    compliance_check = "compliance_check"
+    ready = "ready"
+    testing = "testing"
+    optimizing = "optimizing"
+    scaling = "scaling"
+    paused = "paused"
+    archived = "archived"
 
 def _default_budget() -> dict:
     return {
@@ -45,11 +57,12 @@ class Campaign(Base):
         nullable=False,
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    status: Mapped[str] = mapped_column(String(32), default="draft", nullable=False)
+    status: Mapped[CampaignStatus] = mapped_column(String(32), default=CampaignStatus.draft, nullable=False)
     theme_color: Mapped[str | None] = mapped_column(String(20), nullable=True)
     platforms: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     previous_version_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    is_used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     affiliate_product: Mapped[dict] = mapped_column(JSON, nullable=False)
     audience: Mapped[dict | None] = mapped_column(JSON, nullable=True)

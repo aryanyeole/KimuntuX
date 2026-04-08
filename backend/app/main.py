@@ -8,6 +8,7 @@ from app.core.database import engine, ensure_sqlite_campaign_columns
 from app.models.base import Base
 from app.models import Campaign, ContactSubmission, User  # noqa: F401
 from app.routers import auth, campaigns, contacts
+from app.routers import auth, contacts, crm
 
 
 app = FastAPI(
@@ -39,3 +40,4 @@ def health_check() -> dict[str, str]:
 app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(contacts.router, prefix=settings.api_v1_prefix)
 app.include_router(campaigns.router, prefix=settings.api_v1_prefix)
+app.include_router(crm.router, prefix=settings.api_v1_prefix)

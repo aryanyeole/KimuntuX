@@ -256,6 +256,7 @@ class CampaignCreate(CampaignBase):
 class CampaignUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     status: CampaignStatus | None = None
+    is_used: bool | None = None
     theme_color: str | None = Field(default=None, max_length=20)
     platforms: list[str] | None = None
     tags: list[str] | None = None
@@ -313,3 +314,55 @@ class CampaignResponse(CampaignBase):
     user_id: str
     created_at: datetime
     updated_at: datetime
+
+
+class CampaignUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    status: CampaignStatus | None = None
+    is_used: bool | None = None
+    theme_color: str | None = Field(default=None, max_length=20)
+    platforms: list[str] | None = None
+    tags: list[str] | None = None
+    version: int | None = Field(default=None, ge=1)
+    previous_version_id: str | None = Field(default=None, max_length=36)
+
+    affiliate_product: AffiliateProduct | None = None
+    audience: Audience | None = None
+    tracking: Tracking | None = None
+    scheduling: Scheduling | None = None
+    metrics: Metrics | None = None
+    content_pieces: list[ContentPiece] | None = None
+    budget: CampaignBudget | None = None
+    generation_config: GenerationConfig | None = None
+
+    notes: str | None = None
+    archive_reason: str | None = Field(default=None, max_length=255)
+    deleted_at: datetime | None = None
+
+    @field_validator("platforms")
+    @classmethod
+    def validate_platforms(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return value
+        cleaned = [platform.strip() for platform in value if isinstance(platform, str) and platform.strip()]
+        if len(cleaned) != len(value):
+            raise ValueError("Platforms must be non-empty strings")
+        return cleaned
+
+
+class CampaignResponse(CampaignBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: datetime
+    is_used: bool = False
+
+
+class CampaignListResponse(BaseModel):
+    items: list[CampaignResponse]
+    total: int
+    page: int = 1
+    per_page: int = 20
+    pages: int

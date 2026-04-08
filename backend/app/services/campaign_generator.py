@@ -1,15 +1,12 @@
 from __future__ import annotations
+from uuid import uuid4
+from urllib import error, request as urllib_request
+from fastapi import HTTPException, status
+from app.schemas.campaign import CampaignGenerateRequest
 
 import asyncio
 import json
 import os
-from uuid import uuid4
-from urllib import error, request as urllib_request
-
-from fastapi import HTTPException, status
-
-from app.schemas.campaign import CampaignGenerateRequest
-
 
 SYSTEM_PROMPT = (
     "You are a campaign generation engine. You generate marketing campaign contracts as raw JSON only. "

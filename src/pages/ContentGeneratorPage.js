@@ -689,7 +689,7 @@ export default function ContentGeneratorPage() {
   return (
     <PageContainer>
       <Container>
-        <Title>Content Generator</Title>
+        <Title>Campaign Generator</Title>
 
         <Layout>
           <Panel>
