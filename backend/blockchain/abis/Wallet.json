@@ -1,0 +1,434 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      { "name": "_minimumWithdrawalAmount", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "receive",
+    "stateMutability": "payable"
+  },
+  {
+    "type": "fallback",
+    "stateMutability": "payable"
+  },
+  {
+    "type": "event",
+    "name": "WalletCreated",
+    "inputs": [
+      { "name": "owner", "type": "address", "indexed": true },
+      { "name": "timestamp", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "ETHDeposit",
+    "inputs": [
+      { "name": "wallet", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "timestamp", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "TokenDeposit",
+    "inputs": [
+      { "name": "wallet", "type": "address", "indexed": true },
+      { "name": "token", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "symbol", "type": "string", "indexed": false },
+      { "name": "timestamp", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "ETHWithdrawal",
+    "inputs": [
+      { "name": "wallet", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "timestamp", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "TokenWithdrawal",
+    "inputs": [
+      { "name": "wallet", "type": "address", "indexed": true },
+      { "name": "token", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "symbol", "type": "string", "indexed": false },
+      { "name": "timestamp", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Transfer",
+    "inputs": [
+      { "name": "from", "type": "address", "indexed": true },
+      { "name": "to", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "token", "type": "address", "indexed": false },
+      { "name": "timestamp", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "TokenAdded",
+    "inputs": [
+      { "name": "token", "type": "address", "indexed": true },
+      { "name": "symbol", "type": "string", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "TokenRemoved",
+    "inputs": [
+      { "name": "token", "type": "address", "indexed": true },
+      { "name": "symbol", "type": "string", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "PlatformAuthorized",
+    "inputs": [
+      { "name": "platform", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "PlatformRevoked",
+    "inputs": [
+      { "name": "platform", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MinimumWithdrawalUpdated",
+    "inputs": [
+      { "name": "newMinimum", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "inputs": [
+      { "name": "previousOwner", "type": "address", "indexed": true },
+      { "name": "newOwner", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Paused",
+    "inputs": [
+      { "name": "account", "type": "address", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Unpaused",
+    "inputs": [
+      { "name": "account", "type": "address", "indexed": false }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "paused",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalWallets",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "minimumWithdrawalAmount",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "walletExists",
+    "inputs": [{ "name": "owner", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "authorizedPlatforms",
+    "inputs": [{ "name": "platform", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "supportedTokens",
+    "inputs": [{ "name": "token", "type": "address" }],
+    "outputs": [
+      { "name": "tokenAddress", "type": "address" },
+      { "name": "symbol", "type": "string" },
+      { "name": "isActive", "type": "bool" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "createWallet",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "createWalletFor",
+    "inputs": [{ "name": "_user", "type": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "depositETH",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "creditETH",
+    "inputs": [
+      { "name": "_user", "type": "address" },
+      { "name": "_amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "depositToken",
+    "inputs": [
+      { "name": "_token", "type": "address" },
+      { "name": "_amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "creditToken",
+    "inputs": [
+      { "name": "_user", "type": "address" },
+      { "name": "_token", "type": "address" },
+      { "name": "_amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawETH",
+    "inputs": [{ "name": "_amount", "type": "uint256" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawToken",
+    "inputs": [
+      { "name": "_token", "type": "address" },
+      { "name": "_amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawAllETH",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferETH",
+    "inputs": [
+      { "name": "_recipient", "type": "address" },
+      { "name": "_amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferToken",
+    "inputs": [
+      { "name": "_recipient", "type": "address" },
+      { "name": "_token", "type": "address" },
+      { "name": "_amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getETHBalance",
+    "inputs": [{ "name": "_owner", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTokenBalance",
+    "inputs": [
+      { "name": "_owner", "type": "address" },
+      { "name": "_token", "type": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllBalances",
+    "inputs": [{ "name": "_owner", "type": "address" }],
+    "outputs": [
+      { "name": "ethBalance", "type": "uint256" },
+      { "name": "tokenBalances", "type": "uint256[]" },
+      { "name": "tokenAddresses", "type": "address[]" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getWalletDetails",
+    "inputs": [{ "name": "_owner", "type": "address" }],
+    "outputs": [
+      { "name": "owner", "type": "address" },
+      { "name": "ethBalance", "type": "uint256" },
+      { "name": "createdAt", "type": "uint256" },
+      { "name": "totalDeposits", "type": "uint256" },
+      { "name": "totalWithdrawals", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "hasWallet",
+    "inputs": [{ "name": "_owner", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getTotalWallets",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllWallets",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address[]" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getSupportedTokens",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address[]" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "addSupportedToken",
+    "inputs": [
+      { "name": "_token", "type": "address" },
+      { "name": "_symbol", "type": "string" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "removeSupportedToken",
+    "inputs": [{ "name": "_token", "type": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "authorizePlatform",
+    "inputs": [{ "name": "_platform", "type": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "revokePlatform",
+    "inputs": [{ "name": "_platform", "type": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateMinimumWithdrawal",
+    "inputs": [{ "name": "_newMinimum", "type": "uint256" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "pause",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unpause",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "emergencyWithdraw",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "emergencyWithdrawToken",
+    "inputs": [{ "name": "_token", "type": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "renounceOwnership",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [{ "name": "newOwner", "type": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]

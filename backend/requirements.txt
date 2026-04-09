@@ -1,10 +1,39 @@
+# ─── Core Web Framework ───────────────────────────────────────────────────────
 fastapi
 uvicorn[standard]
+python-multipart
+
+# ─── Data Validation ──────────────────────────────────────────────────────────
+pydantic-settings
+
+# ─── Database ─────────────────────────────────────────────────────────────────
 sqlalchemy
 alembic
 psycopg[binary]
-pydantic-settings
+
+# ─── Auth (CRM) ───────────────────────────────────────────────────────────────
 python-jose[cryptography]
 passlib
 email-validator
-python-multipart
+
+# ─── Blockchain ───────────────────────────────────────────────────────────────
+web3==6.15.1
+
+# ─── Caching ──────────────────────────────────────────────────────────────────
+redis
+hiredis
+
+# ─── HTTP Client ──────────────────────────────────────────────────────────────
+httpx
+
+# ─── Environment ──────────────────────────────────────────────────────────────
+python-dotenv
+
+# ─── Rate Limiting ────────────────────────────────────────────────────────────
+slowapi
+
+# ─── Testing ──────────────────────────────────────────────────────────────────
+pytest
+pytest-asyncio
+pytest-cov
+pytest-mock

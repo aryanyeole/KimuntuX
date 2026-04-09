@@ -2,79 +2,153 @@ import React from 'react';
 import styled from 'styled-components';
 import payouts from '../data/payouts.json';
 
-const Card = styled.div`
-  border: 1px solid #E5E7EB;
-  background: #FFFFFF;
-  border-radius: 0.5rem;
-  padding: 1rem;
+// ── Palette (matches CRMLayout / CRMDashboard) ────────────────────────────────
+const C = {
+  surface: '#0c1527',
+  card: '#121e34',
+  border: '#1a2d4d',
+  text: '#e4eaf4',
+  muted: '#6b7fa3',
+  accent: '#2d7aff',
+  success: '#00c48c',
+  warning: '#ffb020',
+};
+
+const Panel = styled.div`
+  background: ${C.card};
+  border: 1px solid ${C.border};
+  border-radius: 12px;
+  padding: 16px;
 `;
 
-const Small = styled.div`
+const SummaryRow = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+`;
+
+const SummaryItem = styled.div``;
+
+const SummaryLabel = styled.div`
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: ${C.muted};
+  margin-bottom: 2px;
+`;
+
+const SummaryValue = styled.div`
+  font-size: 16px;
+  font-weight: 800;
+  color: ${C.text};
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+const Th = styled.th`
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: ${C.muted};
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid ${C.border};
+`;
+
+const Td = styled.td`
+  font-size: 12px;
+  color: ${C.text};
+  padding: 8px;
+  border-bottom: 1px solid ${C.border};
+
+  &:last-child { border-bottom: none; }
 `;
 
 const Badge = styled.span`
-  padding: 4px 8px;
+  display: inline-block;
+  padding: 2px 8px;
   border-radius: 999px;
-  background: ${p => p.status === 'Pending' ? '#FEF3C7' : '#ECFDF5'};
-  color: ${p => p.status === 'Pending' ? '#B45309' : '#059669'};
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: ${({ $status }) => $status === 'Pending' ? C.warning : C.success};
+`;
+
+const ComplianceTags = styled.div`
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+`;
+
+const Tag = styled.div`
+  background: ${C.surface};
+  border: 1px solid ${C.border};
+  color: ${C.accent};
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
 `;
 
 export default function PayoutsPanel() {
   return (
-    <Card aria-label="Payouts Panel">
-      <h3 style={{ marginTop: 0 }}>Payouts</h3>
-      <Small>
-        <div>
-          <div style={{ fontSize: 12, color: '#6B7280' }}>Pending total</div>
-          <div style={{ fontWeight: 700 }}>$2,480.00</div>
-        </div>
-        <div>
-          <div style={{ fontSize: 12, color: '#6B7280' }}>Paid this month</div>
-          <div style={{ fontWeight: 700 }}>3</div>
-        </div>
-        <div>
-          <div style={{ fontSize: 12, color: '#6B7280' }}>Avg payout time</div>
-          <div style={{ fontWeight: 700 }}>3 days</div>
-        </div>
-        <div>
-          <div style={{ fontSize: 12, color: '#6B7280' }}>Disputes</div>
-          <div style={{ fontWeight: 700 }}>1</div>
-        </div>
-      </Small>
+    <Panel aria-label="Payouts Panel">
+      <SummaryRow>
+        <SummaryItem>
+          <SummaryLabel>Pending total</SummaryLabel>
+          <SummaryValue>$2,480.00</SummaryValue>
+        </SummaryItem>
+        <SummaryItem>
+          <SummaryLabel>Paid this month</SummaryLabel>
+          <SummaryValue>3</SummaryValue>
+        </SummaryItem>
+        <SummaryItem>
+          <SummaryLabel>Avg payout time</SummaryLabel>
+          <SummaryValue>3 days</SummaryValue>
+        </SummaryItem>
+        <SummaryItem>
+          <SummaryLabel>Disputes</SummaryLabel>
+          <SummaryValue>1</SummaryValue>
+        </SummaryItem>
+      </SummaryRow>
 
-      <div style={{ marginTop: 12, overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div style={{ overflowX: 'auto' }}>
+        <Table>
           <thead>
-            <tr style={{ textAlign: 'left', color: '#6B7280' }}>
-              <th>Affiliate</th>
-              <th>Period</th>
-              <th>Amount</th>
-              <th>Status</th>
+            <tr>
+              <Th>Affiliate</Th>
+              <Th>Period</Th>
+              <Th>Amount</Th>
+              <Th>Status</Th>
             </tr>
           </thead>
           <tbody>
             {payouts.map(p => (
-              <tr key={p.id} style={{ borderTop: '1px solid #F3F4F6' }}>
-                <td style={{ padding: 8 }}>{p.affiliate}</td>
-                <td style={{ padding: 8 }}>{p.period}</td>
-                <td style={{ padding: 8 }}>${p.amount.toFixed(2)}</td>
-                <td style={{ padding: 8 }}><Badge status={p.status}>{p.status}</Badge></td>
+              <tr key={p.id}>
+                <Td>{p.affiliate}</Td>
+                <Td>{p.period}</Td>
+                <Td>${p.amount.toFixed(2)}</Td>
+                <Td><Badge $status={p.status}>{p.status}</Badge></Td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       </div>
 
-      <div style={{ marginTop: 12 }}>
-        <div style={{ fontSize: 12, color: '#6B7280' }}>Compliance</div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-          <div style={{ background: '#EEF2FF', padding: '4px 8px', borderRadius: 6 }}>KYC Verified</div>
-          <div style={{ background: '#EEF2FF', padding: '4px 8px', borderRadius: 6 }}>AML Clear</div>
-          <div style={{ background: '#EEF2FF', padding: '4px 8px', borderRadius: 6 }}>Docs on file</div>
-        </div>
-      </div>
-    </Card>
+      <ComplianceTags>
+        <Tag>KYC Verified</Tag>
+        <Tag>AML Clear</Tag>
+        <Tag>Docs on file</Tag>
+      </ComplianceTags>
+    </Panel>
   );
 }

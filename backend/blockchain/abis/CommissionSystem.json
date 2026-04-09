@@ -1,0 +1,338 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "receive",
+    "stateMutability": "payable"
+  },
+  {
+    "type": "event",
+    "name": "AffiliateRegistered",
+    "inputs": [
+      { "name": "affiliate", "type": "address", "indexed": true },
+      { "name": "timestamp", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "CommissionRecorded",
+    "inputs": [
+      { "name": "affiliate", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "transactionId", "type": "string", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "CommissionApproved",
+    "inputs": [
+      { "name": "affiliate", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "CommissionPaid",
+    "inputs": [
+      { "name": "affiliate", "type": "address", "indexed": true },
+      { "name": "amount", "type": "uint256", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "CommissionDisputed",
+    "inputs": [
+      { "name": "affiliate", "type": "address", "indexed": true },
+      { "name": "transactionId", "type": "string", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "MerchantAuthorized",
+    "inputs": [
+      { "name": "merchant", "type": "address", "indexed": true },
+      { "name": "status", "type": "bool", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "OwnershipTransferred",
+    "inputs": [
+      { "name": "previousOwner", "type": "address", "indexed": true },
+      { "name": "newOwner", "type": "address", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Paused",
+    "inputs": [
+      { "name": "account", "type": "address", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "Unpaused",
+    "inputs": [
+      { "name": "account", "type": "address", "indexed": false }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "paused",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "balances",
+    "inputs": [{ "name": "affiliate", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalCommissionsPaid",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "platformFeeRate",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "minimumPayout",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "processedTransactions",
+    "inputs": [{ "name": "transactionId", "type": "string" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "authorizedMerchants",
+    "inputs": [{ "name": "merchant", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "registeredAffiliates",
+    "inputs": [{ "name": "affiliate", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "registerAffiliate",
+    "inputs": [{ "name": "_affiliate", "type": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerSelf",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "recordCommission",
+    "inputs": [
+      { "name": "_affiliate", "type": "address" },
+      { "name": "_saleAmount", "type": "uint256" },
+      { "name": "_commissionRate", "type": "uint256" },
+      { "name": "_transactionId", "type": "string" }
+    ],
+    "outputs": [],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "approveCommission",
+    "inputs": [
+      { "name": "_affiliate", "type": "address" },
+      { "name": "_commissionIndex", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "autoApprove",
+    "inputs": [
+      { "name": "_affiliate", "type": "address" },
+      { "name": "_transactionId", "type": "string" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdraw",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawAmount",
+    "inputs": [{ "name": "_amount", "type": "uint256" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "authorizeMerchant",
+    "inputs": [
+      { "name": "_merchant", "type": "address" },
+      { "name": "_status", "type": "bool" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setPlatformFeeRate",
+    "inputs": [{ "name": "_newRate", "type": "uint256" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setMinimumPayout",
+    "inputs": [{ "name": "_newMinimum", "type": "uint256" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "pause",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "unpause",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdrawPlatformFees",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "renounceOwnership",
+    "inputs": [],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "inputs": [{ "name": "newOwner", "type": "address" }],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "getBalance",
+    "inputs": [{ "name": "_affiliate", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCommissionCount",
+    "inputs": [{ "name": "_affiliate", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getCommission",
+    "inputs": [
+      { "name": "_affiliate", "type": "address" },
+      { "name": "_index", "type": "uint256" }
+    ],
+    "outputs": [
+      { "name": "amount", "type": "uint256" },
+      { "name": "timestamp", "type": "uint256" },
+      { "name": "transactionId", "type": "string" },
+      { "name": "status", "type": "uint8" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAllCommissions",
+    "inputs": [{ "name": "_affiliate", "type": "address" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple[]",
+        "components": [
+          { "name": "affiliate", "type": "address" },
+          { "name": "amount", "type": "uint256" },
+          { "name": "timestamp", "type": "uint256" },
+          { "name": "transactionId", "type": "string" },
+          { "name": "status", "type": "uint8" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getContractStats",
+    "inputs": [],
+    "outputs": [
+      { "name": "contractBalance", "type": "uint256" },
+      { "name": "totalPaid", "type": "uint256" },
+      { "name": "feeRate", "type": "uint256" },
+      { "name": "minPayout", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isAffiliate",
+    "inputs": [{ "name": "_address", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "isMerchant",
+    "inputs": [{ "name": "_address", "type": "address" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  }
+]
