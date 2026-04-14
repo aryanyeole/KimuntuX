@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import PayoutsPanel from '../components/PayoutsPanel';
+import WalletPanel from '../components/WalletPanel';
 
 // ── Palette (matches CRMLayout / CRMDashboard) ────────────────────────────────
 const C = {
@@ -298,6 +299,11 @@ const FintechPage = () => {
               <ActionDesc>Convert between cryptocurrencies and fiat currencies with competitive rates</ActionDesc>
               <ActionBtn>Start Exchange</ActionBtn>
             </ActionCard>
+
+            <div style={{ marginTop: 16 }}>
+              <SectionTitle>🔗 On-Chain Wallet</SectionTitle>
+              <WalletPanel />
+            </div>
 
             <div style={{ marginTop: 16 }}>
               <SectionTitle>💸 Affiliate Payouts</SectionTitle>

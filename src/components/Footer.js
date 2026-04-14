@@ -146,6 +146,8 @@ const Footer = () => {
           <h3>Solutions</h3>
           <ul>
             <li><Link to="/crm">CRM</Link></li>
+            <li><Link to="/blockchain">Blockchain</Link></li>
+            <li><Link to="/fintech">Fintech</Link></li>
             <li><Link to="/b2b-brokerage">B2B Brokerage</Link></li>
             <li><Link to="/b2c-marketplace">B2C Marketplace</Link></li>
             <li><Link to="/ai-dashboard">AI Dashboard</Link></li>

@@ -59,6 +59,55 @@ const MainNav = styled.nav`
   }
 `;
 
+const DropdownWrapper = styled.div`
+  position: relative;
+  &:hover > div { display: block; }
+`;
+
+const DropdownMenu = styled.div`
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 200px;
+  z-index: 2000;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+`;
+
+const DropdownItem = styled(Link)`
+  display: block;
+  padding: 8px 16px;
+  color: white;
+  text-decoration: none;
+  font-size: 1.2rem;
+  opacity: 0.85;
+  transition: all 0.15s ease;
+  &:hover {
+    opacity: 1;
+    color: ${props => props.theme?.colors?.primary || '#00C896'};
+    background: rgba(255,255,255,0.05);
+  }
+`;
+
+const DropdownTrigger = styled.span`
+  color: white;
+  font-weight: 400;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 1.375rem;
+  white-space: nowrap;
+  opacity: 0.9;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  &:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+`;
+
 const NavLink = styled(Link)`
   color: white;
   text-decoration: none;
@@ -192,9 +241,19 @@ const Header = () => {
     { path: '/solutions', label: 'Solutions' },
     { path: '/benefits', label: 'Benefits' },
     { path: '/crm', label: 'CRM' },
-    { path: '/products', label: 'Products' },
     { path: '/faq', label: 'FAQ' },
-    { path: '/blog', label: 'Blog' }
+    { path: '/blog', label: 'Blog' },
+  ];
+
+  const productNavItems = [
+    { path: '/blockchain', label: '🔗 Blockchain' },
+    { path: '/fintech', label: '💳 Fintech' },
+    { path: '/ai-dashboard', label: '🤖 AI Dashboard' },
+    { path: '/b2b-brokerage', label: '🤝 B2B Brokerage' },
+    { path: '/b2c-marketplace', label: '🛒 B2C Marketplace' },
+    { path: '/affiliate-hub', label: '🔗 Affiliate Hub' },
+    { path: '/ecommerce', label: '🛍️ eCommerce' },
+    { path: '/monetization', label: '💰 Monetization' },
   ];
 
   const handleLogout = () => {
@@ -228,6 +287,16 @@ const Header = () => {
                 {item.label}
               </NavLink>
             ))}
+            <DropdownWrapper>
+              <DropdownTrigger>Products ▾</DropdownTrigger>
+              <DropdownMenu>
+                {productNavItems.map(item => (
+                  <DropdownItem key={item.path} to={item.path}>
+                    {item.label}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </DropdownWrapper>
           </MainNav>
         </LeftSection>
         <RightSection>

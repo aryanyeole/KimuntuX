@@ -54,9 +54,8 @@ class BlockchainSettings(BaseSettings):
 
     # ── Network ──────────────────────────────────────────────────────────────
     expected_chain_id: int = Field(
-        11155111,
-        description="Sepolia chain ID. The client raises an error if the "
-                    "connected network does not match this value.",
+        31337,
+        description="Chain ID. 31337 = Hardhat local, 11155111 = Sepolia.",
     )
 
     # ── Platform Wallet ──────────────────────────────────────────────────────
