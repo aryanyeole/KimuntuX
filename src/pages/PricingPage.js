@@ -451,7 +451,7 @@ export default function PricingPage() {
           <Addons>
             <Addon>AI Copywriter Pro (ad scripts, long-form content)</Addon>
             <Addon>Auto Funnel Builder (drag-and-drop AI funnels)</Addon>
-            <Addon>KimuntuX Academy (training & certification portal)</Addon>
+            <Addon>KimuX Academy (training & certification portal)</Addon>
             <Addon>Affiliate Program Management Suite</Addon>
           </Addons>
         </Footer>

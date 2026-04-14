@@ -126,7 +126,7 @@ export default function BlogPage() {
           </HeroImageWrapper>
           <HeroContent>
             <HeroTitle>Blog</HeroTitle>
-            <HeroSubtitle>Stay updated with the latest insights, news, and updates from KimuntuX</HeroSubtitle>
+            <HeroSubtitle>Stay updated with the latest insights, news, and updates from KimuX</HeroSubtitle>
           </HeroContent>
         </HeroSection>
 

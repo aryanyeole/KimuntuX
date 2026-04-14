@@ -10,9 +10,31 @@ export const useUser = () => {
   return context;
 };
 
+function readStoredUser() {
+  try {
+    const raw = localStorage.getItem('kimuntu_user');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return {
+      ...parsed,
+      isAdmin: !!(parsed.isAdmin ?? parsed.is_admin)
+    };
+  } catch {
+    return null;
+  }
+}
+
+function readStoredToken() {
+  try {
+    return localStorage.getItem('kimuntu_token');
+  } catch {
+    return null;
+  }
+}
+
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(readStoredUser);
+  const [token, setToken] = useState(readStoredToken);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +66,16 @@ export const UserProvider = ({ children }) => {
         const r = await fetch(`${API_BASE}/auth/me`, {
           headers: { Authorization: `Bearer ${requestToken}` }
         });
+        if (r.status === 401) {
+          if (localStorage.getItem('kimuntu_token') === requestToken) {
+            localStorage.removeItem('kimuntu_token');
+            localStorage.removeItem('kimuntu_user');
+            localStorage.removeItem('kimuntu_current_user');
+            setToken(null);
+            setUser(null);
+          }
+          return;
+        }
         if (r.ok) {
           const profile = await r.json();
           // Do not overwrite a newer session (e.g. user just logged in as admin while this was in flight).

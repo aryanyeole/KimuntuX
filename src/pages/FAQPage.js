@@ -362,7 +362,7 @@ export default function FAQPage() {
         <>
           <p>KimuX was initiated by Kimuntu Power Inc., a global innovation company focused on intelligent digital ecosystems.</p>
           <p>The project was developed through the Arizona State University Capstone Program with the contribution of five talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, Julian Korn, and Sarjan Patel.</p>
-          <p>Kimuntu Power Inc. continues to lead the project’s growth as the strategic owner, investor, and technology accelerator, expanding KimuntuX as a global AI-powered SaaS and digital infrastructure platform.</p>
+          <p>Kimuntu Power Inc. continues to lead the project’s growth as the strategic owner, investor, and technology accelerator, expanding KimuX as a global AI-powered SaaS and digital infrastructure platform.</p>
         </>
       )
     },

@@ -288,7 +288,7 @@ const SignupPage = () => {
           <img src={transparentLogo} alt="KimuX" style={{ background: 'transparent' }} />
         </Logo>
         <Title>Create Account</Title>
-        <Subtitle>Join the KimuntuX intelligent brokerage universe</Subtitle>
+        <Subtitle>Join the KimuX intelligent brokerage universe</Subtitle>
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && <SuccessMessage>{success}</SuccessMessage>}

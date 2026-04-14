@@ -32,6 +32,7 @@ import CommerceIntelligencePage from './pages/CommerceIntelligencePage';
 import DeveloperPage from './pages/DeveloperPage';
 import MonetizationPage from './pages/MonetizationPage';
 import USBHPage from './pages/USBHPage';
+import ProductsPage from './pages/ProductsPage';
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
               <Route path="/developer" element={<DeveloperPage />} />
               <Route path="/monetization" element={<MonetizationPage />} />
               <Route path="/usbh" element={<USBHPage />} />
+              <Route path="/products" element={<ProductsPage />} />
             </Routes>
             <Footer />
           </div>

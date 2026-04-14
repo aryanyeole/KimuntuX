@@ -23,19 +23,23 @@ const Inner = styled.div`
 `;
 
 const PageTitle = styled.h1`
-  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-size: clamp(2.125rem, 5vw, 3rem);
   font-weight: 700;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.65rem;
   color: ${TEXT};
   font-family: ${(props) => props.theme?.fonts?.title || 'Poppins, sans-serif'};
 `;
 
 const PageSubtitle = styled.p`
-  font-size: 1.125rem;
+  font-size: 1.3rem;
   color: ${TEXT_MUTED};
-  margin: 0 0 2rem;
-  line-height: 1.5;
-  max-width: 42rem;
+  margin: 0 0 2.25rem;
+  line-height: 1.55;
+  max-width: 48rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.15rem;
+  }
 `;
 
 const TabRow = styled.div`
@@ -46,15 +50,20 @@ const TabRow = styled.div`
 `;
 
 const TabButton = styled.button`
-  padding: 0.65rem 1.25rem;
-  border-radius: 6px;
+  padding: 0.8rem 1.45rem;
+  border-radius: 8px;
   border: 1px solid ${(p) => (p.$active ? TEAL : BORDER)};
   background: ${(p) => (p.$active ? 'rgba(0, 200, 150, 0.15)' : 'transparent')};
   color: ${(p) => (p.$active ? TEAL : TEXT_MUTED)};
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+
+  @media (max-width: 768px) {
+    font-size: 1.05rem;
+    padding: 0.7rem 1.15rem;
+  }
 
   &:hover {
     border-color: ${TEAL};
@@ -66,15 +75,23 @@ const Panel = styled.section`
   background: ${CARD_BG};
   border: 1px solid ${BORDER};
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.75rem 2rem;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+
+  @media (max-width: 768px) {
+    padding: 1.35rem 1.15rem;
+  }
 `;
 
 const PanelTitle = styled.h2`
-  font-size: 1.25rem;
+  font-size: 1.6rem;
   font-weight: 600;
-  margin: 0 0 1rem;
+  margin: 0 0 1.15rem;
   color: ${TEXT};
+
+  @media (max-width: 768px) {
+    font-size: 1.35rem;
+  }
 `;
 
 const TableScroll = styled.div`
@@ -85,44 +102,85 @@ const TableScroll = styled.div`
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 1.0625rem;
   min-width: 720px;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 `;
 
 const Th = styled.th`
   text-align: left;
-  padding: 0.75rem 0.5rem;
+  padding: 0.9rem 0.65rem;
   color: ${TEAL};
   font-weight: 600;
+  font-size: 1.05rem;
   border-bottom: 1px solid ${BORDER};
   white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    padding: 0.75rem 0.5rem;
+  }
 `;
 
 const Td = styled.td`
-  padding: 0.65rem 0.5rem;
+  padding: 0.8rem 0.65rem;
   border-bottom: 1px solid ${BORDER};
-  color: ${TEXT_MUTED};
+  color: rgba(255, 255, 255, 0.88);
   vertical-align: top;
   word-break: break-word;
+  font-size: 1.0625rem;
+  line-height: 1.45;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    padding: 0.7rem 0.5rem;
+  }
 `;
 
 const ErrorBox = styled.div`
   background: rgba(204, 51, 51, 0.15);
   color: #ff8a8a;
-  padding: 1rem;
+  padding: 1.1rem 1.15rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 100, 100, 0.35);
   margin-bottom: 1rem;
+  font-size: 1.0625rem;
+  line-height: 1.5;
 `;
 
 const EmptyNote = styled.p`
   color: ${TEXT_MUTED};
   margin: 0;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: 1.125rem;
+  line-height: 1.55;
+
+  @media (max-width: 768px) {
+    font-size: 1.05rem;
+  }
+
+  strong {
+    font-size: inherit;
+  }
 `;
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
+
+function formatApiError(status, data) {
+  let detail = data?.detail;
+  if (Array.isArray(detail)) {
+    detail = detail.map((d) => d.msg || d).join(' ');
+  }
+  if (typeof detail !== 'string') {
+    detail = detail ? String(detail) : 'Request failed';
+  }
+  if (status === 401 && detail.includes('validate credentials')) {
+    return `${detail}. Your session may have expired or the server secret changed — use Logout, then sign in again. This is not a database connection error.`;
+  }
+  return detail;
+}
 
 const TABS = [
   { id: 'users', label: 'User profiles' },
@@ -165,22 +223,22 @@ const AdminPage = () => {
     try {
       if (activeTab === 'users') {
         const r = await fetch(`${API_BASE_URL}/admin/users`, { headers: authHeaders() });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.detail || 'Failed to load users');
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(formatApiError(r.status, data) || 'Failed to load users');
         setUsers(Array.isArray(data) ? data : []);
       } else if (activeTab === 'contacts') {
         const r = await fetch(`${API_BASE_URL}/admin/contact-submissions`, {
           headers: authHeaders()
         });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.detail || 'Failed to load contact submissions');
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(formatApiError(r.status, data) || 'Failed to load contact submissions');
         setContacts(Array.isArray(data) ? data : []);
       } else {
         const r = await fetch(`${API_BASE_URL}/admin/support-messages`, {
           headers: authHeaders()
         });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.detail || 'Failed to load support messages');
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(formatApiError(r.status, data) || 'Failed to load support messages');
         setSupport(Array.isArray(data) ? data : []);
       }
     } catch (e) {
@@ -237,7 +295,7 @@ const AdminPage = () => {
               {loadError && <ErrorBox>{loadError}</ErrorBox>}
               {loading ? (
                 <EmptyNote>Loading…</EmptyNote>
-              ) : users.length === 0 ? (
+              ) : loadError ? null : users.length === 0 ? (
                 <EmptyNote>No users yet.</EmptyNote>
               ) : (
                 <TableScroll>
@@ -274,7 +332,7 @@ const AdminPage = () => {
               {loadError && <ErrorBox>{loadError}</ErrorBox>}
               {loading ? (
                 <EmptyNote>Loading…</EmptyNote>
-              ) : contacts.length === 0 ? (
+              ) : loadError ? null : contacts.length === 0 ? (
                 <EmptyNote>No contact submissions yet.</EmptyNote>
               ) : (
                 <TableScroll>
@@ -320,7 +378,7 @@ const AdminPage = () => {
               {loadError && <ErrorBox>{loadError}</ErrorBox>}
               {loading ? (
                 <EmptyNote>Loading…</EmptyNote>
-              ) : support.length === 0 ? (
+              ) : loadError ? null : support.length === 0 ? (
                 <EmptyNote>No support messages yet.</EmptyNote>
               ) : (
                 <TableScroll>

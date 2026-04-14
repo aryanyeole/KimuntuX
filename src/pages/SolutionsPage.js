@@ -448,7 +448,7 @@ const SolutionsPage = () => {
     {
       title: 'Financial Inclusion',
       problem: 'Millions of small entrepreneurs lack access to digital and financial infrastructure.',
-      solution: 'KimuntuX bridges this gap through inclusive, low-cost, and localized digital tools.',
+      solution: 'KimuX bridges this gap through inclusive, low-cost, and localized digital tools.',
       features: [
         'Affordable digital stores for SMEs, startups, and individual sellers.',
         'Integration with regional fintechs (M-Pesa, Paystack, Flutterwave).',
@@ -478,7 +478,7 @@ const SolutionsPage = () => {
           <HeroContent>
             <HeroTitle>Key Solutions for the Digital Economy</HeroTitle>
             <HeroSubtitle>
-              Discover how KimuntuX solves real-world business challenges with AI-driven solutions that simplify, secure, and scale your operations.
+              Discover how KimuX solves real-world business challenges with AI-driven solutions that simplify, secure, and scale your operations.
             </HeroSubtitle>
           </HeroContent>
         </HeroSection>

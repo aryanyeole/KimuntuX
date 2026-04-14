@@ -174,7 +174,7 @@ const Footer = () => {
       </FooterContent>
 
       <FooterBottom>
-        <p>&copy; 2026 KimuntuX, powered by Kimuntu Power Inc. All rights reserved. Built with AI-powered digital brokerage technology.</p>
+        <p>&copy; 2026 KimuX, powered by Kimuntu Power Inc. All rights reserved. Built with AI-powered digital brokerage technology.</p>
       </FooterBottom>
     </FooterContainer>
   );
