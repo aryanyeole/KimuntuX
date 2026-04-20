@@ -3,19 +3,10 @@ import styled, { keyframes, css } from 'styled-components';
 import useLeads from '../../hooks/useLeads';
 import useLead from '../../hooks/useLead';
 import api from '../../services/api';
-
-// ── Palette ───────────────────────────────────────────────────────────────────
-const C = {
-  bg: '#060d1b', surface: '#0c1527', card: '#121e34', border: '#1a2d4d',
-  text: '#e4eaf4', muted: '#6b7fa3', accent: '#2d7aff', accentHover: '#4d93ff',
-  success: '#00c48c', warning: '#ffb020', danger: '#ff4757', purple: '#8b5cf6',
-};
+import { crm as C } from '../../styles/crmTheme';
+import PlatformLogo from '../../components/crm/PlatformLogo';
 
 // ── Shared data maps ──────────────────────────────────────────────────────────
-const SOURCE_EMOJI = {
-  facebook_ads: '📘', google_ads: '🔍', tiktok_ads: '🎵', instagram: '📸',
-  landing_page: '🌐', affiliate_link: '🔗', website_widget: '💬', api: '⚡',
-};
 const SOURCE_LABEL = {
   facebook_ads: 'Facebook Ads', google_ads: 'Google Ads', tiktok_ads: 'TikTok Ads',
   instagram: 'Instagram', landing_page: 'Landing Page', affiliate_link: 'Affiliate Link',
@@ -28,9 +19,9 @@ const STAGE_COLOR = {
 };
 const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost'];
 const ACTIVITY_ICON = {
-  email_sent: '📧', email_opened: '👁️', email_clicked: '🔗', call: '📞',
-  meeting: '📅', form_submit: '📝', page_visit: '🌐', ad_click: '🖱️',
-  chatbot: '💬', note_added: '📌', stage_changed: '🔄', score_updated: '🎯',
+  email_sent: '→', email_opened: '◎', email_clicked: '↗', call: '◌',
+  meeting: '◈', form_submit: '◻', page_visit: '◦', ad_click: '✦',
+  chatbot: '◉', note_added: '●', stage_changed: '⇄', score_updated: '★',
 };
 const CLASS_COLOR = { hot: C.danger, warm: C.warning, cold: C.muted };
 
@@ -404,8 +395,9 @@ function LeadDetailDrawer({ leadId, onClose, onStageUpdated }) {
               </DetailRow>
               <DetailRow>
                 <DetailLabel>Source</DetailLabel>
-                <DetailValue>
-                  {SOURCE_EMOJI[lead.source] || '📌'} {SOURCE_LABEL[lead.source] || lead.source}
+                <DetailValue style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <PlatformLogo name={lead.source} size={16} />
+                  {SOURCE_LABEL[lead.source] || lead.source}
                 </DetailValue>
               </DetailRow>
               <DetailRow>
@@ -442,7 +434,7 @@ function LeadDetailDrawer({ leadId, onClose, onStageUpdated }) {
               {activities.map(a => (
                 <ActivityItem key={a.id}>
                   <ActivityIconBox>
-                    {ACTIVITY_ICON[a.activity_type] || '📋'}
+                    {ACTIVITY_ICON[a.activity_type] || '·'}
                   </ActivityIconBox>
                   <ActivityBody>
                     <ActivityDesc>{a.description}</ActivityDesc>
@@ -490,7 +482,7 @@ function LeadDetailDrawer({ leadId, onClose, onStageUpdated }) {
                   ))}
                 </ToneRow>
                 <GenBtn onClick={handleGenerate} disabled={generating}>
-                  {generating ? 'Generating…' : '✨ Generate AI Outreach'}
+                  {generating ? 'Generating…' : 'Generate AI Outreach'}
                 </GenBtn>
 
                 {outreach && (
@@ -576,7 +568,7 @@ export default function CRMLeads() {
       {/* Filter bar */}
       <FilterBar>
         <SearchWrap>
-          <span style={{ color: C.muted, fontSize: 13 }}>🔍</span>
+          <span style={{ color: C.muted, fontSize: 13 }}>⌕</span>
           <SearchInput
             placeholder="Search name, email, company…"
             value={search}
@@ -587,15 +579,15 @@ export default function CRMLeads() {
         <Select value={source} onChange={e => { setSource(e.target.value); setCurrentPage(1); }}>
           <option value="">All Sources</option>
           {SOURCES.map(s => (
-            <option key={s} value={s}>{SOURCE_EMOJI[s]} {SOURCE_LABEL[s]}</option>
+            <option key={s} value={s}>{SOURCE_LABEL[s]}</option>
           ))}
         </Select>
 
         <Select value={classification} onChange={e => { setClassification(e.target.value); setCurrentPage(1); }}>
           <option value="">All Classifications</option>
-          <option value="hot">🔥 Hot</option>
-          <option value="warm">🟡 Warm</option>
-          <option value="cold">🔵 Cold</option>
+          <option value="hot">Hot</option>
+          <option value="warm">Warm</option>
+          <option value="cold">Cold</option>
         </Select>
 
         <CountLabel>{total.toLocaleString()} lead{total !== 1 ? 's' : ''}</CountLabel>
@@ -649,8 +641,10 @@ export default function CRMLeads() {
                 </Td>
                 <Td style={{ color: C.muted }}>{lead.company || '—'}</Td>
                 <Td>
-                  {SOURCE_EMOJI[lead.source] || '📌'}{' '}
-                  <span style={{ color: C.muted }}>{SOURCE_LABEL[lead.source] || lead.source}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <PlatformLogo name={lead.source} size={18} />
+                    <span style={{ color: C.muted }}>{SOURCE_LABEL[lead.source] || lead.source}</span>
+                  </span>
                 </Td>
                 <Td>
                   <ClassBadge $cls={lead.classification}>{lead.classification}</ClassBadge>

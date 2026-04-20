@@ -25,6 +25,9 @@ class OfferResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
     id: str
+    tenant_id: str | None = None
+    source: str = "seed"
+    external_id: str | None = None
     name: str
     niche: str
     network: str
@@ -36,9 +39,37 @@ class OfferResponse(BaseModel):
     trend_value: float | None
     status: str
     external_url: str | None
+    last_synced_at: datetime | None = None
     created_at: datetime
 
 
 class OfferListResponse(BaseModel):
     data: list[OfferResponse]
     total: int
+
+
+# ── ClickBank-specific schemas ────────────────────────────────────────────────
+
+class ClickBankConnectRequest(BaseModel):
+    developer_key: str = Field(min_length=1)
+    account_nickname: str | None = None
+
+
+class MarketplaceSyncResponse(BaseModel):
+    synced: int
+    created: int
+    updated: int
+    last_synced_at: str
+
+
+class MarketplaceStatusResponse(BaseModel):
+    last_synced_at: str | None
+    offer_count: int
+
+
+class AccountStatusResponse(BaseModel):
+    connected: bool
+    account_nickname: str | None = None
+    last_sync_at: str | None = None
+    offer_count: int = 0
+    account_summary: dict | None = None

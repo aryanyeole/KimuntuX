@@ -1,16 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import useCommunications from '../../hooks/useCommunications';
 import api from '../../services/api';
+import { crm as C } from '../../styles/crmTheme';
 
-// ── Palette ───────────────────────────────────────────────────────────────────
-const C = {
-  bg: '#060d1b', surface: '#0c1527', card: '#121e34', border: '#1a2d4d',
-  text: '#e4eaf4', muted: '#6b7fa3', accent: '#2d7aff',
-  success: '#00c48c', warning: '#ffb020', danger: '#ff4757', purple: '#8b5cf6',
-};
-
-const CHANNEL_ICON = { email: '📧', sms: '📱', whatsapp: '💬', chatbot: '🤖', social_dm: '🐦' };
+const CHANNEL_ICON = { email: 'EM', sms: 'SM', whatsapp: 'WA', chatbot: 'AI', social_dm: 'DM' };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function timeAgo(ts) {
@@ -160,6 +154,30 @@ export default function CRMCommunication() {
   const { messages, loading } = useCommunications();
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+  const [leadNames, setLeadNames] = useState({});
+
+  useEffect(() => {
+    if (!messages.length) return;
+    const ids = [...new Set(messages.map(m => m.lead_id).filter(Boolean))];
+    // Only fetch IDs we don't already have
+    const missing = ids.filter(id => !leadNames[id]);
+    if (!missing.length) return;
+
+    Promise.allSettled(missing.map(id => api.get(`/api/v1/crm/leads/${id}`))).then(results => {
+      const names = {};
+      results.forEach((r, i) => {
+        if (r.status === 'fulfilled' && r.value) {
+          const lead = r.value;
+          names[missing[i]] = `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || `Lead #${missing[i].slice(0, 6)}`;
+        } else {
+          names[missing[i]] = `Lead #${missing[i].slice(0, 6)}`;
+        }
+      });
+      setLeadNames(prev => ({ ...prev, ...names }));
+    });
+  }, [messages]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const getLeadName = (lead_id) => leadNames[lead_id] || `Lead #${(lead_id || '').slice(0, 6)}`;
   const [reply, setReply] = useState('');
   const [aiSuggestion, setAiSuggestion] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -231,8 +249,8 @@ export default function CRMCommunication() {
                 onClick={() => { setSelected(msg); setAiSuggestion(null); setReply(''); }}
               >
                 <MsgTop>
-                  <MsgIcon>{CHANNEL_ICON[ch] || '💬'}</MsgIcon>
-                  <MsgName $unread={!msg.read && !isOut}>Lead #{(msg.lead_id || '').slice(0, 6)}</MsgName>
+                  <MsgIcon>{CHANNEL_ICON[ch] || 'CH'}</MsgIcon>
+                  <MsgName $unread={!msg.read && !isOut}>{getLeadName(msg.lead_id)}</MsgName>
                   <MsgTime>{timeAgo(msg.timestamp)}</MsgTime>
                 </MsgTop>
                 {msg.subject && <MsgSubject>{msg.subject}</MsgSubject>}
@@ -251,17 +269,17 @@ export default function CRMCommunication() {
       <RightPanel>
         {!selected ? (
           <EmptyState>
-            <EmptyEmoji>💬</EmptyEmoji>
+            <EmptyEmoji>CH</EmptyEmoji>
             <EmptyText>Select a conversation</EmptyText>
           </EmptyState>
         ) : (
           <>
             <DetailHeader>
-              <DetailIcon>{CHANNEL_ICON[(selected.channel || '').toLowerCase()] || '💬'}</DetailIcon>
+              <DetailIcon>{CHANNEL_ICON[(selected.channel || '').toLowerCase()] || 'CH'}</DetailIcon>
               <DetailMeta>
                 <DetailName>{selected.subject || 'No Subject'}</DetailName>
                 <DetailSub>
-                  Lead #{(selected.lead_id || '').slice(0, 8)} · {selected.channel} · {timeAgo(selected.timestamp)}
+                  {getLeadName(selected.lead_id)} · {selected.channel} · {timeAgo(selected.timestamp)}
                 </DetailSub>
               </DetailMeta>
               <Badge $bg={selected.direction === 'outbound' ? C.muted : C.accent}>
@@ -278,7 +296,7 @@ export default function CRMCommunication() {
             <ReplyArea>
               {aiSuggestion && (
                 <AiSuggestion>
-                  <AiSugTitle>✨ AI Suggestion</AiSugTitle>
+                  <AiSugTitle>AI Suggestion</AiSugTitle>
                   <AiSugText>{aiSuggestion}</AiSugText>
                   <AiSugActions>
                     <AiBtn onClick={() => { setReply(aiSuggestion); setAiSuggestion(null); }}>
@@ -297,7 +315,7 @@ export default function CRMCommunication() {
               />
               <ReplyActions>
                 <AiReplyBtn onClick={handleAiReply} disabled={aiLoading}>
-                  {aiLoading ? 'Generating…' : '✨ AI Reply'}
+                  {aiLoading ? 'Generating…' : 'AI Reply'}
                 </AiReplyBtn>
                 <SendBtn onClick={handleSend} disabled={!reply.trim() || sending}>
                   {sending ? 'Sending…' : 'Send'}

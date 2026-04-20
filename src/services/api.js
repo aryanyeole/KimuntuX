@@ -4,11 +4,19 @@ function getToken() {
   return localStorage.getItem('kimuntu_token');
 }
 
+function getTenantId() {
+  return localStorage.getItem('kimuntu_tenant_id');
+}
+
 function buildHeaders(hasBody = false) {
   const headers = {};
   const token = getToken();
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+  const tenantId = getTenantId();
+  if (tenantId) {
+    headers['X-Tenant-ID'] = tenantId;
   }
   if (hasBody) {
     headers['Content-Type'] = 'application/json';

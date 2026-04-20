@@ -4,7 +4,7 @@ import enum
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import DateTime, Enum, Index, JSON, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -31,7 +31,11 @@ class Integration(Base):
         primary_key=True,
         default=lambda: str(uuid4()),
     )
-    tenant_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     platform_name: Mapped[str] = mapped_column(String(100), nullable=False)
     platform_type: Mapped[PlatformType] = mapped_column(
         Enum(PlatformType, name="platformtype"),

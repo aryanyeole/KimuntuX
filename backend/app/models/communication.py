@@ -31,6 +31,12 @@ class Communication(Base):
         primary_key=True,
         default=lambda: str(uuid4()),
     )
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     lead_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("leads.id", ondelete="CASCADE"),

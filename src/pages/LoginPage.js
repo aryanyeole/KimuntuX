@@ -219,7 +219,7 @@ const LoginPage = () => {
         joinDate: data.user.created_at
       };
 
-      login(userData, data.access_token);
+      login(userData, data.access_token, data.tenant || null);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Unable to sign in. Please try again.');

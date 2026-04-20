@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UserProvider } from './contexts/UserContext';
+import { TenantProvider } from './contexts/TenantContext';
 import { ChatbotProvider } from './providers/ChatbotProvider';
 import { GlobalStyles } from './styles/GlobalStyles';
 import Header from './components/Header';
@@ -43,6 +44,10 @@ import CRMPipeline from './pages/crm/CRMPipeline';
 import CRMCommunication from './pages/crm/CRMCommunication';
 import CRMAnalytics from './pages/crm/CRMAnalytics';
 import CRMSettings from './pages/crm/CRMSettings';
+import CRMStrategy from './pages/crm/CRMStrategy';
+import CRMFintech from './pages/crm/CRMFintech';
+import CRMAcademy from './pages/crm/CRMAcademy';
+import CRMContentScheduler from './pages/crm/CRMContentScheduler';
 
 // Inner component — needs to be inside <Router> so it can call useLocation
 function AppInner() {
@@ -85,6 +90,10 @@ function AppInner() {
           <Route path="leads" element={<CRMLeads />} />
           <Route path="pipeline" element={<CRMPipeline />} />
           <Route path="communication" element={<CRMCommunication />} />
+          <Route path="strategy" element={<CRMStrategy />} />
+          <Route path="fintech" element={<CRMFintech />} />
+          <Route path="academy" element={<CRMAcademy />} />
+          <Route path="content-scheduler" element={<CRMContentScheduler />} />
           <Route path="analytics" element={<CRMAnalytics />} />
           <Route path="settings" element={<CRMSettings />} />
         </Route>
@@ -98,12 +107,14 @@ function App() {
   return (
     <ThemeProvider>
       <UserProvider>
-        <GlobalStyles />
-        <Router>
-          <ChatbotProvider>
-            <AppInner />
-          </ChatbotProvider>
-        </Router>
+        <TenantProvider>
+          <GlobalStyles />
+          <Router>
+            <ChatbotProvider>
+              <AppInner />
+            </ChatbotProvider>
+          </Router>
+        </TenantProvider>
       </UserProvider>
     </ThemeProvider>
   );

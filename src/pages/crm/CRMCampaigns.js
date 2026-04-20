@@ -1,18 +1,9 @@
 import { useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 import useCampaigns from '../../hooks/useCampaigns';
+import { crm as C } from '../../styles/crmTheme';
+import PlatformLogo from '../../components/crm/PlatformLogo';
 
-// ── Palette ───────────────────────────────────────────────────────────────────
-const C = {
-  bg: '#060d1b', surface: '#0c1527', card: '#121e34', border: '#1a2d4d',
-  text: '#e4eaf4', muted: '#6b7fa3', accent: '#2d7aff',
-  success: '#00c48c', warning: '#ffb020', danger: '#ff4757', purple: '#8b5cf6',
-};
-
-const PLATFORM_EMOJI = {
-  facebook_ads: '📘', google_ads: '🔍', tiktok_ads: '🎵', instagram: '📸',
-  youtube: '▶️', email: '📧', twitter: '🐦',
-};
 const PLATFORM_LABEL = {
   facebook_ads: 'Facebook Ads', google_ads: 'Google Ads', tiktok_ads: 'TikTok Ads',
   instagram: 'Instagram', youtube: 'YouTube', email: 'Email',
@@ -110,19 +101,19 @@ const SuggestionAction = styled.button`
 
 const AI_SUGGESTIONS = [
   {
-    emoji: '🎯',
+    emoji: null,
     title: 'Scale AI Growth Q1',
     desc: 'This campaign has a 3.4x ROAS. Increasing daily budget by 30% could yield an additional $4,200 in monthly revenue.',
     action: 'Increase Budget',
   },
   {
-    emoji: '⏸️',
+    emoji: null,
     title: 'Pause IG Retargeting',
     desc: 'ROAS dropped below 1.5x over the last 14 days. Reallocating spend to Facebook Cold would improve overall efficiency.',
     action: 'Pause Campaign',
   },
   {
-    emoji: '🔥',
+    emoji: null,
     title: 'Scale Trending Offers on TikTok',
     desc: 'LeanBiome and CitrusBurn gravity scores surged 15%+ this week. Launch TikTok UGC before the window closes.',
     action: 'Create Campaign',
@@ -218,9 +209,11 @@ export default function CRMCampaigns() {
                   <Tr key={c.id}>
                     <Td style={{ fontWeight: 700, maxWidth: 200 }}>{c.name}</Td>
                     <Td>
-                      {PLATFORM_EMOJI[platform] || '📣'}{' '}
-                      <span style={{ color: C.muted }}>
-                        {PLATFORM_LABEL[platform] || c.platform}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <PlatformLogo name={c.platform} size={20} />
+                        <span style={{ color: C.muted }}>
+                          {PLATFORM_LABEL[platform] || c.platform}
+                        </span>
                       </span>
                     </Td>
                     <Td style={{ color: C.accent }}>{c.offer_name || '—'}</Td>

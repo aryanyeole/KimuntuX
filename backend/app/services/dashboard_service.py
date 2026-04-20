@@ -12,10 +12,10 @@ from app.schemas.dashboard import (
 )
 
 
-def get_summary(db: Session) -> DashboardSummaryResponse:
-    # --- aggregate counts by classification ---
+def get_summary(db: Session, tenant_id: str) -> DashboardSummaryResponse:
     classification_rows = db.execute(
         select(Lead.classification, func.count(Lead.id))
+        .where(Lead.tenant_id == tenant_id)
         .group_by(Lead.classification)
     ).all()
     classification_map: dict[str, int] = {
@@ -27,31 +27,31 @@ def get_summary(db: Session) -> DashboardSummaryResponse:
     warm_leads = classification_map.get(LeadClassification.warm.value, 0)
     cold_leads = classification_map.get(LeadClassification.cold.value, 0)
 
-    # --- revenue from won leads ---
     total_revenue = db.scalar(
         select(func.coalesce(func.sum(Lead.predicted_value), 0.0))
-        .where(Lead.stage == LeadStage.won)
+        .where(Lead.tenant_id == tenant_id, Lead.stage == LeadStage.won)
     ) or 0.0
 
-    # --- conversion rate ---
     won_count = db.scalar(
-        select(func.count(Lead.id)).where(Lead.stage == LeadStage.won)
+        select(func.count(Lead.id))
+        .where(Lead.tenant_id == tenant_id, Lead.stage == LeadStage.won)
     ) or 0
     conversion_rate = round((won_count / total_leads * 100), 2) if total_leads else 0.0
 
-    # --- average AI score ---
     avg_ai_score = db.scalar(
         select(func.coalesce(func.avg(Lead.ai_score), 0.0))
+        .where(Lead.tenant_id == tenant_id)
     ) or 0.0
     avg_ai_score = round(float(avg_ai_score), 1)
 
-    # --- pipeline summary (count + total value per stage) ---
     pipeline_rows = db.execute(
         select(
             Lead.stage,
             func.count(Lead.id),
             func.coalesce(func.sum(Lead.predicted_value), 0.0),
-        ).group_by(Lead.stage)
+        )
+        .where(Lead.tenant_id == tenant_id)
+        .group_by(Lead.stage)
     ).all()
 
     stage_order = [s.value for s in LeadStage]
@@ -64,13 +64,14 @@ def get_summary(db: Session) -> DashboardSummaryResponse:
         key=lambda e: stage_order.index(e.stage) if e.stage in stage_order else 999,
     )
 
-    # --- source breakdown (count + avg score per source) ---
     source_rows = db.execute(
         select(
             Lead.source,
             func.count(Lead.id),
             func.coalesce(func.avg(Lead.ai_score), 0.0),
-        ).group_by(Lead.source)
+        )
+        .where(Lead.tenant_id == tenant_id)
+        .group_by(Lead.source)
     ).all()
     source_breakdown = [
         SourceBreakdownEntry(
@@ -81,9 +82,11 @@ def get_summary(db: Session) -> DashboardSummaryResponse:
         for src, cnt, avg in source_rows
     ]
 
-    # --- 5 most recent leads ---
     recent_orm = db.scalars(
-        select(Lead).order_by(Lead.created_at.desc()).limit(5)
+        select(Lead)
+        .where(Lead.tenant_id == tenant_id)
+        .order_by(Lead.created_at.desc())
+        .limit(5)
     ).all()
     recent_leads = [
         RecentLeadEntry(

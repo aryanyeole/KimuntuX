@@ -1,13 +1,8 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import useDashboard from '../../hooks/useDashboard';
-
-// ── Palette ───────────────────────────────────────────────────────────────────
-const C = {
-  bg: '#060d1b', surface: '#0c1527', card: '#121e34', border: '#1a2d4d',
-  text: '#e4eaf4', muted: '#6b7fa3', accent: '#2d7aff',
-  success: '#00c48c', warning: '#ffb020', danger: '#ff4757', purple: '#8b5cf6',
-};
+import { crm as C } from '../../styles/crmTheme';
 
 const STAGE_ORDER = ['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won'];
 const STAGE_LABEL = {
@@ -19,18 +14,9 @@ const STAGE_COLOR = {
   proposal: C.warning, negotiation: '#f97316', won: C.success,
 };
 
-const ROI_TABLE = [
-  { channel: 'Google Ads', emoji: '🔍', clicks: 5978, leads: 1475, ctr: 6.3,  cpl: 7.75,  cpa: 28.40,  roas: 4.6  },
-  { channel: 'Facebook',   emoji: '📘', clicks: 4109, leads: 929,  ctr: 5.2,  cpl: 8.35,  cpa: 92.90,  roas: 3.8  },
-  { channel: 'Instagram',  emoji: '📸', clicks: 3410, leads: 813,  ctr: 4.7,  cpl: 9.20,  cpa: 94.90,  roas: 3.1  },
-  { channel: 'YouTube',    emoji: '▶️', clicks: 2987, leads: 654,  ctr: 3.8,  cpl: 10.75, cpa: 41.20,  roas: 2.6  },
-  { channel: 'TikTok',     emoji: '🎵', clicks: 3276, leads: 689,  ctr: 5.2,  cpl: 11.11, cpa: 140.00, roas: 4.17 },
-];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmtMoney = n => n ? '$' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '$0';
-const fmtX = n => `${Number(n).toFixed(2)}x`;
-const fmtPct = n => `${Number(n).toFixed(1)}%`;
 
 // ── Animations ────────────────────────────────────────────────────────────────
 const fadeIn = keyframes`from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}`;
@@ -109,25 +95,26 @@ const TableTitle = styled.div`
   font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
   color:${C.muted};padding:16px 20px 14px;
 `;
-const TableScroll = styled.div`overflow-x:auto;`;
-const Table = styled.table`width:100%;border-collapse:collapse;min-width:700px;`;
-const Th = styled.th`
-  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
-  color:${C.muted};padding:11px 14px;text-align:left;background:${C.surface};
-  border-bottom:1px solid ${C.border};white-space:nowrap;
+
+// ── Empty states ──────────────────────────────────────────────────────────────
+const EmptyState = styled.div`
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:32px 16px;gap:10px;color:${C.muted};
 `;
-const Tr = styled.tr`
-  border-bottom:1px solid ${C.border};&:last-child{border-bottom:none;}
-  transition:background .12s;&:hover{background:${C.surface};}
+const EmptyText = styled.div`font-size:12px;line-height:1.6;max-width:260px;`;
+const EmptyBtn = styled.button`
+  background:${C.accent};color:#fff;border:none;border-radius:8px;
+  padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;margin-top:4px;
+  &:hover{opacity:.85;}
 `;
-const Td = styled.td`padding:11px 14px;font-size:12px;color:${C.text};vertical-align:middle;`;
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function CRMAnalytics() {
   const { summary, loading } = useDashboard();
+  const navigate = useNavigate();
 
   const kpis = useMemo(() => {
-    if (!summary) return { pipelineValue: 0, avgScore: 0, wonCount: 0 };
+    if (!summary) return { pipelineValue: 0, avgScore: 0, wonCount: 0, wonRevenue: 0 };
     const pipeline = summary.pipeline_summary || [];
     const pipelineValue = pipeline.reduce((s, p) => s + (p.total_value || 0), 0);
     const wonStage = pipeline.find(p => p.stage === 'won');
@@ -135,15 +122,16 @@ export default function CRMAnalytics() {
       pipelineValue,
       avgScore: summary.avg_ai_score || 0,
       wonCount: wonStage?.count || 0,
+      wonRevenue: wonStage?.total_value || 0,
     };
   }, [summary]);
 
   const classBreakdown = useMemo(() => {
-    if (!summary) return { hot: 0, warm: 0, cold: 0, total: 1 };
-    const cb = summary.classification_breakdown || [];
-    const find = cls => cb.find(x => x.classification === cls)?.count || 0;
-    const hot = find('hot'), warm = find('warm'), cold = find('cold');
-    return { hot, warm, cold, total: Math.max(hot + warm + cold, 1) };
+    if (!summary) return { hot: 0, warm: 0, cold: 0, realTotal: 0 };
+    const hot = summary.hot_leads || 0;
+    const warm = summary.warm_leads || 0;
+    const cold = summary.cold_leads || 0;
+    return { hot, warm, cold, realTotal: hot + warm + cold };
   }, [summary]);
 
   const pipelineStages = useMemo(() => {
@@ -155,7 +143,8 @@ export default function CRMAnalytics() {
     return sorted.map(s => ({ ...s, pct: Math.round((s.count / maxCount) * 100) }));
   }, [summary]);
 
-  const { hot, warm, cold, total } = classBreakdown;
+  const { hot, warm, cold, realTotal } = classBreakdown;
+  const scoreTotal = Math.max(realTotal, 1); // avoid divide-by-zero for percentages
 
   if (loading && !summary) {
     return (
@@ -164,6 +153,8 @@ export default function CRMAnalytics() {
       </Page>
     );
   }
+
+  const currentMonth = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
     <Page>
@@ -186,88 +177,84 @@ export default function CRMAnalytics() {
         </KpiCard>
         <KpiCard>
           <KpiLabel>Month Sales</KpiLabel>
-          <KpiValue $color={C.warning}>$235,590</KpiValue>
-          <KpiSub>April 2026</KpiSub>
+          <KpiValue $color={C.warning}>{fmtMoney(kpis.wonRevenue)}</KpiValue>
+          <KpiSub>{currentMonth}</KpiSub>
         </KpiCard>
       </KpiRow>
 
       {/* ── Two-col ── */}
       <TwoCol>
+        {/* Score Distribution — empty state when no leads scored */}
         <Card>
           <CardTitle>Score Distribution</CardTitle>
-          <CircleRow>
-            <CircleItem>
-              <Circle $color={C.danger}>{Math.round((hot / total) * 100)}%</Circle>
-              <CircleLabel>Hot</CircleLabel>
-              <CircleCount>{hot} leads</CircleCount>
-            </CircleItem>
-            <CircleItem>
-              <Circle $color={C.warning}>{Math.round((warm / total) * 100)}%</Circle>
-              <CircleLabel>Warm</CircleLabel>
-              <CircleCount>{warm} leads</CircleCount>
-            </CircleItem>
-            <CircleItem>
-              <Circle $color={C.accent}>{Math.round((cold / total) * 100)}%</Circle>
-              <CircleLabel>Cold</CircleLabel>
-              <CircleCount>{cold} leads</CircleCount>
-            </CircleItem>
-          </CircleRow>
-          <StackBar>
-            <StackSegment $color={C.danger} $flex={hot || 0} />
-            <StackSegment $color={C.warning} $flex={warm || 0} />
-            <StackSegment $color={C.accent} $flex={cold || 0} />
-          </StackBar>
+          {realTotal === 0 ? (
+            <EmptyState>
+              <EmptyText>Score distribution will appear once leads are scored by AI.</EmptyText>
+            </EmptyState>
+          ) : (
+            <>
+              <CircleRow>
+                <CircleItem>
+                  <Circle $color={C.danger}>{Math.round((hot / scoreTotal) * 100)}%</Circle>
+                  <CircleLabel>Hot</CircleLabel>
+                  <CircleCount>{hot} leads</CircleCount>
+                </CircleItem>
+                <CircleItem>
+                  <Circle $color={C.warning}>{Math.round((warm / scoreTotal) * 100)}%</Circle>
+                  <CircleLabel>Warm</CircleLabel>
+                  <CircleCount>{warm} leads</CircleCount>
+                </CircleItem>
+                <CircleItem>
+                  <Circle $color={C.accent}>{Math.round((cold / scoreTotal) * 100)}%</Circle>
+                  <CircleLabel>Cold</CircleLabel>
+                  <CircleCount>{cold} leads</CircleCount>
+                </CircleItem>
+              </CircleRow>
+              <StackBar>
+                <StackSegment $color={C.danger} $flex={hot || 0} />
+                <StackSegment $color={C.warning} $flex={warm || 0} />
+                <StackSegment $color={C.accent} $flex={cold || 0} />
+              </StackBar>
+            </>
+          )}
         </Card>
 
+        {/* Pipeline by Stage — empty state when no data */}
         <Card>
           <CardTitle>Pipeline by Stage</CardTitle>
-          {pipelineStages.map(s => (
-            <StageRow key={s.stage}>
-              <StageTop>
-                <StageName>{STAGE_LABEL[s.stage] || s.stage}</StageName>
-                <StageMeta>{s.count} leads · {fmtMoney(s.total_value)}</StageMeta>
-              </StageTop>
-              <StageBarBg>
-                <StageBarFill $color={STAGE_COLOR[s.stage] || C.muted} $pct={s.pct} />
-              </StageBarBg>
-            </StageRow>
-          ))}
+          {pipelineStages.length === 0 ? (
+            <EmptyState>
+              <EmptyText>
+                No deals in pipeline yet. Add leads and move them through stages to see pipeline distribution.
+              </EmptyText>
+            </EmptyState>
+          ) : (
+            pipelineStages.map(s => (
+              <StageRow key={s.stage}>
+                <StageTop>
+                  <StageName>{STAGE_LABEL[s.stage] || s.stage}</StageName>
+                  <StageMeta>{s.count} leads · {fmtMoney(s.total_value)}</StageMeta>
+                </StageTop>
+                <StageBarBg>
+                  <StageBarFill $color={STAGE_COLOR[s.stage] || C.muted} $pct={s.pct} />
+                </StageBarBg>
+              </StageRow>
+            ))
+          )}
         </Card>
       </TwoCol>
 
-      {/* ── ROI Table ── */}
+      {/* ── ROI Table — empty state until campaign data exists ── */}
       <TableCard>
         <TableTitle>ROI &amp; CPA Overview</TableTitle>
-        <TableScroll>
-          <Table>
-            <thead>
-              <tr>
-                <Th>Channel</Th>
-                <Th>Clicks</Th>
-                <Th>Leads</Th>
-                <Th>CTR</Th>
-                <Th>CPL</Th>
-                <Th>CPA</Th>
-                <Th>ROAS</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {ROI_TABLE.map(row => (
-                <Tr key={row.channel}>
-                  <Td style={{ fontWeight: 700 }}>{row.emoji} {row.channel}</Td>
-                  <Td style={{ color: C.muted }}>{row.clicks.toLocaleString()}</Td>
-                  <Td>{row.leads.toLocaleString()}</Td>
-                  <Td style={{ color: row.ctr > 5 ? C.success : C.muted }}>{fmtPct(row.ctr)}</Td>
-                  <Td style={{ color: C.muted }}>${row.cpl.toFixed(2)}</Td>
-                  <Td style={{ color: C.muted }}>${row.cpa.toFixed(2)}</Td>
-                  <Td style={{ fontWeight: 700, color: row.roas >= 4 ? C.success : C.warning }}>
-                    {fmtX(row.roas)}
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        </TableScroll>
+        <EmptyState style={{ padding: '32px 20px' }}>
+          <EmptyText>
+            No campaign data yet. ROI and CPA metrics appear after campaigns start running.
+          </EmptyText>
+          <EmptyBtn onClick={() => navigate('/crm/campaigns')}>
+            Create a Campaign →
+          </EmptyBtn>
+        </EmptyState>
       </TableCard>
     </Page>
   );

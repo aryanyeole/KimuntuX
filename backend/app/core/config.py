@@ -13,6 +13,17 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:3000"]
+    gemini_api_key: str | None = None
+
+    # ── Phase 2: Encryption + ClickBank ──────────────────────────────────────
+    # Required for encrypting tenant credentials. Generate with:
+    #   cd backend && python -m app.scripts.generate_fernet_key
+    kimux_fernet_key: str | None = None
+
+    # Platform-level ClickBank credential (single developer key, post-Aug 2023 auth model).
+    # Used for marketplace data — visible to all tenants.
+    # Obtain from https://accounts.clickbank.com/developer/index.htm
+    clickbank_developer_key: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

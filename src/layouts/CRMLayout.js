@@ -2,20 +2,9 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useUser } from '../contexts/UserContext';
-
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const C = {
-  bg: '#060d1b',
-  surface: '#0c1527',
-  card: '#121e34',
-  border: '#1a2d4d',
-  text: '#e4eaf4',
-  muted: '#6b7fa3',
-  accent: '#2d7aff',
-  accentHover: '#4d93ff',
-  danger: '#ef4444',
-  green: '#22c55e',
-};
+import { useTenant } from '../contexts/TenantContext';
+import useStrategy from '../hooks/useStrategy';
+import { crm as C } from '../styles/crmTheme';
 
 // ── Root shell ────────────────────────────────────────────────────────────────
 const Shell = styled.div`
@@ -24,7 +13,7 @@ const Shell = styled.div`
   overflow: hidden;
   background: ${C.bg};
   color: ${C.text};
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: ${C.fontFamily};
 `;
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -96,24 +85,67 @@ const CollapseBtn = styled.button`
 
 const Nav = styled.nav`
   flex: 1;
-  padding: 12px 8px;
+  padding: 8px 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
   overflow-y: auto;
   overflow-x: hidden;
 `;
 
+// ── Section label (PLATFORM, COMMERCE, INTELLIGENCE) ─────────────────────────
+const SectionLabel = styled.div`
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: ${C.muted};
+  padding: 14px 12px 4px;
+  white-space: nowrap;
+  opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
+  height: ${({ $collapsed }) => ($collapsed ? '6px' : 'auto')};
+  overflow: hidden;
+  transition: opacity 0.15s ease, height 0.15s ease;
+  pointer-events: none;
+`;
+
+// ── Regular nav item (NavLink) ────────────────────────────────────────────────
 const NavItem = styled(NavLink)`
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: ${({ $collapsed }) => ($collapsed ? '10px 0' : '10px 12px')};
+  gap: 10px;
+  padding: ${({ $collapsed }) => ($collapsed ? '9px 0' : '9px 10px')};
   justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
-  border-radius: 8px;
+  border-radius: 7px;
   text-decoration: none;
   color: ${C.muted};
-  font-size: 13.5px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  position: relative;
+
+  &:hover {
+    background: ${C.card};
+    color: ${C.text};
+  }
+  &.active {
+    background: ${C.card};
+    color: ${C.accent};
+    box-shadow: inset 3px 0 0 ${C.accent};
+  }
+`;
+
+// ── Sub-item (indented NavLink for children) ──────────────────────────────────
+const SubNavItem = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: ${({ $collapsed }) => ($collapsed ? '8px 0' : '8px 10px 8px 30px')};
+  justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
+  border-radius: 7px;
+  text-decoration: none;
+  color: ${C.muted};
+  font-size: 12.5px;
   font-weight: 500;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
@@ -129,11 +161,46 @@ const NavItem = styled(NavLink)`
   }
 `;
 
-const NavLabel = styled.span`
-  opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
-  width: ${({ $collapsed }) => ($collapsed ? 0 : 'auto')};
-  overflow: hidden;
-  transition: opacity 0.15s ease;
+// ── Disabled/coming-soon item (not a NavLink) ─────────────────────────────────
+const DisabledItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: ${({ $collapsed }) => ($collapsed ? '9px 0' : '9px 10px')};
+  justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
+  border-radius: 7px;
+  color: ${C.border};
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: not-allowed;
+  user-select: none;
+`;
+
+// ── Expandable parent item (button) ──────────────────────────────────────────
+const ParentItem = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: ${({ $collapsed }) => ($collapsed ? '9px 0' : '9px 10px')};
+  justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
+  border-radius: 7px;
+  background: ${({ $active }) => ($active ? C.card : 'none')};
+  color: ${({ $active }) => ($active ? C.accent : C.muted)};
+  box-shadow: ${({ $active }) => ($active ? `inset 3px 0 0 ${C.accent}` : 'none')};
+  border: none;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  text-align: left;
+
+  &:hover {
+    background: ${C.card};
+    color: ${C.text};
+  }
 `;
 
 const NavIcon = styled.span`
@@ -145,6 +212,73 @@ const NavIcon = styled.span`
   justify-content: center;
 `;
 
+const NavLabel = styled.span`
+  flex: 1;
+  opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
+  width: ${({ $collapsed }) => ($collapsed ? 0 : 'auto')};
+  overflow: hidden;
+  transition: opacity 0.15s ease;
+`;
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+const ActiveBadge = styled.span`
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: ${C.green}22;
+  color: ${C.green};
+  border: 1px solid ${C.green}44;
+  flex-shrink: 0;
+`;
+
+const ComingSoonBadge = styled.span`
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: ${C.card};
+  color: ${C.muted};
+  border: 1px solid ${C.border};
+  flex-shrink: 0;
+`;
+
+// ── Chevron for expand/collapse ───────────────────────────────────────────────
+const Chevron = styled.span`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: ${C.muted};
+  transform: ${({ $open }) => ($open ? 'rotate(180deg)' : 'rotate(0deg)')};
+  transition: transform 0.2s ease;
+  opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
+  width: ${({ $collapsed }) => ($collapsed ? 0 : 'auto')};
+`;
+
+// ── Nav item with separate arrow button (navigable parent) ───────────────────
+const NavItemRow = styled.div`position: relative;`;
+
+const ArrowBtn = styled.button`
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${C.muted};
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  &:hover { color: ${C.text}; background: ${C.card}; }
+`;
+
+// ── Sidebar bottom ────────────────────────────────────────────────────────────
 const SidebarBottom = styled.div`
   padding: ${({ $collapsed }) => ($collapsed ? '12px 0' : '12px 16px')};
   border-top: 1px solid ${C.border};
@@ -219,6 +353,17 @@ const PageTitle = styled.h1`
 
 const Spacer = styled.div`flex: 1;`;
 
+const TenantBadge = styled.div`
+  font-size: 11px;
+  font-weight: 700;
+  color: ${C.muted};
+  background: ${C.card};
+  border: 1px solid ${C.border};
+  border-radius: 6px;
+  padding: 4px 10px;
+  white-space: nowrap;
+`;
+
 const SearchBox = styled.div`
   display: flex;
   align-items: center;
@@ -283,17 +428,11 @@ const icons = {
       <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
     </svg>
   ),
-  offers: (
+  strategy: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
-      <circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"/>
-    </svg>
-  ),
-  campaigns: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-      <path d="M19.07 4.93a10 10 0 010 14.14"/>
-      <path d="M15.54 8.46a5 5 0 010 7.07"/>
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
     </svg>
   ),
   leads: (
@@ -310,15 +449,52 @@ const icons = {
       <rect x="17" y="11" width="4" height="10" rx="1"/>
     </svg>
   ),
+  campaigns: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path d="M19.07 4.93a10 10 0 010 14.14"/>
+      <path d="M15.54 8.46a5 5 0 010 7.07"/>
+    </svg>
+  ),
   messages: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+    </svg>
+  ),
+  funnel: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+    </svg>
+  ),
+  fintech: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23"/>
+      <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+    </svg>
+  ),
+  affiliate: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+  ),
+  offers: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+      <circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"/>
     </svg>
   ),
   analytics: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
       <line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/>
+    </svg>
+  ),
+  academy: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+      <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
     </svg>
   ),
   settings: (
@@ -353,47 +529,115 @@ const icons = {
       <polyline points="9 18 15 12 9 6"/>
     </svg>
   ),
+  chevronDown: (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  ),
+  calendar: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
 };
 
 // ── Nav config ────────────────────────────────────────────────────────────────
-const NAV_ITEMS = [
-  { label: 'Dashboard',  to: '/crm/dashboard',     icon: 'dashboard'  },
-  { label: 'Offers',     to: '/crm/offers',         icon: 'offers'     },
-  { label: 'Campaigns',  to: '/crm/campaigns',      icon: 'campaigns'  },
-  { label: 'Leads',      to: '/crm/leads',          icon: 'leads'      },
-  { label: 'Pipeline',   to: '/crm/pipeline',       icon: 'pipeline'   },
-  { label: 'Messages',   to: '/crm/communication',  icon: 'messages'   },
-  { label: 'Analytics',  to: '/crm/analytics',      icon: 'analytics'  },
-  { label: 'Settings',   to: '/crm/settings',       icon: 'settings'   },
+const NAV_SECTIONS = [
+  {
+    label: 'PLATFORM',
+    items: [
+      { label: 'Dashboard',       to: '/crm/dashboard',     icon: 'dashboard'  },
+      { label: 'Strategy Engine', to: '/crm/strategy',      icon: 'strategy',  badge: 'active' },
+      { label: 'Leads',           to: '/crm/leads',         icon: 'leads'      },
+      { label: 'Pipeline',        to: '/crm/pipeline',      icon: 'pipeline'   },
+      {
+        label: 'Campaigns', to: '/crm/campaigns', icon: 'campaigns', expandable: true,
+        children: [
+          { label: 'Content Scheduler', to: '/crm/content-scheduler', icon: 'calendar' },
+        ],
+      },
+      { label: 'Messages',        to: '/crm/communication', icon: 'messages'   },
+    ],
+  },
+  {
+    label: 'COMMERCE',
+    items: [
+      { label: 'Funnel Builder',  disabled: true,           icon: 'funnel',    badge: 'soon'  },
+      { label: 'Fintech Hub',     to: '/crm/fintech',       icon: 'fintech'    },
+      {
+        label: 'Affiliate Center', icon: 'affiliate', expandable: true,
+        children: [
+          { label: 'Offers', to: '/crm/offers', icon: 'offers' },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'INTELLIGENCE',
+    items: [
+      { label: 'Analytics',       to: '/crm/analytics',     icon: 'analytics'  },
+      { label: 'KimuX Academy',   to: '/crm/academy',       icon: 'academy'    },
+      { label: 'Settings',        to: '/crm/settings',      icon: 'settings'   },
+    ],
+  },
 ];
 
-// Map path segment to display title shown in the TopBar
+// Map path segment → TopBar title
 const PATH_TITLES = {
   dashboard:     'Dashboard',
-  offers:        'Offer Discovery',
-  campaigns:     'Campaigns',
+  strategy:      'Strategy Engine',
   leads:         'Leads',
   pipeline:      'Pipeline',
-  communication: 'Messages',
+  campaigns:           'Campaigns',
+  'content-scheduler': 'Content Scheduler',
+  communication:       'Messages',
+  offers:        'Offer Discovery',
+  fintech:       'Fintech Hub',
   analytics:     'Analytics',
+  academy:       'KimuX Academy',
   settings:      'Settings',
 };
 
+const LoadingShell = styled.div`
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background: ${C.bg};
+  color: ${C.muted};
+  font-size: 14px;
+  font-family: ${C.fontFamily};
+`;
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function CRMLayout() {
+  // All hooks must be called unconditionally before any early return
   const [collapsed, setCollapsed] = useState(false);
-  const { user } = useUser();
+  const [affiliateExpanded, setAffiliateExpanded] = useState(true);
+  const [campaignsExpanded, setCampaignsExpanded] = useState(true);
+  const { user, isLoading } = useUser();
+  const { currentTenant } = useTenant();
+  const { strategies } = useStrategy();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Derive the section title from the current path segment
+  // Block rendering until auth + tenant bootstrap is complete
+  if (isLoading) return <LoadingShell>Loading…</LoadingShell>;
+
+  const hasStrategy = strategies.length > 0;
   const segment = location.pathname.split('/')[2] || 'dashboard';
   const pageTitle = PATH_TITLES[segment] || 'CRM';
 
-  // Derive initials for the avatar
   const initials = user?.full_name
     ? user.full_name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
     : 'U';
+
+  // Is any Affiliate Center child currently active?
+  const affiliateActive = NAV_SECTIONS[1].items
+    .find(i => i.expandable)
+    ?.children?.some(c => location.pathname.startsWith(c.to)) || false;
 
   return (
     <Shell>
@@ -420,11 +664,123 @@ export default function CRMLayout() {
         )}
 
         <Nav>
-          {NAV_ITEMS.map(({ label, to, icon }) => (
-            <NavItem key={to} to={to} $collapsed={collapsed} title={collapsed ? label : undefined}>
-              <NavIcon>{icons[icon]}</NavIcon>
-              <NavLabel $collapsed={collapsed}>{label}</NavLabel>
-            </NavItem>
+          {NAV_SECTIONS.map((section) => (
+            <React.Fragment key={section.label}>
+              <SectionLabel $collapsed={collapsed}>{section.label}</SectionLabel>
+
+              {section.items.map((item) => {
+                // ── Disabled item ──
+                if (item.disabled) {
+                  return (
+                    <DisabledItem key={item.label} $collapsed={collapsed} title={collapsed ? item.label : undefined}>
+                      <NavIcon>{icons[item.icon]}</NavIcon>
+                      <NavLabel $collapsed={collapsed}>{item.label}</NavLabel>
+                      {!collapsed && <ComingSoonBadge>Soon</ComingSoonBadge>}
+                    </DisabledItem>
+                  );
+                }
+
+                // ── Navigable parent with children (e.g. Campaigns) ──
+                // Has both a route (`to`) and sub-items; NavLink navigates, arrow toggles
+                if (item.expandable && item.to) {
+                  const isExpanded = item.label === 'Campaigns' ? campaignsExpanded : false;
+                  const toggle = item.label === 'Campaigns'
+                    ? () => setCampaignsExpanded(prev => !prev)
+                    : () => {};
+                  return (
+                    <React.Fragment key={item.to}>
+                      <NavItemRow>
+                        <NavItem
+                          to={item.to}
+                          $collapsed={collapsed}
+                          title={collapsed ? item.label : undefined}
+                          style={!collapsed ? { paddingRight: '30px' } : undefined}
+                        >
+                          <NavIcon>{icons[item.icon]}</NavIcon>
+                          <NavLabel $collapsed={collapsed}>{item.label}</NavLabel>
+                        </NavItem>
+                        {!collapsed && (
+                          <ArrowBtn onClick={toggle} title={isExpanded ? 'Collapse' : 'Expand'}>
+                            <Chevron $open={isExpanded} $collapsed={false}>
+                              {icons.chevronDown}
+                            </Chevron>
+                          </ArrowBtn>
+                        )}
+                      </NavItemRow>
+
+                      {!collapsed && isExpanded && item.children?.map(child => (
+                        <SubNavItem
+                          key={child.to}
+                          to={child.to}
+                          $collapsed={collapsed}
+                          title={child.label}
+                        >
+                          <NavIcon>{icons[child.icon]}</NavIcon>
+                          <NavLabel $collapsed={collapsed}>{child.label}</NavLabel>
+                        </SubNavItem>
+                      ))}
+                    </React.Fragment>
+                  );
+                }
+
+                // ── Pure expandable parent — no route (e.g. Affiliate Center) ──
+                if (item.expandable) {
+                  return (
+                    <React.Fragment key={item.label}>
+                      <ParentItem
+                        $collapsed={collapsed}
+                        $active={affiliateActive}
+                        title={collapsed ? item.label : undefined}
+                        onClick={() => {
+                          if (collapsed) {
+                            if (item.children?.[0]?.to) navigate(item.children[0].to);
+                          } else {
+                            setAffiliateExpanded(prev => !prev);
+                          }
+                        }}
+                      >
+                        <NavIcon>{icons[item.icon]}</NavIcon>
+                        <NavLabel $collapsed={collapsed}>{item.label}</NavLabel>
+                        <Chevron $open={affiliateExpanded} $collapsed={collapsed}>
+                          {icons.chevronDown}
+                        </Chevron>
+                      </ParentItem>
+
+                      {!collapsed && affiliateExpanded && item.children?.map(child => (
+                        <SubNavItem
+                          key={child.to}
+                          to={child.to}
+                          $collapsed={collapsed}
+                          title={child.label}
+                        >
+                          <NavIcon>{icons[child.icon]}</NavIcon>
+                          <NavLabel $collapsed={collapsed}>{child.label}</NavLabel>
+                        </SubNavItem>
+                      ))}
+                    </React.Fragment>
+                  );
+                }
+
+                // ── Regular nav item ──
+                return (
+                  <NavItem
+                    key={item.to}
+                    to={item.to}
+                    $collapsed={collapsed}
+                    title={collapsed ? item.label : undefined}
+                  >
+                    <NavIcon>{icons[item.icon]}</NavIcon>
+                    <NavLabel $collapsed={collapsed}>{item.label}</NavLabel>
+                    {!collapsed && item.badge === 'active' && hasStrategy && (
+                      <ActiveBadge>Active</ActiveBadge>
+                    )}
+                    {!collapsed && item.badge === 'soon' && (
+                      <ComingSoonBadge>Soon</ComingSoonBadge>
+                    )}
+                  </NavItem>
+                );
+              })}
+            </React.Fragment>
           ))}
         </Nav>
 
@@ -441,6 +797,7 @@ export default function CRMLayout() {
       <RightPane>
         <TopBar>
           <PageTitle>{pageTitle}</PageTitle>
+          {currentTenant && <TenantBadge>{currentTenant.name}</TenantBadge>}
           <Spacer />
           <SearchBox>
             {icons.search}

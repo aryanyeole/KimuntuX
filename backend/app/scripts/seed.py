@@ -21,6 +21,9 @@ from app.models.communication import Communication, CommunicationChannel, Commun
 from app.models.integration import Integration, IntegrationStatus, PlatformType
 from app.models.lead import Lead, LeadClassification, LeadSource, LeadStage
 from app.models.offer import Offer, OfferStatus, TrendDirection
+from app.models.tenant import Tenant, TenantPlan
+from app.models.tenant_membership import MemberRole, TenantMembership
+from app.models.user import User
 
 # ── Reproducible randomness ──────────────────────────────────────────────────
 rng = random.Random(42)
@@ -404,13 +407,52 @@ _COMM_BODIES = [
 
 # ── Main seed function ────────────────────────────────────────────────────────
 
+def _grant_all_users_demo_membership(db, demo_tenant_id: str) -> None:
+    """DEV ONLY: grant every existing user membership + default_tenant to demo tenant.
+
+    Remove this before production — in production each user gets their own tenant.
+    """
+    users = db.scalars(select(User)).all()
+    for user in users:
+        existing_membership = db.scalar(
+            select(TenantMembership).where(
+                TenantMembership.tenant_id == demo_tenant_id,
+                TenantMembership.user_id == user.id,
+            )
+        )
+        if not existing_membership:
+            db.add(TenantMembership(
+                tenant_id=demo_tenant_id,
+                user_id=user.id,
+                role=MemberRole.member,
+            ))
+        if not user.default_tenant_id:
+            user.default_tenant_id = demo_tenant_id
+    db.flush()
+    if users:
+        print(f"  Granted {len(users)} user(s) membership to KimuX Demo tenant.")
+
+
 def seed() -> None:
     db = SessionLocal()
     try:
-        # Guard: skip if leads already exist
+        # 0. Ensure KimuX Demo tenant exists (idempotent)
+        demo_tenant = db.scalar(select(Tenant).where(Tenant.slug == "kimux-demo"))
+        if demo_tenant is None:
+            demo_tenant = Tenant(name="KimuX Demo", slug="kimux-demo", plan=TenantPlan.free)
+            db.add(demo_tenant)
+            db.flush()
+
+        tenant_id = demo_tenant.id
+
+        # DEV ONLY: always grant all users membership to demo tenant
+        _grant_all_users_demo_membership(db, tenant_id)
+
+        # Guard: skip data seeding if leads already exist
         existing = db.scalar(select(Lead.id).limit(1))
         if existing:
-            print("Database already has data — skipping seed. (Delete all leads to re-seed.)")
+            db.commit()
+            print("Database already has data — skipping data seed. (User memberships updated.)")
             return
 
         print("Seeding database...")
@@ -419,7 +461,7 @@ def seed() -> None:
         lead_data = _build_leads(48)
         lead_objs: list[Lead] = []
         for d in lead_data:
-            lead = Lead(**d)
+            lead = Lead(**d, tenant_id=tenant_id)
             db.add(lead)
             lead_objs.append(lead)
         db.flush()  # populate lead.id without committing
@@ -428,21 +470,21 @@ def seed() -> None:
         for lead in lead_objs:
             count = rng.randint(3, 6)
             for act_data in _build_activities(lead.id, lead.created_at, count):
-                db.add(Activity(**act_data))
+                db.add(Activity(**act_data, tenant_id=tenant_id))
 
         # 3. Campaigns
         for c in _CAMPAIGNS:
-            db.add(Campaign(**c))
+            db.add(Campaign(**c, tenant_id=tenant_id))
 
         # 4. Offers
         for o in _OFFERS:
-            db.add(Offer(**o))
+            db.add(Offer(**o, tenant_id=tenant_id))
 
         # 5. Integrations
         for intg in _INTEGRATIONS:
             connected_at = _rand_ago(10, 60) if intg["status"] == IntegrationStatus.connected else None
             last_sync = _rand_ago(0, 3) if intg["status"] == IntegrationStatus.connected else None
-            db.add(Integration(**intg, connected_at=connected_at, last_sync_at=last_sync))
+            db.add(Integration(**intg, tenant_id=tenant_id, connected_at=connected_at, last_sync_at=last_sync))
 
         # 6. Communications (pick 7 random leads, 1 comm each)
         sample_leads = rng.sample(lead_objs, min(7, len(lead_objs)))
@@ -460,6 +502,7 @@ def seed() -> None:
             direction = directions[idx % len(directions)]
             db.add(Communication(
                 lead_id=lead.id,
+                tenant_id=tenant_id,
                 channel=channel,
                 direction=direction,
                 subject=subject if channel == CommunicationChannel.email else None,
@@ -470,6 +513,7 @@ def seed() -> None:
             ))
 
         db.commit()
+        print(f"  Tenant: KimuX Demo (id={tenant_id})")
         print(f"  {len(lead_objs)} leads created.")
         print(f"  Activities created (3–6 per lead).")
         print(f"  {len(_CAMPAIGNS)} campaigns created.")

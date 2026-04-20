@@ -8,7 +8,8 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models.activity import Activity, ActivityType
-from app.models.lead import Lead, LeadStage
+from app.models.contact_submission import ContactSubmission
+from app.models.lead import Lead, LeadClassification, LeadSource, LeadStage
 from app.schemas.lead import ActivityCreate, LeadCreate, LeadListResponse, LeadResponse, LeadUpdate
 
 
@@ -24,8 +25,10 @@ _SORTABLE_FIELDS = {
 }
 
 
-def _get_or_404(db: Session, lead_id: str) -> Lead:
-    lead = db.scalar(select(Lead).where(Lead.id == lead_id))
+def _get_or_404(db: Session, lead_id: str, tenant_id: str) -> Lead:
+    lead = db.scalar(
+        select(Lead).where(Lead.id == lead_id, Lead.tenant_id == tenant_id)
+    )
     if lead is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
     return lead
@@ -38,6 +41,7 @@ def _get_or_404(db: Session, lead_id: str) -> Lead:
 def get_leads(
     db: Session,
     *,
+    tenant_id: str,
     page: int = 1,
     limit: int = 20,
     search: str | None = None,
@@ -47,9 +51,8 @@ def get_leads(
     sort_by: str = "created_at",
     sort_dir: str = "desc",
 ) -> LeadListResponse:
-    query = select(Lead)
+    query = select(Lead).where(Lead.tenant_id == tenant_id)
 
-    # Case-insensitive partial match across name, email, company
     if search:
         pattern = f"%{search}%"
         query = query.where(
@@ -68,16 +71,13 @@ def get_leads(
     if classification:
         query = query.where(Lead.classification == classification)
 
-    # Count total before pagination
     count_query = select(func.count()).select_from(query.subquery())
     total = db.scalar(count_query) or 0
 
-    # Sorting — fall back to created_at if field is invalid
     sort_field = sort_by if sort_by in _SORTABLE_FIELDS else "created_at"
     col = getattr(Lead, sort_field)
     query = query.order_by(col.desc() if sort_dir == "desc" else col.asc())
 
-    # Pagination
     offset = (page - 1) * limit
     leads = list(db.scalars(query.offset(offset).limit(limit)))
 
@@ -91,20 +91,20 @@ def get_leads(
     )
 
 
-def get_lead_by_id(db: Session, lead_id: str) -> Lead:
-    return _get_or_404(db, lead_id)
+def get_lead_by_id(db: Session, lead_id: str, tenant_id: str) -> Lead:
+    return _get_or_404(db, lead_id, tenant_id)
 
 
-def create_lead(db: Session, data: LeadCreate) -> Lead:
-    lead = Lead(**data.model_dump())
+def create_lead(db: Session, data: LeadCreate, tenant_id: str) -> Lead:
+    lead = Lead(**data.model_dump(), tenant_id=tenant_id)
     db.add(lead)
     db.commit()
     db.refresh(lead)
     return lead
 
 
-def update_lead(db: Session, lead_id: str, data: LeadUpdate) -> Lead:
-    lead = _get_or_404(db, lead_id)
+def update_lead(db: Session, lead_id: str, data: LeadUpdate, tenant_id: str) -> Lead:
+    lead = _get_or_404(db, lead_id, tenant_id)
     updates = data.model_dump(exclude_unset=True)
     for field, value in updates.items():
         setattr(lead, field, value)
@@ -114,21 +114,21 @@ def update_lead(db: Session, lead_id: str, data: LeadUpdate) -> Lead:
     return lead
 
 
-def delete_lead(db: Session, lead_id: str) -> None:
-    lead = _get_or_404(db, lead_id)
+def delete_lead(db: Session, lead_id: str, tenant_id: str) -> None:
+    lead = _get_or_404(db, lead_id, tenant_id)
     db.delete(lead)
     db.commit()
 
 
-def update_lead_stage(db: Session, lead_id: str, new_stage: LeadStage) -> Lead:
-    lead = _get_or_404(db, lead_id)
+def update_lead_stage(db: Session, lead_id: str, new_stage: LeadStage, tenant_id: str) -> Lead:
+    lead = _get_or_404(db, lead_id, tenant_id)
     old_stage = lead.stage
     lead.stage = new_stage
     lead.updated_at = datetime.now(timezone.utc)
 
-    # Log a stage_changed activity automatically
     activity = Activity(
         lead_id=lead_id,
+        tenant_id=tenant_id,
         activity_type=ActivityType.stage_changed,
         description=f"Stage changed from {old_stage.value if hasattr(old_stage, 'value') else old_stage} to {new_stage.value}",
         meta={"old_stage": str(old_stage), "new_stage": new_stage.value},
@@ -140,11 +140,75 @@ def update_lead_stage(db: Session, lead_id: str, new_stage: LeadStage) -> Lead:
 
 
 # ---------------------------------------------------------------------------
+# Contact → Lead conversion
+# ---------------------------------------------------------------------------
+
+def convert_contact_to_lead(
+    db: Session, contact: ContactSubmission, tenant_id: str
+) -> Lead:
+    parts = contact.full_name.strip().split(" ", 1)
+    first_name = parts[0]
+    last_name = parts[1] if len(parts) > 1 else ""
+
+    lead = Lead(
+        tenant_id=tenant_id,
+        first_name=first_name,
+        last_name=last_name,
+        email=contact.email.lower(),
+        company=contact.company,
+        source=LeadSource.landing_page,
+        source_detail=contact.primary_interest,
+        stage=LeadStage.new,
+        classification=LeadClassification.cold,
+        notes=contact.message,
+    )
+    db.add(lead)
+    db.flush()
+
+    activity = Activity(
+        lead_id=lead.id,
+        tenant_id=tenant_id,
+        activity_type=ActivityType.form_submit,
+        description="Submitted landing page contact form",
+        meta={
+            "primary_interest": contact.primary_interest,
+            "company_size": contact.company_size,
+            "country": contact.country,
+            "source": contact.source,
+        },
+        channel="landing_page",
+    )
+    db.add(activity)
+    return lead
+
+
+def import_contacts_as_leads(db: Session, tenant_id: str) -> dict:
+    existing_emails = set(
+        db.scalars(select(Lead.email).where(Lead.tenant_id == tenant_id)).all()
+    )
+
+    contacts = db.scalars(select(ContactSubmission)).all()
+    created = 0
+    skipped = 0
+
+    for contact in contacts:
+        if contact.email.lower() in existing_emails:
+            skipped += 1
+            continue
+        convert_contact_to_lead(db, contact, tenant_id)
+        existing_emails.add(contact.email.lower())
+        created += 1
+
+    db.commit()
+    return {"created": created, "skipped": skipped, "total_contacts": len(contacts)}
+
+
+# ---------------------------------------------------------------------------
 # Activities
 # ---------------------------------------------------------------------------
 
-def get_lead_activities(db: Session, lead_id: str) -> list[Activity]:
-    _get_or_404(db, lead_id)
+def get_lead_activities(db: Session, lead_id: str, tenant_id: str) -> list[Activity]:
+    _get_or_404(db, lead_id, tenant_id)
     return list(
         db.scalars(
             select(Activity)
@@ -155,11 +219,16 @@ def get_lead_activities(db: Session, lead_id: str) -> list[Activity]:
 
 
 def add_lead_activity(
-    db: Session, lead_id: str, data: ActivityCreate, performed_by: str | None = None
+    db: Session,
+    lead_id: str,
+    data: ActivityCreate,
+    tenant_id: str,
+    performed_by: str | None = None,
 ) -> Activity:
-    _get_or_404(db, lead_id)
+    _get_or_404(db, lead_id, tenant_id)
     activity = Activity(
         lead_id=lead_id,
+        tenant_id=tenant_id,
         activity_type=data.activity_type,
         description=data.description,
         meta=data.meta,
@@ -167,7 +236,6 @@ def add_lead_activity(
         performed_by=performed_by,
     )
     db.add(activity)
-    # Touch lead's updated_at when an activity is logged
     db.execute(
         Lead.__table__.update()
         .where(Lead.id == lead_id)

@@ -6,6 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import auth, contacts, crm
 
+# ── Fail-fast checks ──────────────────────────────────────────────────────────
+# Catch missing Phase 2 secrets before the server accepts any requests.
+if not settings.kimux_fernet_key:
+    raise RuntimeError(
+        "KIMUX_FERNET_KEY is not set. "
+        "Generate one with: cd backend && python -m app.scripts.generate_fernet_key"
+    )
 
 app = FastAPI(
     title=settings.app_name,

@@ -138,10 +138,15 @@ class AiScoreResponse(BaseModel):
     ai_score: int
     classification: str
     message: str
+    # Gemini-enhanced fields (None when rule-based fallback is used)
+    conversion_probability: float | None = None
+    recommended_action: str | None = None
+    reasoning: str | None = None
 
 
 class AiOutreachRequest(BaseModel):
     tone: str = Field(default="professional", pattern="^(professional|friendly|urgent)$")
+    channel: str = Field(default="email")
 
 
 class AiOutreachResponse(BaseModel):
@@ -149,3 +154,6 @@ class AiOutreachResponse(BaseModel):
     subject: str
     body: str
     tone: str
+    # Gemini-enhanced fields (None when template fallback is used)
+    estimated_open_rate: float | None = None
+    estimated_reply_rate: float | None = None
