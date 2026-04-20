@@ -1,0 +1,36 @@
+{
+  "network": "localhost",
+  "chainId": "31337",
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "timestamp": "2026-04-11T16:03:33.649Z",
+  "deploymentTime": 1565,
+  "blockNumber": 1,
+  "contracts": {
+    "KimuntuXWallet": {
+      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "transactionHash": "0xa5eda5a0cc38ea22b7d926e3aa6d87756875ed68f8e192c5f4d682800a6885ce",
+      "blockNumber": 1,
+      "constructorArgs": [
+        "10000000000000000"
+      ],
+      "verified": false
+    },
+    "KimuntuXCommissionSystem": {
+      "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      "transactionHash": "0xce370cd0b9d5c26016ebc3d613bf301e0d71b6e85bae01d51bd0a401dfc401ee",
+      "blockNumber": 2,
+      "constructorArgs": [],
+      "verified": false
+    },
+    "PaymentEscrow": {
+      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "transactionHash": "0xb8a9ea52a77b7bd881c284d46eee39c68950b5068c9c4944a9622353d6d784a9",
+      "blockNumber": 3,
+      "constructorArgs": [],
+      "verified": false
+    }
+  },
+  "configuration": {
+    "minimumWithdrawalAmount": "0.01 ETH"
+  }
+}
