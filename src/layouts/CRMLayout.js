@@ -461,6 +461,18 @@ const icons = {
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
     </svg>
   ),
+  blockchain: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <line x1="10" y1="6.5" x2="14" y2="6.5"/>
+      <line x1="10" y1="17.5" x2="14" y2="17.5"/>
+      <line x1="6.5" y1="10" x2="6.5" y2="14"/>
+      <line x1="17.5" y1="10" x2="17.5" y2="14"/>
+    </svg>
+  ),
   funnel: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
@@ -565,6 +577,7 @@ const NAV_SECTIONS = [
     label: 'COMMERCE',
     items: [
       { label: 'Funnel Builder',  disabled: true,           icon: 'funnel',    badge: 'soon'  },
+      { label: 'Blockchain',      to: '/crm/blockchain',    icon: 'blockchain' },
       { label: 'Fintech Hub',     to: '/crm/fintech',       icon: 'fintech'    },
       {
         label: 'Affiliate Center', icon: 'affiliate', expandable: true,
@@ -593,6 +606,7 @@ const PATH_TITLES = {
   campaigns:           'Campaigns',
   'content-scheduler': 'Content Scheduler',
   communication:       'Messages',
+  blockchain:    'Blockchain Operations',
   offers:        'Offer Discovery',
   fintech:       'Fintech Hub',
   analytics:     'Analytics',
