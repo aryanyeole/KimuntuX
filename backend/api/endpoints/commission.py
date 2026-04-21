@@ -1,7 +1,7 @@
 """
 api/endpoints/commission.py
 ────────────────────────────
-FastAPI router for KimuntuXCommissionSystem interactions.
+FastAPI router for KimuXCommissionSystem interactions.
 
 All blockchain errors are caught at the router level and mapped to
 appropriate HTTP status codes so callers receive structured JSON errors
@@ -42,9 +42,11 @@ from api.models import (
     AutoApproveRequest,
     AffiliateStatusResponse,
     BalanceResponse,
+    CommissionConfigResponse,
     CommissionHistoryItemResponse,
     CommissionHistoryResponse,
     CommissionRecordResponse,
+    CommissionTransactionStatusResponse,
     ContractStatsResponse,
     LegacyRecordCommissionRequest,
     RecordCommissionRequest,
@@ -113,6 +115,20 @@ def get_stats():
         raise _map_blockchain_error(exc)
 
 
+@router.get("/config", response_model=CommissionConfigResponse)
+def get_commission_config():
+    """Return fee, payout, and pause configuration for the commission contract."""
+    try:
+        contract = _commission_contract()
+        return CommissionConfigResponse(
+            platform_fee_rate_bps=contract.get_platform_fee_rate(),
+            minimum_payout_eth=contract.get_minimum_payout(),
+            paused=contract.is_paused(),
+        )
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
 @router.get("/balance/{affiliate}", response_model=BalanceResponse)
 def get_balance(affiliate: str):
     """Return the claimable balance for an affiliate address."""
@@ -145,6 +161,19 @@ def get_affiliate_status(address: str):
 def get_affiliate_status_compat(address: str):
     """Compatibility route for the current frontend service."""
     return get_affiliate_status(address)
+
+
+@router.get("/transactions/{transaction_id}", response_model=CommissionTransactionStatusResponse)
+def get_transaction_processed(transaction_id: str):
+    """Return whether a sale transaction ID has already been processed on-chain."""
+    try:
+        processed = _commission_contract().is_transaction_processed(transaction_id)
+        return CommissionTransactionStatusResponse(
+            transaction_id=transaction_id,
+            processed=processed,
+        )
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
 
 
 @router.get("/{affiliate}", response_model=list[CommissionRecordResponse])

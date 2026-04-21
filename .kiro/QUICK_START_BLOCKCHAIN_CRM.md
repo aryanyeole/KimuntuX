@@ -17,7 +17,7 @@ You now have a fully functional **Blockchain Operations** tab in your CRM with:
 ### 1. Start Hardhat Node (Terminal 1)
 
 ```bash
-cd KimuntuX_BlockchainIntegration
+cd KimuX_BlockchainIntegration
 npx hardhat node
 ```
 
@@ -30,7 +30,7 @@ Account #0: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
 ### 2. Deploy Contracts (Terminal 2)
 
 ```bash
-cd KimuntuX_BlockchainIntegration
+cd KimuX_BlockchainIntegration
 npx hardhat run scripts/deploy-all.js --network localhost
 ```
 
@@ -183,7 +183,7 @@ Example: `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
 **Solution:**
 ```bash
 # Restart Hardhat node
-cd KimuntuX_BlockchainIntegration
+cd KimuX_BlockchainIntegration
 npx hardhat node
 
 # Redeploy contracts

@@ -1,7 +1,7 @@
 """
 main.py
 ────────
-KimuntuX Backend — FastAPI application entry point.
+KimuX Backend — FastAPI application entry point.
 
 Start development server:
     uvicorn main:app --reload --host 0.0.0.0 --port 8000
@@ -27,7 +27,11 @@ from fastapi.responses import JSONResponse
 from api.endpoints.commission import router as commission_router
 from api.endpoints.wallet import router as wallet_router
 from api.endpoints.escrow import router as escrow_router
+from api.endpoints.network import router as network_router
 from api.models import ErrorResponse, HealthResponse
+from app.routers.auth import router as auth_router
+from app.routers.contacts import router as contacts_router
+from app.routers.crm import router as crm_router
 from blockchain.exceptions import BlockchainError, ConfigurationError, ConnectionError
 from blockchain.web3_client import get_client
 from config.settings import settings
@@ -52,7 +56,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title=settings.app.app_name,
     description=(
-        "REST API for the KimuntuX platform blockchain integration layer. "
+        "REST API for the KimuX platform blockchain integration layer. "
         "Provides endpoints for commission recording, affiliate management, "
         "and user wallet operations on the Sepolia testnet."
     ),
@@ -138,6 +142,10 @@ async def generic_error_handler(request: Request, exc: Exception) -> JSONRespons
 app.include_router(commission_router, prefix="/api/v1")
 app.include_router(wallet_router, prefix="/api/v1")
 app.include_router(escrow_router, prefix="/api/v1")
+app.include_router(network_router, prefix="/api/v1")
+app.include_router(auth_router, prefix="/api/v1")
+app.include_router(contacts_router, prefix="/api/v1")
+app.include_router(crm_router, prefix="/api/v1")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

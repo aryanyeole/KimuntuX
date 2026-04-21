@@ -1,9 +1,9 @@
 """
 blockchain/contracts/commission.py
 ───────────────────────────────────
-Task 9.2.1 — KimuntuXCommissionSystem interaction methods
+Task 9.2.1 — KimuXCommissionSystem interaction methods
 
-Wraps every public function of ``KimuntuXCommissionSystem.sol`` in a typed
+Wraps every public function of ``KimuXCommissionSystem.sol`` in a typed
 Python method.  Callers never touch Web3 primitives; all Wei/ETH
 conversions and exception mapping happen here.
 
@@ -89,7 +89,7 @@ class ContractStats:
 
 class CommissionContract:
     """
-    High-level wrapper around the deployed KimuntuXCommissionSystem contract.
+    High-level wrapper around the deployed KimuXCommissionSystem contract.
 
     Parameters
     ----------

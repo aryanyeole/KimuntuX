@@ -157,6 +157,73 @@ class EscrowContract:
             fee_rate_bps=fee_rate,
         )
 
+    def is_paused(self) -> bool:
+        return self._call("paused")
+
+    def auto_release_timeout(self) -> int:
+        return self._call("autoReleaseTimeout")
+
+    def release_escrow(self, escrow_id: int) -> str:
+        tx_hash = self._send("releaseEscrow", escrow_id)
+        logger.info("releaseEscrow tx sent: escrow_id=%d -> %s", escrow_id, tx_hash)
+        return tx_hash
+
+    def auto_release_escrow(self, escrow_id: int) -> str:
+        tx_hash = self._send("autoReleaseEscrow", escrow_id)
+        logger.info("autoReleaseEscrow tx sent: escrow_id=%d -> %s", escrow_id, tx_hash)
+        return tx_hash
+
+    def refund_escrow(self, escrow_id: int) -> str:
+        tx_hash = self._send("refundEscrow", escrow_id)
+        logger.info("refundEscrow tx sent: escrow_id=%d -> %s", escrow_id, tx_hash)
+        return tx_hash
+
+    def raise_dispute(self, escrow_id: int, reason: str) -> str:
+        tx_hash = self._send("raiseDispute", escrow_id, reason)
+        logger.info("raiseDispute tx sent: escrow_id=%d -> %s", escrow_id, tx_hash)
+        return tx_hash
+
+    def resolve_dispute(self, escrow_id: int, release_to_seller: bool) -> str:
+        tx_hash = self._send("resolveDispute", escrow_id, release_to_seller)
+        logger.info(
+            "resolveDispute tx sent: escrow_id=%d release_to_seller=%s -> %s",
+            escrow_id,
+            release_to_seller,
+            tx_hash,
+        )
+        return tx_hash
+
+    def cancel_escrow(self, escrow_id: int) -> str:
+        tx_hash = self._send("cancelEscrow", escrow_id)
+        logger.info("cancelEscrow tx sent: escrow_id=%d -> %s", escrow_id, tx_hash)
+        return tx_hash
+
+    def set_escrow_fee_rate(self, rate_bps: int) -> str:
+        tx_hash = self._send("setEscrowFeeRate", rate_bps)
+        logger.info("setEscrowFeeRate tx sent: %d bps -> %s", rate_bps, tx_hash)
+        return tx_hash
+
+    def set_auto_release_timeout(self, timeout_seconds: int) -> str:
+        tx_hash = self._send("setAutoReleaseTimeout", timeout_seconds)
+        logger.info("setAutoReleaseTimeout tx sent: %d seconds -> %s", timeout_seconds, tx_hash)
+        return tx_hash
+
+    def set_arbiter_authorization(self, arbiter: str, authorized: bool) -> str:
+        arbiter_addr = Web3.to_checksum_address(arbiter)
+        tx_hash = self._send("setArbiterAuthorization", arbiter_addr, authorized)
+        logger.info(
+            "setArbiterAuthorization tx sent: arbiter=%s authorized=%s -> %s",
+            arbiter_addr,
+            authorized,
+            tx_hash,
+        )
+        return tx_hash
+
+    def withdraw_fees(self) -> str:
+        tx_hash = self._send("withdrawFees")
+        logger.info("withdrawFees tx sent: %s", tx_hash)
+        return tx_hash
+
     def get_recent_escrows(self, limit: int = 5) -> list[EscrowRecord]:
         stats = self.get_contract_stats()
         total = stats.total_created

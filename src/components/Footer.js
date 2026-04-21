@@ -156,7 +156,7 @@ const Footer = () => {
           <h3>Resources</h3>
           <ul>
             <li><Link to="/developer">Documentation</Link></li>
-            <li><a href="mailto:support@kimuntux.com">Support</a></li>
+            <li><a href="mailto:support@KimuX.com">Support</a></li>
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/faq">FAQ</Link></li>
           </ul>
@@ -166,7 +166,7 @@ const Footer = () => {
           <h3>Company</h3>
           <ul>
             <li><Link to="/about">About</Link></li>
-            <li><a href="mailto:contact@kimuntux.com">Contact</a></li>
+            <li><a href="mailto:contact@KimuX.com">Contact</a></li>
             <li><Link to="/benefits">Benefits</Link></li>
             <li><Link to="/faq">Help Center</Link></li>
           </ul>
@@ -174,7 +174,7 @@ const Footer = () => {
       </FooterContent>
 
       <FooterBottom>
-        <p>&copy; 2026 KimuntuX, powered by Kimuntu Power Inc. All rights reserved. Built with AI-powered digital brokerage technology.</p>
+        <p>&copy; 2026 KimuX. All rights reserved. Built with AI-powered digital brokerage technology.</p>
       </FooterBottom>
     </FooterContainer>
   );

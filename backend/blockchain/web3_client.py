@@ -48,6 +48,16 @@ logger = logging.getLogger(__name__)
 
 # Path to bundled ABI files
 _ABI_DIR = Path(__file__).parent / "abis"
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_ARTIFACTS_CANDIDATES = [
+    _REPO_ROOT / "KimuX_BlockchainIntegration" / "artifacts" / "contracts",
+    _REPO_ROOT / "KimuntuX_BlockchainIntegration" / "artifacts" / "contracts",
+]
+
+_ABI_ARTIFACT_ALIASES = {
+    "CommissionSystem.json": ["KimuXCommissionSystem.json", "KimuXCommissionSystem.json"],
+    "Wallet.json": ["KimuXWallet.json", "KimuXWallet.json"],
+}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -61,23 +71,28 @@ def _load_abi(filename: str) -> list:
         with path.open() as fh:
             return json.load(fh)
 
-    artifact_path = (
-        Path(__file__).resolve().parents[2]
-        / "KimuntuX_BlockchainIntegration"
-        / "artifacts"
-        / "contracts"
-        / filename.replace(".json", ".sol")
-        / filename
-    )
-    if artifact_path.exists():
-        with artifact_path.open() as fh:
-            artifact = json.load(fh)
-        return artifact["abi"]
+    candidate_names = [filename]
+    aliases = _ABI_ARTIFACT_ALIASES.get(filename, [])
+    if isinstance(aliases, str):
+        aliases = [aliases]
+    candidate_names = [*aliases, *candidate_names]
+
+    for artifacts_dir in _ARTIFACTS_CANDIDATES:
+        if not artifacts_dir.exists():
+            continue
+        for candidate in candidate_names:
+            for artifact_path in artifacts_dir.rglob(candidate):
+                if artifact_path.name.endswith(".dbg.json"):
+                    continue
+                with artifact_path.open() as fh:
+                    artifact = json.load(fh)
+                if "abi" in artifact:
+                    return artifact["abi"]
 
     raise ConfigurationError(
         f"ABI file not found: {path}. "
         "Ensure blockchain/abis/ contains the compiled contract ABIs "
-        "or KimuntuX_BlockchainIntegration/artifacts has been built."
+        "or KimuX_BlockchainIntegration/artifacts has been built."
     )
 
 
@@ -129,9 +144,9 @@ class Web3Client:
     account : LocalAccount
         Platform signing account derived from ``PLATFORM_PRIVATE_KEY``.
     commission : Contract
-        Loaded KimuntuXCommissionSystem contract.
+        Loaded KimuXCommissionSystem contract.
     wallet : Contract
-        Loaded KimuntuXWallet contract.
+        Loaded KimuXWallet contract.
     """
 
     def __init__(self) -> None:
@@ -166,12 +181,12 @@ class Web3Client:
         self.commission: Contract = self._load_contract(
             "CommissionSystem.json",
             cfg.commission_contract_address,
-            "KimuntuXCommissionSystem",
+            "KimuXCommissionSystem",
         )
         self.wallet: Contract = self._load_contract(
             "Wallet.json",
             cfg.wallet_contract_address,
-            "KimuntuXWallet",
+            "KimuXWallet",
         )
         self.escrow: Contract | None = None
         if cfg.escrow_contract_address:

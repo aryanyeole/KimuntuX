@@ -1,7 +1,7 @@
 """
 config/settings.py
 ──────────────────
-Centralised configuration for the KimuntuX backend.
+Centralised configuration for the KimuX backend.
 
 All values come from environment variables (or a .env file).
 Pydantic-settings validates types and raises clear errors on startup
@@ -74,11 +74,11 @@ class BlockchainSettings(BaseSettings):
     # ── Contract Addresses ───────────────────────────────────────────────────
     commission_contract_address: str = Field(
         ...,
-        description="Deployed KimuntuXCommissionSystem contract address.",
+        description="Deployed KimuXCommissionSystem contract address.",
     )
     wallet_contract_address: str = Field(
         ...,
-        description="Deployed KimuntuXWallet contract address.",
+        description="Deployed KimuXWallet contract address.",
     )
     escrow_contract_address: Optional[str] = Field(
         None,
@@ -161,7 +161,7 @@ class AppSettings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "KimuntuX Backend"
+    app_name: str = "KimuX Backend"
     debug: bool = False
     log_level: str = Field("INFO", pattern=r"^(DEBUG|INFO|WARNING|ERROR|CRITICAL)$")
 

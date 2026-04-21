@@ -1,6 +1,6 @@
-# Getting Started with KimuntuX
+# Getting Started with KimuX
 
-Welcome to KimuntuX! Here's your quick onboarding guide to get up and running in minutes.
+Welcome to KimuX! Here's your quick onboarding guide to get up and running in minutes.
 
 ## Step 1: Create Your Account
 - Click **Sign Up** in the top right corner
@@ -38,8 +38,8 @@ Welcome to KimuntuX! Here's your quick onboarding guide to get up and running in
 ## Need Help?
 - Chat with our AI assistant (bottom right corner)
 - Check out our FAQ section
-- Email support@kimuntux.com
-- Schedule a demo call: https://kimuntux.com/demo
+- Email support@KimuX.com
+- Schedule a demo call: https://KimuX.com/demo
 
 ## Pro Tips
 ✅ Enable two-factor authentication for security

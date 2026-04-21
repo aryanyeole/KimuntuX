@@ -577,7 +577,6 @@ const NAV_SECTIONS = [
     label: 'COMMERCE',
     items: [
       { label: 'Funnel Builder',  disabled: true,           icon: 'funnel',    badge: 'soon'  },
-      { label: 'Blockchain',      to: '/crm/blockchain',    icon: 'blockchain' },
       { label: 'Fintech Hub',     to: '/crm/fintech',       icon: 'fintech'    },
       {
         label: 'Affiliate Center', icon: 'affiliate', expandable: true,
@@ -606,7 +605,6 @@ const PATH_TITLES = {
   campaigns:           'Campaigns',
   'content-scheduler': 'Content Scheduler',
   communication:       'Messages',
-  blockchain:    'Blockchain Operations',
   offers:        'Offer Discovery',
   fintech:       'Fintech Hub',
   analytics:     'Analytics',

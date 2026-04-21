@@ -174,7 +174,7 @@ The main branch added:
 ### 1. Deploy Hardhat Contracts
 
 ```bash
-cd KimuntuX_BlockchainIntegration
+cd KimuX_BlockchainIntegration
 npx hardhat node  # Terminal 1
 npx hardhat run scripts/deploy-all.js --network localhost  # Terminal 2
 ```

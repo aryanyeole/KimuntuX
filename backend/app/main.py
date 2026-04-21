@@ -17,7 +17,7 @@ if not settings.kimux_fernet_key:
 app = FastAPI(
     title=settings.app_name,
     version="0.1.0",
-    description="Backend API for KimuntuX auth, contact forms, and future CRM features.",
+    description="Backend API for KimuX auth, contact forms, and future CRM features.",
 )
 
 app.add_middleware(

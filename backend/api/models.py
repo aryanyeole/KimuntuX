@@ -1,7 +1,7 @@
 """
 api/models.py
 ─────────────
-Pydantic request and response models for all KimuntuX API endpoints.
+Pydantic request and response models for all KimuX API endpoints.
 
 Design decisions
 ----------------
@@ -58,6 +58,14 @@ class TxReceiptResponse(BaseModel):
     block_number: int
     gas_used: int
     status: str = Field(..., description="'success' or 'reverted'")
+
+
+class TransactionStatusResponse(BaseModel):
+    tx_hash: str
+    status: str = Field(..., description="'pending', 'success', 'reverted', or 'not_found'")
+    block_number: Optional[int] = None
+    gas_used: Optional[int] = None
+    confirmations: Optional[int] = None
 
 
 class ErrorResponse(BaseModel):
@@ -206,6 +214,17 @@ class CommissionHistoryResponse(BaseModel):
     commissions: list[CommissionHistoryItemResponse]
 
 
+class CommissionTransactionStatusResponse(BaseModel):
+    transaction_id: str
+    processed: bool
+
+
+class CommissionConfigResponse(BaseModel):
+    platform_fee_rate_bps: int
+    minimum_payout_eth: float
+    paused: bool
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Wallet endpoints
 # ─────────────────────────────────────────────────────────────────────────────
@@ -315,6 +334,12 @@ class SupportedTokensResponse(BaseModel):
     supported_tokens: list[str]
 
 
+class WalletConfigResponse(BaseModel):
+    total_wallets: int
+    minimum_withdrawal_eth: float
+    paused: bool
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Escrow
 # ─────────────────────────────────────────────────────────────────────────────
@@ -353,6 +378,38 @@ class EscrowStatsResponse(BaseModel):
     total_escrows: int = 0
     completed_escrows: int = 0
     escrow_fee_rate_bps: int = 0
+
+
+class EscrowDisputeRequest(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=500)
+
+
+class ResolveDisputeRequest(BaseModel):
+    release_to_seller: bool
+
+
+class SetEscrowFeeRateRequest(BaseModel):
+    rate_bps: int = Field(..., ge=0, le=500)
+
+
+class SetAutoReleaseTimeoutRequest(BaseModel):
+    timeout_seconds: int = Field(..., ge=86_400, le=2_592_000)
+
+
+class SetArbiterAuthorizationRequest(BaseModel):
+    arbiter: str
+    authorized: bool
+
+    @field_validator("arbiter")
+    @classmethod
+    def validate_arbiter(cls, v: str) -> str:
+        return _validate_eth_address(v)
+
+
+class EscrowConfigResponse(BaseModel):
+    escrow_fee_rate_bps: int
+    auto_release_timeout_seconds: int
+    paused: bool
 
 
 # ─────────────────────────────────────────────────────────────────────────────

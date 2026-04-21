@@ -20,7 +20,7 @@ Ensure you have the following installed:
 
 ```bash
 # Terminal 1: Hardhat Node
-cd KimuntuX_BlockchainIntegration
+cd KimuX_BlockchainIntegration
 npx hardhat node
 ```
 
@@ -43,7 +43,7 @@ Account #1: 0x70997970C51812e339D9B73b0245ad59E1edd142 (10000 ETH)
 
 ```bash
 # Terminal 2: Deploy contracts
-cd KimuntuX_BlockchainIntegration
+cd KimuX_BlockchainIntegration
 npx hardhat run scripts/deploy-all.js --network localhost
 ```
 
@@ -53,11 +53,11 @@ Deploying contracts to network: localhost
 Deployer address: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 Deployer balance: 10000.0 ETH
 
-Deploying KimuntuXWallet...
-✓ KimuntuXWallet deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+Deploying KimuXWallet...
+✓ KimuXWallet deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
 
-Deploying KimuntuXCommissionSystem...
-✓ KimuntuXCommissionSystem deployed to: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+Deploying KimuXCommissionSystem...
+✓ KimuXCommissionSystem deployed to: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
 
 Deploying PaymentEscrow...
 ✓ PaymentEscrow deployed to: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
@@ -77,7 +77,7 @@ ESCROW_CONTRACT_ADDRESS=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
 ### 1.3 Sync ABIs
 
 ```bash
-# Still in KimuntuX_BlockchainIntegration directory
+# Still in KimuX_BlockchainIntegration directory
 node scripts/sync-abis.js
 ```
 
@@ -118,7 +118,7 @@ WALLET_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
 ESCROW_CONTRACT_ADDRESS=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
 
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/kimuntux
+DATABASE_URL=postgresql://user:password@localhost:5432/KimuX
 
 # API Configuration
 API_HOST=0.0.0.0
@@ -137,11 +137,11 @@ ALLOWED_ORIGINS=http://localhost:3000
 
 ```bash
 # Create database
-createdb kimuntux
+createdb KimuX
 
 # Or using psql
 psql -U postgres
-CREATE DATABASE kimuntux;
+CREATE DATABASE KimuX;
 \q
 
 # Run migrations
@@ -182,7 +182,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 INFO:     Started reloader process [12345] using StatReload
 INFO:     Started server process [12346]
 INFO:     Waiting for application startup.
-INFO:     Starting KimuntuX Backend …
+INFO:     Starting KimuX Backend …
 INFO:     Blockchain ready — block=1, gas=1.0 gwei, platform_balance=10000.000000 ETH
 INFO:     Application startup complete.
 ```
@@ -206,8 +206,8 @@ curl http://localhost:8000/health
 #   "gas_price_gwei": 1.0,
 #   "platform_balance_eth": 10000.0,
 #   "contracts": {
-#     "KimuntuXCommissionSystem": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-#     "KimuntuXWallet": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+#     "KimuXCommissionSystem": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+#     "KimuXWallet": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
 #     "PaymentEscrow": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 #   }
 # }
@@ -397,7 +397,7 @@ ALLOWED_ORIGINS=http://localhost:3000
 **Solution:**
 ```bash
 # Restart Hardhat node
-cd KimuntuX_BlockchainIntegration
+cd KimuX_BlockchainIntegration
 npx hardhat node
 
 # Redeploy contracts
@@ -417,7 +417,7 @@ npx hardhat run scripts/deploy-all.js --network localhost
 pg_isready
 
 # Check database exists
-psql -U postgres -l | grep kimuntux
+psql -U postgres -l | grep KimuX
 
 # Run migrations
 cd backend
@@ -463,7 +463,7 @@ Create `start-demo.sh`:
 #!/bin/bash
 
 # Start Hardhat node in background
-cd KimuntuX_BlockchainIntegration
+cd KimuX_BlockchainIntegration
 npx hardhat node &
 HARDHAT_PID=$!
 

@@ -228,7 +228,7 @@ export default function BenefitsBySectorPage() {
     },
     {
       title: 'Professional & Consulting Services',
-      description: 'AI-powered automation for clients, projects, and digital visibility. Automate leads, meetings, and invoicing. Generate proposals, contracts, and marketing content instantly. Expand professional networks through the KimuntuX brokerage hub.'
+      description: 'AI-powered automation for clients, projects, and digital visibility. Automate leads, meetings, and invoicing. Generate proposals, contracts, and marketing content instantly. Expand professional networks through the KimuX brokerage hub.'
     },
     {
       title: 'Universal Benefits',
@@ -245,7 +245,7 @@ export default function BenefitsBySectorPage() {
           </HeroImageWrapper>
           <HeroContent>
             <HeroTitle>Benefits by Sector</HeroTitle>
-            <HeroSubtitle>How KimuntuX empowers organizations across every industry</HeroSubtitle>
+            <HeroSubtitle>How KimuX empowers organizations across every industry</HeroSubtitle>
           </HeroContent>
         </HeroSection>
 

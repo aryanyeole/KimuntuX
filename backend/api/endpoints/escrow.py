@@ -10,7 +10,18 @@ import logging
 
 from fastapi import APIRouter, HTTPException, status
 
-from api.models import CreateEscrowRequest, EscrowResponse, EscrowStatsResponse, TxResponse
+from api.models import (
+    CreateEscrowRequest,
+    EscrowConfigResponse,
+    EscrowDisputeRequest,
+    EscrowResponse,
+    EscrowStatsResponse,
+    ResolveDisputeRequest,
+    SetArbiterAuthorizationRequest,
+    SetAutoReleaseTimeoutRequest,
+    SetEscrowFeeRateRequest,
+    TxResponse,
+)
 from blockchain.contracts.escrow import EscrowContract, EscrowStatus
 from blockchain.exceptions import (
     BlockchainError,
@@ -79,6 +90,21 @@ def get_escrow_stats():
         raise _map_blockchain_error(exc)
 
 
+@router.get("/config", response_model=EscrowConfigResponse)
+def get_escrow_config():
+    """Return the global escrow fee and timeout configuration."""
+    try:
+        contract = _escrow_contract()
+        stats = contract.get_contract_stats()
+        return EscrowConfigResponse(
+            escrow_fee_rate_bps=stats.fee_rate_bps,
+            auto_release_timeout_seconds=contract.auto_release_timeout(),
+            paused=contract.is_paused(),
+        )
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
 @router.post("/create", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
 def create_escrow(body: CreateEscrowRequest):
     """Create a new escrow on-chain."""
@@ -95,6 +121,88 @@ def create_escrow(body: CreateEscrowRequest):
         raise _map_blockchain_error(exc)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/{escrow_id}/release", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def release_escrow(escrow_id: int):
+    try:
+        return TxResponse(tx_hash=_escrow_contract().release_escrow(escrow_id))
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/{escrow_id}/auto-release", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def auto_release_escrow(escrow_id: int):
+    try:
+        return TxResponse(tx_hash=_escrow_contract().auto_release_escrow(escrow_id))
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/{escrow_id}/refund", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def refund_escrow(escrow_id: int):
+    try:
+        return TxResponse(tx_hash=_escrow_contract().refund_escrow(escrow_id))
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/{escrow_id}/dispute", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def dispute_escrow(escrow_id: int, body: EscrowDisputeRequest):
+    try:
+        return TxResponse(tx_hash=_escrow_contract().raise_dispute(escrow_id, body.reason))
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/{escrow_id}/resolve", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def resolve_escrow_dispute(escrow_id: int, body: ResolveDisputeRequest):
+    try:
+        return TxResponse(tx_hash=_escrow_contract().resolve_dispute(escrow_id, body.release_to_seller))
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/{escrow_id}/cancel", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def cancel_escrow(escrow_id: int):
+    try:
+        return TxResponse(tx_hash=_escrow_contract().cancel_escrow(escrow_id))
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/fee-rate", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def set_escrow_fee_rate(body: SetEscrowFeeRateRequest):
+    try:
+        return TxResponse(tx_hash=_escrow_contract().set_escrow_fee_rate(body.rate_bps))
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/auto-release-timeout", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def set_auto_release_timeout(body: SetAutoReleaseTimeoutRequest):
+    try:
+        return TxResponse(tx_hash=_escrow_contract().set_auto_release_timeout(body.timeout_seconds))
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/arbiters/authorize", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def set_arbiter_authorization(body: SetArbiterAuthorizationRequest):
+    try:
+        return TxResponse(
+            tx_hash=_escrow_contract().set_arbiter_authorization(body.arbiter, body.authorized)
+        )
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.post("/fees/withdraw", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
+def withdraw_escrow_fees():
+    try:
+        return TxResponse(tx_hash=_escrow_contract().withdraw_fees())
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
 
 
 @router.get("/{escrow_id}", response_model=EscrowResponse)

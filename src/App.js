@@ -42,7 +42,6 @@ import CRMCampaigns from './pages/crm/CRMCampaigns';
 import CRMLeads from './pages/crm/CRMLeads';
 import CRMPipeline from './pages/crm/CRMPipeline';
 import CRMCommunication from './pages/crm/CRMCommunication';
-import CRMBlockchain from './pages/crm/CRMBlockchain';
 import CRMAnalytics from './pages/crm/CRMAnalytics';
 import CRMSettings from './pages/crm/CRMSettings';
 import CRMStrategy from './pages/crm/CRMStrategy';
@@ -91,7 +90,7 @@ function AppInner() {
           <Route path="leads" element={<CRMLeads />} />
           <Route path="pipeline" element={<CRMPipeline />} />
           <Route path="communication" element={<CRMCommunication />} />
-          <Route path="blockchain" element={<CRMBlockchain />} />
+          <Route path="blockchain" element={<Navigate to="/crm/fintech" replace />} />
           <Route path="strategy" element={<CRMStrategy />} />
           <Route path="fintech" element={<CRMFintech />} />
           <Route path="academy" element={<CRMAcademy />} />

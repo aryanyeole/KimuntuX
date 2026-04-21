@@ -1,7 +1,7 @@
 """
 api/endpoints/wallet.py
 ────────────────────────
-FastAPI router for KimuntuXWallet interactions.
+FastAPI router for KimuXWallet interactions.
 
 Endpoints
 ---------
@@ -45,6 +45,7 @@ from api.models import (
     TxResponse,
     UpdateMinimumWithdrawalRequest,
     WalletBalancesResponse,
+    WalletConfigResponse,
     WalletDetailsResponse,
     WalletExistsResponse,
     WalletSummaryResponse,
@@ -174,6 +175,20 @@ def get_total_wallets():
     try:
         total = _wallet_contract().get_total_wallets()
         return {"total_wallets": total}
+    except BlockchainError as exc:
+        raise _map_blockchain_error(exc)
+
+
+@router.get("/config", response_model=WalletConfigResponse)
+def get_wallet_config():
+    """Return global wallet configuration used by treasury flows."""
+    try:
+        contract = _wallet_contract()
+        return WalletConfigResponse(
+            total_wallets=contract.get_total_wallets(),
+            minimum_withdrawal_eth=contract.minimum_withdrawal(),
+            paused=contract.is_paused(),
+        )
     except BlockchainError as exc:
         raise _map_blockchain_error(exc)
 
