@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserSignup(BaseModel):
@@ -25,6 +25,18 @@ class UserResponse(BaseModel):
     is_active: bool
     is_admin: bool
     created_at: datetime
+
+    @field_validator("is_active", "is_admin", mode="before")
+    @classmethod
+    def bool_none_to_false(cls, v: object) -> bool:
+        return False if v is None else bool(v)
+
+    @field_validator("full_name", mode="before")
+    @classmethod
+    def empty_name_to_unknown(cls, v: object) -> str:
+        if v is None or (isinstance(v, str) and not v.strip()):
+            return "User"
+        return str(v)
 
 
 class TokenResponse(BaseModel):

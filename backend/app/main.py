@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.exceptions import ResponseValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.core.bootstrap_admin import ensure_bootstrap_admin
@@ -17,6 +19,18 @@ app = FastAPI(
     version="0.1.0",
     description="Backend API for KimuntuX auth, contact forms, and future CRM features.",
 )
+
+
+@app.exception_handler(ResponseValidationError)
+async def response_validation_handler(
+    _request, exc: ResponseValidationError
+) -> JSONResponse:
+    """Return JSON (not HTML) so clients see why /auth/login response failed validation."""
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Response validation failed", "errors": exc.errors()},
+    )
+
 
 app.add_middleware(
     CORSMiddleware,

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { parseJsonOrApiError } from '../utils/parseFetchJson';
 
 const PAGE_BG = '#000000';
 const CARD_BG = '#111111';
@@ -99,11 +100,59 @@ const TableScroll = styled.div`
   margin: 0 -0.25rem;
 `;
 
+const ActionCell = styled.td`
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid ${BORDER};
+  vertical-align: middle;
+  white-space: nowrap;
+`;
+
+const ActionGroup = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+`;
+
+const ActionBtn = styled.button`
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid ${TEAL};
+  background: rgba(0, 200, 150, 0.12);
+  color: ${TEAL};
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 200, 150, 0.28);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+`;
+
+const ActionBtnSecondary = styled(ActionBtn)`
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+
+  &:hover:not(:disabled) {
+    border-color: ${TEAL};
+    background: rgba(0, 200, 150, 0.15);
+    color: ${TEAL};
+  }
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 1.0625rem;
-  min-width: 720px;
+  min-width: 920px;
 
   @media (max-width: 768px) {
     font-size: 1rem;
@@ -189,7 +238,7 @@ const TABS = [
 ];
 
 const AdminPage = () => {
-  const { user, token, isLoading } = useUser();
+  const { user, token, login, isLoading } = useUser();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
@@ -197,6 +246,8 @@ const AdminPage = () => {
   const [support, setSupport] = useState([]);
   const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [actingOnUserId, setActingOnUserId] = useState(null);
 
   useEffect(() => {
     if (isLoading) return;
@@ -253,6 +304,76 @@ const AdminPage = () => {
     loadTab();
   }, [activeTab, user, token, loadTab]);
 
+  useEffect(() => {
+    setActionError('');
+  }, [activeTab]);
+
+  const mapTokenUserToContext = (data) => ({
+    id: data.user.id,
+    name: data.user.full_name,
+    email: data.user.email,
+    isActive: data.user.is_active ?? data.user.isActive,
+    isAdmin: !!(data.user?.is_admin ?? data.user?.isAdmin),
+    joinDate: data.user.created_at
+  });
+
+  const handleAccessAccount = async (target) => {
+    if (!token || !(user?.isAdmin ?? user?.is_admin)) return;
+    setActionError('');
+    setActingOnUserId(target.id);
+    try {
+      const r = await fetch(`${API_BASE_URL}/admin/users/${target.id}/access-token`, {
+        method: 'POST',
+        headers: authHeaders()
+      });
+      const data = await parseJsonOrApiError(r);
+      const backup = {
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          isActive: user.isActive ?? user.is_active,
+          isAdmin: !!(user.isAdmin ?? user.is_admin),
+          joinDate: user.joinDate
+        }
+      };
+      try {
+        sessionStorage.setItem('kimuntu_admin_restore', JSON.stringify(backup));
+      } catch {
+        /* private mode */
+      }
+      login(mapTokenUserToContext(data), data.access_token);
+      navigate('/dashboard');
+    } catch (e) {
+      setActionError(e.message || 'Could not open user session');
+    } finally {
+      setActingOnUserId(null);
+    }
+  };
+
+  const handleMakeAdmin = async (target) => {
+    if (!token || !(user?.isAdmin ?? user?.is_admin)) return;
+    if (target.is_admin) return;
+    setActionError('');
+    setActingOnUserId(target.id);
+    try {
+      const r = await fetch(`${API_BASE_URL}/admin/users/${target.id}/role`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ is_admin: true })
+      });
+      await parseJsonOrApiError(r);
+      setUsers((prev) =>
+        prev.map((row) => (row.id === target.id ? { ...row, is_admin: true } : row))
+      );
+    } catch (e) {
+      setActionError(e.message || 'Could not update admin role');
+    } finally {
+      setActingOnUserId(null);
+    }
+  };
+
   const isAdminUser = !!(user?.isAdmin ?? user?.is_admin);
 
   if (isLoading || !isAdminUser) {
@@ -293,6 +414,7 @@ const AdminPage = () => {
             <>
               <PanelTitle>User profiles</PanelTitle>
               {loadError && <ErrorBox>{loadError}</ErrorBox>}
+              {actionError && <ErrorBox>{actionError}</ErrorBox>}
               {loading ? (
                 <EmptyNote>Loading…</EmptyNote>
               ) : loadError ? null : users.length === 0 ? (
@@ -306,19 +428,46 @@ const AdminPage = () => {
                         <Th>Email / username</Th>
                         <Th>Password</Th>
                         <Th>Active</Th>
+                        <Th>Admin</Th>
                         <Th>Joined</Th>
+                        <Th>Actions</Th>
                       </tr>
                     </thead>
                     <tbody>
-                      {users.map((u) => (
-                        <tr key={u.id}>
-                          <Td>{u.full_name}</Td>
-                          <Td>{u.email}</Td>
-                          <Td title={u.password_note}>{u.password_note}</Td>
-                          <Td>{u.is_active ? 'Yes' : 'No'}</Td>
-                          <Td>{u.created_at ? new Date(u.created_at).toLocaleString() : '—'}</Td>
-                        </tr>
-                      ))}
+                      {users.map((u) => {
+                        const isSelf = u.id === user?.id;
+                        const busy = actingOnUserId === u.id;
+                        return (
+                          <tr key={u.id}>
+                            <Td>{u.full_name}</Td>
+                            <Td>{u.email}</Td>
+                            <Td title={u.password_note}>{u.password_note}</Td>
+                            <Td>{u.is_active ? 'Yes' : 'No'}</Td>
+                            <Td>{u.is_admin ? 'Yes' : 'No'}</Td>
+                            <Td>{u.created_at ? new Date(u.created_at).toLocaleString() : '—'}</Td>
+                            <ActionCell>
+                              <ActionGroup>
+                                <ActionBtnSecondary
+                                  type="button"
+                                  disabled={busy || isSelf}
+                                  title={isSelf ? 'Already your account' : 'Sign in as this user (you can return via the banner)'}
+                                  onClick={() => handleAccessAccount(u)}
+                                >
+                                  Access account
+                                </ActionBtnSecondary>
+                                <ActionBtn
+                                  type="button"
+                                  disabled={busy || u.is_admin}
+                                  title={u.is_admin ? 'User is already an administrator' : 'Grant administrator access'}
+                                  onClick={() => handleMakeAdmin(u)}
+                                >
+                                  Make admin
+                                </ActionBtn>
+                              </ActionGroup>
+                            </ActionCell>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </Table>
                 </TableScroll>

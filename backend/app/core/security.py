@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from passlib.exc import UnknownHashError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -24,7 +25,13 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    if not hashed_password:
+        return False
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except (ValueError, TypeError, UnknownHashError):
+        # Unknown or legacy hash format — avoid 500 on login; treat as invalid password.
+        return False
 
 
 def create_access_token(subject: str, expires_minutes: int | None = None) -> str:

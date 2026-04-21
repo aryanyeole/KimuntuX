@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { parseJsonOrApiError } from '../utils/parseFetchJson';
 import transparentLogo from '../assets/dark_new_logo.jpeg';
 
 const SignupContainer = styled.div`
@@ -251,10 +252,7 @@ const SignupPage = () => {
         })
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to create account');
-      }
+      const data = await parseJsonOrApiError(response);
 
       const userData = {
         id: data.user.id,

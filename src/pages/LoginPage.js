@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { parseJsonOrApiError } from '../utils/parseFetchJson';
 import transparentLogo from '../assets/dark_new_logo.jpeg';
 
 const LoginContainer = styled.div`
@@ -229,10 +230,7 @@ const LoginPage = () => {
         })
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || 'Invalid email or password');
-      }
+      const data = await parseJsonOrApiError(response);
 
       const admin =
         !!(data.user?.is_admin ?? data.user?.isAdmin);

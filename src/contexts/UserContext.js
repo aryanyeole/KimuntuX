@@ -127,6 +127,27 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem('kimuntu_user');
     localStorage.removeItem('kimuntu_current_user');
     localStorage.removeItem('kimuntu_token');
+    try {
+      sessionStorage.removeItem('kimuntu_admin_restore');
+    } catch {
+      /* ignore */
+    }
+  };
+
+  /** Restore admin session after "Access account" impersonation (see AdminPage). */
+  const stopImpersonating = () => {
+    try {
+      const raw = sessionStorage.getItem('kimuntu_admin_restore');
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      const { token: adminToken, user: adminUser } = parsed;
+      if (!adminToken || !adminUser) return false;
+      sessionStorage.removeItem('kimuntu_admin_restore');
+      login(adminUser, adminToken);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const updateUser = (updatedData) => {
@@ -141,6 +162,7 @@ export const UserProvider = ({ children }) => {
     token,
     login,
     logout,
+    stopImpersonating,
     updateUser,
     isLoading,
     isAuthenticated: !!user

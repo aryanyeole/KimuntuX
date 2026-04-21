@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class AdminUserItem(BaseModel):
@@ -12,7 +12,12 @@ class AdminUserItem(BaseModel):
     username: str
     password_note: str
     is_active: bool
+    is_admin: bool
     created_at: datetime
+
+
+class AdminUserRoleUpdate(BaseModel):
+    is_admin: bool = Field(description="Grant or revoke administrator access")
 
 
 class AdminContactItem(BaseModel):

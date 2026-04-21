@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import transparentLogo from '../assets/dark_new_logo.jpeg';
@@ -157,10 +157,38 @@ const StartTrialButton = styled(Link)`
   }
 `;
 
+const ImpersonationBar = styled.div`
+  background: rgba(218, 165, 32, 0.2);
+  border-bottom: 1px solid rgba(218, 165, 32, 0.45);
+  color: #f5e6c8;
+  padding: 0.5rem 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 1.05rem;
+`;
+
+const ImpersonationBtn = styled.button`
+  background: #daa520;
+  color: #111;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  &:hover {
+    filter: brightness(1.08);
+  }
+`;
+
 const Header = () => {
   const { isDarkMode, toggleTheme } = useTheme();
-  const { user, logout } = useUser();
+  const { user, logout, stopImpersonating } = useUser();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -187,6 +215,11 @@ const Header = () => {
   }, [lastScrollY]);
 
   const isAdminUser = !!(user?.isAdmin ?? user?.is_admin);
+  const canReturnToAdmin =
+    user &&
+    !isAdminUser &&
+    typeof sessionStorage !== 'undefined' &&
+    !!sessionStorage.getItem('kimuntu_admin_restore');
 
   const mainNavItems = [
     { path: '/about', label: 'About' },
@@ -204,8 +237,22 @@ const Header = () => {
     logout();
   };
 
+  const handleReturnToAdmin = () => {
+    if (stopImpersonating()) {
+      navigate('/admin');
+    }
+  };
+
   return (
     <HeaderContainer isVisible={isVisible}>
+      {canReturnToAdmin && (
+        <ImpersonationBar>
+          <span>You are signed in as this user (admin view). Session can be restored.</span>
+          <ImpersonationBtn type="button" onClick={handleReturnToAdmin}>
+            Return to admin account
+          </ImpersonationBtn>
+        </ImpersonationBar>
+      )}
       <NavContainer>
         <LeftSection>
           <Logo to="/">
