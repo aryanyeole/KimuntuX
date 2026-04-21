@@ -459,6 +459,7 @@ export default function ContentGeneratorPage() {
   const [statusMessage, setStatusMessage] = useState('Ready to generate a campaign.');
   const [saveMessage, setSaveMessage] = useState('');
   const [saveErrors, setSaveErrors] = useState([]);
+  const [previewSelections, setPreviewSelections] = useState({});
   const [showRawJson, setShowRawJson] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [numVariants, setNumVariants] = useState(3);
@@ -559,7 +560,76 @@ export default function ContentGeneratorPage() {
     if (!campaign || isGenerating) return;
 
     try {
-      const payload = mode === 'manual' ? JSON.parse(manualJson || '{}') : campaign;
+      const sourcePayload = mode === 'manual' ? JSON.parse(manualJson || '{}') : campaign;
+
+      const payload = !sourcePayload || !Array.isArray(sourcePayload.content_pieces) || !Object.keys(previewSelections).length
+        ? sourcePayload
+        : {
+          ...sourcePayload,
+          content_pieces: sourcePayload.content_pieces.map((piece, index) => {
+            const platformKey = piece?.platform || `Platform ${index + 1}`;
+            const platformSelections = previewSelections?.[platformKey];
+
+            if (!platformSelections) {
+              return piece;
+            }
+
+            const clampIndex = (value) => {
+              const safeValue = Number.isInteger(value) ? value : 0;
+              return Math.max(0, Math.min(2, safeValue));
+            };
+
+            const pickVariant = (value, indexValue) => {
+              const variants = [value, value, value];
+              return variants[clampIndex(indexValue)];
+            };
+
+            const selectedHeadline = pickVariant(piece?.copy?.headline, platformSelections.headline);
+            const selectedBody = pickVariant(piece?.copy?.body ?? piece?.copy?.caption, platformSelections.body);
+            const selectedCta = pickVariant(piece?.copy?.cta_text ?? piece?.cta_text, platformSelections.cta);
+            const selectedHashtags = pickVariant(
+              Array.isArray(piece?.hashtags) ? piece.hashtags : undefined,
+              platformSelections.hashtags,
+            );
+            const selectedImagePrompt = pickVariant(piece?.media?.image_prompt, platformSelections.imagePrompt);
+
+            const nextCopy = {
+              ...(piece?.copy || {}),
+            };
+
+            if (selectedHeadline !== undefined) {
+              nextCopy.headline = selectedHeadline;
+            }
+
+            if (selectedBody !== undefined) {
+              nextCopy.body = selectedBody;
+              nextCopy.caption = selectedBody;
+            }
+
+            const nextPiece = {
+              ...piece,
+              copy: nextCopy,
+            };
+
+            if (selectedCta !== undefined) {
+              nextPiece.cta_text = selectedCta;
+            }
+
+            if (selectedHashtags !== undefined) {
+              nextPiece.hashtags = Array.isArray(selectedHashtags) ? [...selectedHashtags] : selectedHashtags;
+            }
+
+            if (selectedImagePrompt !== undefined) {
+              nextPiece.media = {
+                ...(piece?.media || {}),
+                image_prompt: selectedImagePrompt,
+              };
+            }
+
+            return nextPiece;
+          }),
+        };
+
       const result = await createCampaignForScheduler(payload, { strict: false });
       if (result.campaign) {
         setCampaign(result.campaign);
@@ -763,7 +833,11 @@ export default function ContentGeneratorPage() {
                   <BodyText>{previewText}</BodyText>
                 </Card>
 
-                <CampaignPlatformPreview contentPieces={campaign.content_pieces} />
+                <CampaignPlatformPreview
+                  contentPieces={campaign.content_pieces}
+                  selections={previewSelections}
+                  onSelectionsChange={setPreviewSelections}
+                />
 
                 <Button
                   variant="ghost"
