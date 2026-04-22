@@ -11,6 +11,7 @@ const API_URL = process.env.REACT_APP_BLOCKCHAIN_API_URL || 'http://localhost:80
 const NETWORK = process.env.REACT_APP_BLOCKCHAIN_NETWORK || 'localhost';
 const DEFAULT_COMMISSION_RATE_BPS = Number(process.env.REACT_APP_DEFAULT_COMMISSION_RATE_BPS || 10000);
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const MARKET_API_URL = 'https://api.coingecko.com/api/v3';
 const HARDHAT_CHAIN_ID = '0x7A69';
 const HARDHAT_CHAIN_DECIMAL = 31337;
 const HARDHAT_NETWORK_CONFIG = {
@@ -368,6 +369,72 @@ export const getTransactionStatus = async (txHash) => {
   };
 };
 
+export const getCryptoMarketSnapshot = async () => {
+  const query = new URLSearchParams({
+    vs_currency: 'usd',
+    ids: 'bitcoin,ethereum,solana,chainlink,usd-coin',
+    order: 'market_cap_desc',
+    per_page: '5',
+    page: '1',
+    sparkline: 'false',
+    price_change_percentage: '24h',
+  });
+
+  const response = await fetch(`${MARKET_API_URL}/coins/markets?${query.toString()}`);
+  if (!response.ok) {
+    throw new Error('Unable to load crypto market data right now.');
+  }
+
+  const rows = await response.json();
+  return rows.map((coin) => ({
+    id: coin.id,
+    symbol: String(coin.symbol || '').toUpperCase(),
+    name: coin.name,
+    image: coin.image,
+    current_price: Number(coin.current_price || 0),
+    price_change_percentage_24h: Number(coin.price_change_percentage_24h || 0),
+    market_cap_rank: Number(coin.market_cap_rank || 0),
+    market_cap: Number(coin.market_cap || 0),
+  }));
+};
+
+export const getCryptoPriceMap = async () => {
+  const query = new URLSearchParams({
+    ids: 'bitcoin,ethereum,solana,chainlink,usd-coin',
+    vs_currencies: 'usd',
+    include_24hr_change: 'true',
+  });
+
+  const response = await fetch(`${MARKET_API_URL}/simple/price?${query.toString()}`);
+  if (!response.ok) {
+    throw new Error('Unable to load crypto prices right now.');
+  }
+
+  const data = await response.json();
+  return {
+    bitcoin: {
+      usd: Number(data.bitcoin?.usd || 0),
+      change_24h: Number(data.bitcoin?.usd_24h_change || 0),
+    },
+    ethereum: {
+      usd: Number(data.ethereum?.usd || 0),
+      change_24h: Number(data.ethereum?.usd_24h_change || 0),
+    },
+    solana: {
+      usd: Number(data.solana?.usd || 0),
+      change_24h: Number(data.solana?.usd_24h_change || 0),
+    },
+    chainlink: {
+      usd: Number(data.chainlink?.usd || 0),
+      change_24h: Number(data.chainlink?.usd_24h_change || 0),
+    },
+    'usd-coin': {
+      usd: Number(data['usd-coin']?.usd || 0),
+      change_24h: Number(data['usd-coin']?.usd_24h_change || 0),
+    },
+  };
+};
+
 export const createWalletFor = async (address) => {
   if (!validateAddress(address)) {
     throw new Error('Invalid Ethereum address');
@@ -707,6 +774,8 @@ const blockchainService = {
   getEscrowConfig,
   getEscrow,
   getTransactionStatus,
+  getCryptoMarketSnapshot,
+  getCryptoPriceMap,
   createWalletFor,
   createWalletWithMetaMask,
   depositEth,

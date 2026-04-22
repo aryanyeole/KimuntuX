@@ -134,7 +134,18 @@ function Update-EnvValue {
         $content = $content.TrimEnd() + "`r`n$replacement`r`n"
     }
 
-    Set-Content -Path $FilePath -Value $content
+    $lastError = $null
+    for ($attempt = 1; $attempt -le 5; $attempt++) {
+        try {
+            Set-Content -Path $FilePath -Value $content
+            return
+        } catch {
+            $lastError = $_
+            Start-Sleep -Milliseconds 400
+        }
+    }
+
+    throw $lastError
 }
 
 Write-Host "Starting KimuX demo stack..."

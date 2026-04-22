@@ -217,8 +217,19 @@ const WalletConnector = ({ onWalletConnected }) => {
     bootstrapMetaMask();
     const unsubscribe = blockchainService.watchMetaMaskAccount((nextAddress) => {
       setMetaMaskAddress(nextAddress);
-      if (!connected) {
-        setAddress(nextAddress || '');
+      setAddress(nextAddress || '');
+
+      if (connected) {
+        setConnected(false);
+        setWalletData(null);
+        setSuccess('');
+        setError(nextAddress
+          ? 'MetaMask account changed. Review the new wallet and reconnect.'
+          : 'MetaMask disconnected. Reconnect to continue.');
+
+        if (onWalletConnected) {
+          onWalletConnected(null, null);
+        }
       }
     });
 
@@ -226,14 +237,13 @@ const WalletConnector = ({ onWalletConnected }) => {
       active = false;
       unsubscribe();
     };
-  }, [connected]);
+  }, [connected, onWalletConnected]);
 
   const hydrateWallet = async (walletAddress) => {
     const status = await blockchainService.getWalletStatus(walletAddress);
 
     if (!status.exists) {
-      const createResult = await blockchainService.createWalletFor(walletAddress);
-      setSuccess(`Wallet created successfully. Transaction: ${createResult.tx_hash}`);
+      throw new Error('No KimuX wallet exists for this address yet.');
     }
 
     const details = await blockchainService.getWalletDetails(walletAddress);
@@ -276,7 +286,14 @@ const WalletConnector = ({ onWalletConnected }) => {
       const nextAddress = await blockchainService.connectMetaMask();
       setMetaMaskAddress(nextAddress);
       setAddress(nextAddress);
-      await handleConnect(nextAddress);
+
+      const status = await blockchainService.getWalletStatus(nextAddress);
+      if (!status.exists) {
+        const createResult = await blockchainService.createWalletWithMetaMask(nextAddress);
+        setSuccess(`Wallet created with MetaMask. Transaction: ${createResult.tx_hash}`);
+      }
+
+      await hydrateWallet(nextAddress);
     } catch (err) {
       setError(err.message || 'Failed to connect MetaMask.');
     } finally {
@@ -337,8 +354,8 @@ const WalletConnector = ({ onWalletConnected }) => {
                 <InfoValue>Checks wallet registry</InfoValue>
               </InfoRow>
               <InfoRow>
-                <InfoLabel>If missing</InfoLabel>
-                <InfoValue>Creates platform wallet</InfoValue>
+                <InfoLabel>If missing via MetaMask</InfoLabel>
+                <InfoValue>Creates wallet on-chain as you</InfoValue>
               </InfoRow>
               <InfoRow>
                 <InfoLabel>Then</InfoLabel>
@@ -372,7 +389,8 @@ const WalletConnector = ({ onWalletConnected }) => {
           </InputGroup>
 
           <HelperText>
-            MetaMask connect will request the active account and switch to the local Hardhat network automatically.
+            MetaMask connect will request the active account, switch to the local Hardhat network automatically,
+            and create the wallet from your connected account if one does not exist yet.
           </HelperText>
         </>
       ) : (

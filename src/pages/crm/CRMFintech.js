@@ -90,11 +90,11 @@ export default function CRMFintech() {
     },
     {
       title: 'Wallet Onboarding',
-      body: 'MetaMask connect now pulls the active account, switches to the local Hardhat chain when needed, and provisions an on-platform wallet automatically.',
+      body: 'MetaMask connect now pulls the active account, switches to the local Hardhat chain when needed, and creates the wallet from the user account itself when needed.',
     },
     {
-      title: 'Payments Layer',
-      body: 'This section is where fiat rails, settlement reporting, and broader fintech controls can grow without splitting blockchain into its own sidebar lane.',
+      title: 'Market-Aware Finance',
+      body: 'Users now get wallet value, crypto pricing context, and strategy guidance alongside the transaction console so the blockchain workspace feels practical and decision-ready.',
     },
   ];
 
@@ -105,7 +105,8 @@ export default function CRMFintech() {
         <Title>Payments, wallets, and blockchain operations in one place.</Title>
         <Copy>
           Fintech Hub is now the home for wallet connectivity, smart-contract monitoring, escrow flows,
-          and commission treasury activity. That keeps the sidebar clean while preserving the full blockchain workflow.
+          commission treasury activity, and live market context. That keeps the sidebar clean while preserving a more
+          useful blockchain workflow for day-to-day fintech operations.
         </Copy>
       </Hero>
 
