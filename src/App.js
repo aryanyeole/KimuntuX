@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UserProvider } from './contexts/UserContext';
+import { TenantProvider } from './contexts/TenantContext';
 import { ChatbotProvider } from './providers/ChatbotProvider';
 import { GlobalStyles } from './styles/GlobalStyles';
 import Header from './components/Header';
@@ -44,6 +45,10 @@ import CRMCommunication from './pages/crm/CRMCommunication';
 import CRMAnalytics from './pages/crm/CRMAnalytics';
 import CRMSettings from './pages/crm/CRMSettings';
 import ContentSchedulerPage from './pages/ContentSchedulerPage';
+import CRMStrategy from './pages/crm/CRMStrategy';
+import CRMFintech from './pages/crm/CRMFintech';
+import CRMAcademy from './pages/crm/CRMAcademy';
+import CRMContentScheduler from './pages/crm/CRMContentScheduler';
 
 function AppInner() {
   const location = useLocation();
@@ -82,14 +87,6 @@ function AppInner() {
             </ProtectedRoute>
           )}
         />
-        <Route
-          path="/content-gen"
-          element={(
-            <ProtectedRoute>
-              <ContentGeneratorPage />
-            </ProtectedRoute>
-          )}
-        />
         <Route path="/digital-marketing-report" element={<MarketingReportPage />} />
 
         <Route path="/crm" element={<CRMLayout />}>
@@ -97,11 +94,15 @@ function AppInner() {
           <Route path="dashboard" element={<CRMDashboard />} />
           <Route path="offers" element={<CRMOffers />} />
           <Route path="campaigns" element={<CRMCampaigns />} />
-          <Route path="scheduler" element={<ContentSchedulerPage />} />
           <Route path="content-gen" element={<ContentGeneratorPage />} />
           <Route path="leads" element={<CRMLeads />} />
           <Route path="pipeline" element={<CRMPipeline />} />
           <Route path="communication" element={<CRMCommunication />} />
+          <Route path="blockchain" element={<Navigate to="/crm/fintech" replace />} />
+          <Route path="strategy" element={<CRMStrategy />} />
+          <Route path="fintech" element={<CRMFintech />} />
+          <Route path="academy" element={<CRMAcademy />} />
+          <Route path="content-scheduler" element={<CRMContentScheduler />} />
           <Route path="analytics" element={<CRMAnalytics />} />
           <Route path="settings" element={<CRMSettings />} />
         </Route>
@@ -116,12 +117,14 @@ function App() {
   return (
     <ThemeProvider>
       <UserProvider>
-        <GlobalStyles />
-        <Router>
-          <ChatbotProvider>
-            <AppInner />
-          </ChatbotProvider>
-        </Router>
+        <TenantProvider>
+          <GlobalStyles />
+          <Router>
+            <ChatbotProvider>
+              <AppInner />
+            </ChatbotProvider>
+          </Router>
+        </TenantProvider>
       </UserProvider>
     </ThemeProvider>
   );

@@ -17,13 +17,17 @@ _PREVIEW_LEN = 100
 
 def get_communications(
     db: Session,
+    tenant_id: str,
     *,
     lead_id: str | None = None,
 ) -> CommunicationListResponse:
-    query = select(Communication).order_by(Communication.timestamp.desc())
+    query = select(Communication).where(Communication.tenant_id == tenant_id).order_by(
+        Communication.timestamp.desc()
+    )
     if lead_id:
-        # Verify the lead exists before filtering
-        if not db.scalar(select(Lead.id).where(Lead.id == lead_id)):
+        if not db.scalar(
+            select(Lead.id).where(Lead.id == lead_id, Lead.tenant_id == tenant_id)
+        ):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
         query = query.where(Communication.lead_id == lead_id)
 
@@ -34,13 +38,17 @@ def get_communications(
     )
 
 
-def create_communication(db: Session, data: CommunicationCreate) -> Communication:
-    # Validate the lead exists
-    if not db.scalar(select(Lead.id).where(Lead.id == data.lead_id)):
+def create_communication(
+    db: Session, data: CommunicationCreate, tenant_id: str
+) -> Communication:
+    if not db.scalar(
+        select(Lead.id).where(Lead.id == data.lead_id, Lead.tenant_id == tenant_id)
+    ):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
 
     preview = data.body[:_PREVIEW_LEN].replace("\n", " ")
     comm = Communication(
+        tenant_id=tenant_id,
         lead_id=data.lead_id,
         channel=data.channel,
         direction=data.direction,

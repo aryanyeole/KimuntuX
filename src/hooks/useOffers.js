@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 
 /**
- * @param {Object} params - { niche, network, sort_by, sort_dir }
+ * @param {Object} params - { niche, network, source, sort_by, sort_dir }
  */
 function useOffers(params = {}) {
   const [offers, setOffers] = useState([]);

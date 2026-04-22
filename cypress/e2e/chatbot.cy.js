@@ -25,7 +25,7 @@ describe('Chatbot Widget', () => {
         .should('be.visible');
       
       cy.get('.chat-widget-header h2')
-        .should('contain', 'KimuntuX Assistant');
+        .should('contain', 'KimuX Assistant');
     });
 
     it('should close the drawer when close button is clicked', () => {
@@ -49,7 +49,7 @@ describe('Chatbot Widget', () => {
       
       cy.get('.chat-message-bot')
         .first()
-        .should('contain', 'Welcome to KimuntuX Assistant');
+        .should('contain', 'Welcome to KimuX Assistant');
     });
   });
 
@@ -59,7 +59,7 @@ describe('Chatbot Widget', () => {
     });
 
     it('should send a message when user types and clicks send', () => {
-      const testMessage = 'What is KimuntuX?';
+      const testMessage = 'What is KimuX?';
       
       cy.get('.chat-widget-input')
         .type(testMessage);
@@ -107,8 +107,8 @@ describe('Chatbot Widget', () => {
       cy.get('.chat-widget-button').click();
     });
 
-    it('should answer common questions about KimuntuX', () => {
-      cy.get('.chat-widget-input').type('What is KimuntuX?{enter}');
+    it('should answer common questions about KimuX', () => {
+      cy.get('.chat-widget-input').type('What is KimuX?{enter}');
       
       cy.get('.chat-message-bot', { timeout: 5000 })
         .last()

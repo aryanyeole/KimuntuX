@@ -4,7 +4,7 @@ import enum
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import DateTime, Enum, Float, Index, String
+from sqlalchemy import DateTime, Enum, Float, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -21,6 +21,17 @@ class OfferStatus(str, enum.Enum):
     inactive = "inactive"
 
 
+# Offer source taxonomy (soft enum — validated in service layer, not DB):
+#   "seed"                  — original seeded mock data
+#   "clickbank_marketplace" — platform credentials, visible to ALL tenants
+#   "clickbank_account"     — tenant credentials, visible only to that tenant
+#   "manual"                — future user-created offers
+OFFER_SOURCE_SEED = "seed"
+OFFER_SOURCE_CB_MARKETPLACE = "clickbank_marketplace"
+OFFER_SOURCE_CB_ACCOUNT = "clickbank_account"
+OFFER_SOURCE_MANUAL = "manual"
+
+
 class Offer(Base):
     __tablename__ = "offers"
 
@@ -29,6 +40,20 @@ class Offer(Base):
         primary_key=True,
         default=lambda: str(uuid4()),
     )
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
+    # Source taxonomy — determines visibility and sync behavior
+    source: Mapped[str] = mapped_column(String(50), nullable=False, default=OFFER_SOURCE_SEED)
+
+    # External identifier (e.g. ClickBank vendor site nickname).
+    # Combined with tenant_id + source forms the upsert key.
+    external_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     niche: Mapped[str] = mapped_column(String(100), nullable=False)
     network: Mapped[str] = mapped_column(String(100), nullable=False)
@@ -54,6 +79,9 @@ class Offer(Base):
     )
     external_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
 
+    last_synced_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -64,4 +92,6 @@ class Offer(Base):
         Index("ix_offers_niche", "niche"),
         Index("ix_offers_network", "network"),
         Index("ix_offers_status", "status"),
+        Index("ix_offers_source", "source"),
+        Index("ix_offers_external_id", "external_id"),
     )

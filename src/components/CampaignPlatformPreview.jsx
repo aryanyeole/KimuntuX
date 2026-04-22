@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
+import { crm as C } from '../styles/crmTheme';
 
 const PreviewShell = styled.div`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border: 1px solid ${C.border};
   border-radius: 12px;
   padding: 1rem;
-  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
+  background: ${C.surface};
 `;
 
 const TabRow = styled.div`
@@ -16,9 +17,9 @@ const TabRow = styled.div`
 `;
 
 const VariantNavButton = styled.button`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border: 1px solid ${C.border};
   background: transparent;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  color: ${C.text};
   border-radius: 10px;
   padding: 0.2rem 0.5rem;
   min-width: 28px;
@@ -55,8 +56,7 @@ const ElementLabel = styled.span`
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.7;
+  color: ${C.muted};
 `;
 
 const InlineVariantSelector = styled.div`
@@ -68,14 +68,13 @@ const InlineVariantSelector = styled.div`
 const InlineVariantLabel = styled.span`
   font-size: 0.78rem;
   font-weight: 700;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.75;
+  color: ${C.muted};
 `;
 
 const TabButton = styled.button`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  background: ${props => (props.active ? (props.theme?.colors?.primary || '#00C896') : 'transparent')};
-  color: ${props => (props.active ? '#ffffff' : (props.theme?.colors?.text || '#111111'))};
+  border: 1px solid ${C.border};
+  background: ${props => (props.active ? C.accent : 'transparent')};
+  color: ${props => (props.active ? C.bg : C.text)};
   border-radius: 8px;
   padding: 0.45rem 0.75rem;
   font-size: 0.85rem;
@@ -84,10 +83,10 @@ const TabButton = styled.button`
 `;
 
 const PreviewCard = styled.div`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border: 1px solid ${C.border};
   border-radius: 12px;
   padding: 1rem;
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
+  background: ${C.card};
 `;
 
 const PlatformLabel = styled.div`
@@ -97,21 +96,20 @@ const PlatformLabel = styled.div`
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.7;
+  color: ${C.muted};
   margin-bottom: 0.55rem;
 `;
 
 const Headline = styled.h4`
   margin: 0;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  color: ${C.text};
   font-size: 1.05rem;
   font-weight: 800;
 `;
 
 const Body = styled.p`
   margin: 0.85rem 0 0 0;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  color: ${C.text};
   line-height: 1.5;
 `;
 
@@ -122,8 +120,8 @@ const CtaButton = styled.button`
   padding: 0.7rem 1rem;
   font-weight: 700;
   cursor: default;
-  background: ${props => props.theme?.colors?.primary || '#00C896'};
-  color: #ffffff;
+  background: ${C.accent};
+  color: ${C.bg};
 `;
 
 const HashtagRow = styled.div`
@@ -134,22 +132,21 @@ const HashtagRow = styled.div`
 `;
 
 const MetaPill = styled.span`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
+  border: 1px solid ${C.border};
   border-radius: 999px;
   padding: 0.3rem 0.65rem;
   font-size: 0.8rem;
-  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  background: ${C.surface};
+  color: ${C.text};
 `;
 
 const MediaPlaceholder = styled.div`
   margin-top: 1rem;
   min-height: 120px;
   border-radius: 10px;
-  border: 1px dashed ${props => props.theme?.colors?.border || '#d1d5db'};
-  background: ${props => props.theme?.colors?.background || '#f3f4f6'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.8;
+  border: 1px dashed ${C.borderLight};
+  background: ${C.surfaceAlt};
+  color: ${C.text};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,8 +158,7 @@ const MediaPlaceholder = styled.div`
 const ComplianceLine = styled.div`
   margin-top: 0.85rem;
   font-size: 0.82rem;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.7;
+  color: ${C.muted};
 `;
 
 const DEFAULT_PLATFORM_SELECTIONS = {
@@ -173,42 +169,24 @@ const DEFAULT_PLATFORM_SELECTIONS = {
   imagePrompt: 0,
 };
 
-function clampVariantIndex(index) {
+function clampVariantIndex(index, maxIndex = 0) {
   const safeIndex = Number.isInteger(index) ? index : 0;
-  return Math.max(0, Math.min(2, safeIndex));
+  return Math.max(0, Math.min(maxIndex, safeIndex));
 }
 
 function getPlatformKey(piece, index) {
   return piece?.platform || `Platform ${index + 1}`;
 }
 
-function getDefaultSelections(pieces) {
-  return pieces.reduce((acc, piece, index) => {
-    acc[getPlatformKey(piece, index)] = { ...DEFAULT_PLATFORM_SELECTIONS };
-    return acc;
-  }, {});
-}
-
-function buildVariants(value) {
-  return [value, value, value];
-}
-
 function resolveSelectionsForPlatform(selections, platformKey) {
   const platformSelections = selections?.[platformKey] || {};
   return {
-    headline: clampVariantIndex(platformSelections.headline),
-    body: clampVariantIndex(platformSelections.body),
-    cta: clampVariantIndex(platformSelections.cta),
-    hashtags: clampVariantIndex(platformSelections.hashtags),
-    imagePrompt: clampVariantIndex(platformSelections.imagePrompt),
+    headline: clampVariantIndex(platformSelections.headline, 2),
+    body: clampVariantIndex(platformSelections.body, 2),
+    cta: clampVariantIndex(platformSelections.cta, 2),
+    hashtags: clampVariantIndex(platformSelections.hashtags, 2),
+    imagePrompt: clampVariantIndex(platformSelections.imagePrompt, 2),
   };
-}
-
-function mergeSelectionsIntoDefaults(defaultSelections, providedSelections) {
-  return Object.keys(defaultSelections).reduce((acc, platformKey) => {
-    acc[platformKey] = resolveSelectionsForPlatform(providedSelections, platformKey);
-    return acc;
-  }, {});
 }
 
 export default function CampaignPlatformPreview({ contentPieces = [], selections = {}, onSelectionsChange }) {
@@ -224,48 +202,76 @@ export default function CampaignPlatformPreview({ contentPieces = [], selections
   const activePlatformKey = activePiece ? getPlatformKey(activePiece, activeIndex) : '';
 
   useEffect(() => {
-    if (!normalizedPieces.length) {
-      setLocalSelections({});
+    if (!activePlatformKey) {
       return;
     }
-
-    const defaults = getDefaultSelections(normalizedPieces);
-    setLocalSelections(mergeSelectionsIntoDefaults(defaults, selections));
-  }, [normalizedPieces, selections]);
+    setLocalSelections((prev) => ({
+      ...prev,
+      [activePlatformKey]: { ...DEFAULT_PLATFORM_SELECTIONS },
+    }));
+  }, [activePlatformKey]);
 
   const activeSelections = resolveSelectionsForPlatform(localSelections, activePlatformKey);
 
-  const headlineVariants = useMemo(
-    () => buildVariants(activePiece?.copy?.headline || 'Campaign headline'),
+  const headlines = useMemo(
+    () => (Array.isArray(activePiece?.copy?.headline) ? activePiece.copy.headline : [activePiece?.copy?.headline]),
     [activePiece],
   );
-  const bodyVariants = useMemo(
-    () => buildVariants(activePiece?.copy?.body || activePiece?.copy?.caption || 'No preview text available.'),
+  const bodies = useMemo(() => {
+    const bodySource = activePiece?.copy?.body;
+    const captionSource = activePiece?.copy?.caption;
+    if (Array.isArray(bodySource)) {
+      return bodySource;
+    }
+    if (Array.isArray(captionSource)) {
+      return captionSource;
+    }
+    return [bodySource || captionSource || 'No preview text available.'];
+  }, [activePiece]);
+  const ctaOptions = useMemo(
+    () => (Array.isArray(activePiece?.cta_text) ? activePiece.cta_text : [activePiece?.cta_text]),
     [activePiece],
   );
-  const ctaVariants = useMemo(
-    () => buildVariants(activePiece?.copy?.cta_text || activePiece?.cta_text || 'Learn More'),
-    [activePiece],
-  );
-  const hashtagsVariants = useMemo(
-    () => buildVariants(Array.isArray(activePiece?.hashtags) ? activePiece.hashtags : []),
-    [activePiece],
-  );
-  const imagePromptVariants = useMemo(
-    () => buildVariants(activePiece?.media?.image_prompt || 'No image prompt provided'),
+  const hashtagSets = useMemo(() => {
+    if (Array.isArray(activePiece?.hashtags?.[0])) {
+      return activePiece.hashtags;
+    }
+    return [Array.isArray(activePiece?.hashtags) ? activePiece.hashtags : []];
+  }, [activePiece]);
+  const imagePrompts = useMemo(
+    () => (Array.isArray(activePiece?.media?.image_prompt) ? activePiece.media.image_prompt : [activePiece?.media?.image_prompt]),
     [activePiece],
   );
 
-  const selectedHeadline = headlineVariants[activeSelections.headline] || headlineVariants[0];
-  const selectedBody = bodyVariants[activeSelections.body] || bodyVariants[0];
-  const selectedCta = ctaVariants[activeSelections.cta] || ctaVariants[0];
-  const selectedHashtags = hashtagsVariants[activeSelections.hashtags] || hashtagsVariants[0];
-  const selectedImagePrompt = imagePromptVariants[activeSelections.imagePrompt] || imagePromptVariants[0];
+  const selectedHeadline = headlines[activeSelections.headline] ?? headlines[0] ?? 'Campaign headline';
+  const selectedBody = bodies[activeSelections.body] ?? bodies[0] ?? 'No preview text available.';
+  const selectedCta = ctaOptions[activeSelections.cta] ?? ctaOptions[0] ?? 'Learn More';
+  const selectedHashtags = hashtagSets[activeSelections.hashtags] ?? hashtagSets[0] ?? [];
+  const selectedImagePrompt = imagePrompts[activeSelections.imagePrompt] ?? imagePrompts[0] ?? 'No image prompt provided';
+
+  const variantTotals = {
+    headline: Math.max(1, headlines.length),
+    body: Math.max(1, bodies.length),
+    cta: Math.max(1, ctaOptions.length),
+    hashtags: Math.max(1, hashtagSets.length),
+    imagePrompt: Math.max(1, imagePrompts.length),
+  };
+
+  const buildSelections = (indices) => ({
+    [activePlatformKey]: {
+      headline: headlines[indices.headline] ?? headlines[0],
+      body: bodies[indices.body] ?? bodies[0],
+      cta: ctaOptions[indices.cta] ?? ctaOptions[0],
+      hashtags: hashtagSets[indices.hashtags] ?? hashtagSets[0],
+      imagePrompt: imagePrompts[indices.imagePrompt] ?? imagePrompts[0],
+    },
+  });
 
   const updateSelection = (elementKey, direction) => {
+    const total = variantTotals[elementKey] || 1;
     setLocalSelections((prev) => {
       const currentPlatformSelections = resolveSelectionsForPlatform(prev, activePlatformKey);
-      const nextIndex = clampVariantIndex(currentPlatformSelections[elementKey] + direction);
+      const nextIndex = clampVariantIndex(currentPlatformSelections[elementKey] + direction, total - 1);
 
       if (currentPlatformSelections[elementKey] === nextIndex) {
         return prev;
@@ -280,15 +286,16 @@ export default function CampaignPlatformPreview({ contentPieces = [], selections
       };
 
       if (typeof onSelectionsChange === 'function') {
-        onSelectionsChange(nextSelections);
+        onSelectionsChange(buildSelections(nextSelections[activePlatformKey]));
       }
 
       return nextSelections;
     });
   };
 
-  const renderInlineSelector = (elementKey) => {
+  const renderInlineSelector = (elementKey, total) => {
     const currentIndex = activeSelections[elementKey];
+    const totalVariants = Math.max(1, total || 1);
 
     return (
       <InlineVariantSelector>
@@ -300,10 +307,10 @@ export default function CampaignPlatformPreview({ contentPieces = [], selections
         >
           {'‹'}
         </VariantNavButton>
-        <InlineVariantLabel>{currentIndex + 1}/3</InlineVariantLabel>
+        <InlineVariantLabel>{currentIndex + 1}/{totalVariants}</InlineVariantLabel>
         <VariantNavButton
           type="button"
-          disabled={currentIndex === 2}
+          disabled={currentIndex >= totalVariants - 1}
           onClick={() => updateSelection(elementKey, 1)}
           aria-label={`Next ${elementKey} variant`}
         >
@@ -338,7 +345,7 @@ export default function CampaignPlatformPreview({ contentPieces = [], selections
         <ElementBlock>
           <ElementHeader>
             <ElementLabel>Headline</ElementLabel>
-            {renderInlineSelector('headline')}
+            {renderInlineSelector('headline', variantTotals.headline)}
           </ElementHeader>
           <Headline>{selectedHeadline}</Headline>
         </ElementBlock>
@@ -346,7 +353,7 @@ export default function CampaignPlatformPreview({ contentPieces = [], selections
         <ElementBlock>
           <ElementHeader>
             <ElementLabel>Body</ElementLabel>
-            {renderInlineSelector('body')}
+            {renderInlineSelector('body', variantTotals.body)}
           </ElementHeader>
           <Body>{selectedBody}</Body>
         </ElementBlock>
@@ -354,7 +361,7 @@ export default function CampaignPlatformPreview({ contentPieces = [], selections
         <ElementBlock>
           <ElementHeader>
             <ElementLabel>CTA</ElementLabel>
-            {renderInlineSelector('cta')}
+            {renderInlineSelector('cta', variantTotals.cta)}
           </ElementHeader>
           <CtaButton type="button">{selectedCta}</CtaButton>
         </ElementBlock>
@@ -362,7 +369,7 @@ export default function CampaignPlatformPreview({ contentPieces = [], selections
         <ElementBlock>
           <ElementHeader>
             <ElementLabel>Hashtags</ElementLabel>
-            {renderInlineSelector('hashtags')}
+            {renderInlineSelector('hashtags', variantTotals.hashtags)}
           </ElementHeader>
           <HashtagRow>
             {Array.isArray(selectedHashtags) && selectedHashtags.length > 0 ? (
@@ -378,7 +385,7 @@ export default function CampaignPlatformPreview({ contentPieces = [], selections
         <ElementBlock>
           <ElementHeader>
             <ElementLabel>Image Prompt</ElementLabel>
-            {renderInlineSelector('imagePrompt')}
+            {renderInlineSelector('imagePrompt', variantTotals.imagePrompt)}
           </ElementHeader>
           <MediaPlaceholder>
             <em>Image: {selectedImagePrompt}</em>

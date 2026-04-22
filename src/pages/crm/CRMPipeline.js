@@ -2,13 +2,7 @@ import { useState, useCallback } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import useLeads from '../../hooks/useLeads';
 import api from '../../services/api';
-
-// ── Palette ───────────────────────────────────────────────────────────────────
-const C = {
-  bg: '#060d1b', surface: '#0c1527', card: '#121e34', border: '#1a2d4d',
-  text: '#e4eaf4', muted: '#6b7fa3', accent: '#2d7aff',
-  success: '#00c48c', warning: '#ffb020', danger: '#ff4757', purple: '#8b5cf6',
-};
+import { crm as C } from '../../styles/crmTheme';
 
 const COLUMNS = [
   { stage: 'new',         label: 'New',         color: C.accent   },

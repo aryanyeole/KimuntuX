@@ -1936,7 +1936,7 @@ const LandingPage = () => {
     { title: 'AI Marketing Engine', description: 'Create, launch, and optimize ads automatically across Facebook, Instagram, YouTube, and more with AI-powered campaign management.' },
     { title: 'Universal Digital Brokerage', description: 'Connect with verified partners, suppliers, and clients globally through AI-powered brokerage and blockchain-secured transactions.' },
     { title: 'Financial Inclusion', description: 'Empowering entrepreneurs and small businesses with affordable digital tools and fintech access.' },
-    { title: 'API Integrations', description: 'Build, extend, and innovate with KimuntuX APIs, SDKs, and partner marketplace for seamless third-party connections.' },
+    { title: 'API Integrations', description: 'Build, extend, and innovate with KimuX APIs, SDKs, and partner marketplace for seamless third-party connections.' },
     { title: 'AI eCommerce & Store Creation', description: 'Launch your complete online store in minutes, automatically designed, optimized, and ready to sell with AI-generated content.' },
     { title: 'Intelligent CRM', description: 'Manage leads, clients, and conversations effortlessly with smart automation and AI-powered follow-ups and insights.' },
     { title: 'Smart Fintech Hub', description: 'Multi-currency wallets, instant payouts, AI fraud detection, and smart crypto wallet with predictive investment engine.' },
@@ -2216,7 +2216,7 @@ const LandingPage = () => {
         <Container>
           <SectionTitle>Key Solutions</SectionTitle>
           <FeaturesSubtitle>
-            KimuntuX solves the real-world pain points that individuals, entrepreneurs, and enterprises face in the modern digital economy. It merges AI, Blockchain, and Fintech into a single intelligent platform that simplifies, secures, and scales business growth.
+            KimuX solves the real-world pain points that individuals, entrepreneurs, and enterprises face in the modern digital economy. It merges AI, Blockchain, and Fintech into a single intelligent platform that simplifies, secures, and scales business growth.
           </FeaturesSubtitle>
           <FeaturesSliderContainer>
             <FeaturesSlider>
@@ -2352,7 +2352,7 @@ const LandingPage = () => {
               <CryptoWealthTitle>AI-Driven Crypto & Fintech Wealth Engine</CryptoWealthTitle>
               <CryptoWealthSubtitle>Trade smarter. Grow faster. Earn more.</CryptoWealthSubtitle>
               <CryptoWealthDescription>
-                Unlock the future of digital investing with KimuntuX's intelligent trading platform — where AI, fintech, and blockchain work together to help you grow your wealth with confidence.
+                Unlock the future of digital investing with KimuX's intelligent trading platform — where AI, fintech, and blockchain work together to help you grow your wealth with confidence.
               </CryptoWealthDescription>
               <TalkToTeamButton to="/contact">Talk to the Team</TalkToTeamButton>
             </CryptoWealthContent>

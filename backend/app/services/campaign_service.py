@@ -16,7 +16,7 @@ from app.schemas.campaign import (
 )
 
 
-def _get_or_404(db: Session, campaign_id: str) -> Campaign:
+def _get_or_404(db: Session, campaign_id: str, tenant_id: str | None = None) -> Campaign:
     campaign = db.scalar(
         select(Campaign).where(
             Campaign.id == campaign_id,
@@ -30,6 +30,7 @@ def _get_or_404(db: Session, campaign_id: str) -> Campaign:
 
 def get_campaigns(
     db: Session,
+    tenant_id: str | None = None,
     *,
     page: int = 1,
     limit: int = 20,
@@ -56,13 +57,13 @@ def get_campaigns(
     )
 
 
-def get_campaign_by_id(db: Session, campaign_id: str) -> Campaign:
+def get_campaign_by_id(db: Session, campaign_id: str, tenant_id: str | None = None) -> Campaign:
     return _get_or_404(db, campaign_id)
 
 
-def create_campaign(db: Session, data: CampaignCreate, *, user_id: str) -> Campaign:
+def create_campaign(db: Session, data: CampaignCreate, tenant_id: str | None = None, *, user_id: str | None = None) -> Campaign:
     campaign = Campaign(
-        user_id=user_id,
+        user_id=user_id or "system",
         **data.model_dump(mode="json"),
     )
     db.add(campaign)
@@ -71,7 +72,7 @@ def create_campaign(db: Session, data: CampaignCreate, *, user_id: str) -> Campa
     return campaign
 
 
-def update_campaign(db: Session, campaign_id: str, data: CampaignUpdate) -> Campaign:
+def update_campaign(db: Session, campaign_id: str, data: CampaignUpdate, tenant_id: str | None = None) -> Campaign:
     campaign = _get_or_404(db, campaign_id)
     updates = data.model_dump(exclude_unset=True, mode="json")
     for field, value in updates.items():

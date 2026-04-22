@@ -150,19 +150,19 @@ const SuggestionAction = styled.button`
 
 const AI_SUGGESTIONS = [
   {
-    emoji: '🎯',
+    emoji: null,
     title: 'Scale AI Growth Q1',
     desc: 'This campaign has a 3.4x ROAS. Increasing daily budget by 30% could yield an additional $4,200 in monthly revenue.',
     action: 'Increase Budget',
   },
   {
-    emoji: '⏸️',
+    emoji: null,
     title: 'Pause IG Retargeting',
     desc: 'ROAS dropped below 1.5x over the last 14 days. Reallocating spend to Facebook Cold would improve overall efficiency.',
     action: 'Pause Campaign',
   },
   {
-    emoji: '🔥',
+    emoji: null,
     title: 'Scale Trending Offers on TikTok',
     desc: 'LeanBiome and CitrusBurn gravity scores surged 15%+ this week. Launch TikTok UGC before the window closes.',
     action: 'Create Campaign',

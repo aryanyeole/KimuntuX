@@ -1,36 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes } from 'styled-components'; // keyframes used for fadeIn
 import useDashboard from '../../hooks/useDashboard';
-
-// ── Palette (matches CRMLayout) ───────────────────────────────────────────────
-const C = {
-  bg: '#060d1b',
-  surface: '#0c1527',
-  card: '#121e34',
-  border: '#1a2d4d',
-  text: '#e4eaf4',
-  muted: '#6b7fa3',
-  accent: '#2d7aff',
-  success: '#00c48c',
-  warning: '#ffb020',
-  danger: '#ff4757',
-  purple: '#8b5cf6',
-  hot: '#ff4757',
-  warm: '#ffb020',
-  cold: '#6b7fa3',
-};
+import { crm as C } from '../../styles/crmTheme';
+import PlatformLogo from '../../components/crm/PlatformLogo';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const SOURCE_EMOJI = {
-  facebook_ads:    '📘',
-  google_ads:      '🔍',
-  tiktok_ads:      '🎵',
-  instagram:       '📸',
-  landing_page:    '🌐',
-  affiliate_link:  '🔗',
-  website_widget:  '💬',
-  api:             '⚡',
-};
 
 const SOURCE_LABEL = {
   facebook_ads:   'Facebook Ads',
@@ -82,11 +56,6 @@ function fmtMoney(n) {
 }
 
 // ── Animations ────────────────────────────────────────────────────────────────
-const pulse = keyframes`
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.4; }
-`;
-
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -193,97 +162,41 @@ const GradientTitle = styled.span`
   background-clip: text;
 `;
 
-const LiveBadge = styled.span`
-  font-size: 9px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  background: ${C.danger};
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  animation: ${pulse} 2s ease-in-out infinite;
-`;
 
-const InsightsList = styled.div`
+const InsightsEmptyState = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
-`;
-
-const InsightItem = styled.div`
-  background: ${C.surface};
-  border: 1px solid ${C.border};
-  border-radius: 10px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 16px;
   gap: 12px;
-`;
-
-const InsightEmoji = styled.div`
-  font-size: 20px;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-top: 1px;
-`;
-
-const InsightBody = styled.div`flex: 1;`;
-
-const InsightTitle = styled.div`
-  font-size: 13px;
-  font-weight: 600;
-  color: ${C.text};
-  margin-bottom: 2px;
-`;
-
-const InsightDesc = styled.div`
-  font-size: 11px;
   color: ${C.muted};
-  line-height: 1.5;
 `;
 
-const PriorityBadge = styled.span`
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 2px 7px;
-  border-radius: 999px;
-  flex-shrink: 0;
+const InsightsEmptyIcon = styled.div`
+  font-size: 32px;
+  opacity: 0.4;
+`;
+
+const InsightsEmptyText = styled.div`
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 260px;
+`;
+
+const InsightsEmptyBtn = styled.button`
+  background: ${C.accent};
   color: #fff;
-  background: ${({ $level }) =>
-    $level === 'high'   ? C.danger  :
-    $level === 'medium' ? C.warning :
-                          C.muted};
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover { opacity: 0.85; }
 `;
 
-const AI_INSIGHTS = [
-  {
-    emoji: '🔥',
-    title: '12 hot leads ready to convert',
-    desc: 'These leads scored 80+ and haven\'t been contacted in 48h. Strike now.',
-    priority: 'high',
-  },
-  {
-    emoji: '📉',
-    title: 'CPA dropped on AI Growth Q1',
-    desc: 'Cost per acquisition fell 18% after AI outreach was enabled on warm leads.',
-    priority: 'medium',
-  },
-  {
-    emoji: '⚠️',
-    title: '3 leads going cold',
-    desc: 'Qualified leads with no activity in 14+ days. Re-engage before they churn.',
-    priority: 'high',
-  },
-  {
-    emoji: '💡',
-    title: 'A/B test new lead magnet',
-    desc: 'Landing page leads convert 2.3× better. Consider shifting budget from social.',
-    priority: 'low',
-  },
-];
 
 // ── Sources + Pipeline (right column) ────────────────────────────────────────
 const RightColumnCard = styled(Card)`
@@ -311,7 +224,6 @@ const SourceMeta = styled.div`
   gap: 6px;
 `;
 
-const SourceEmoji = styled.span`font-size: 14px;`;
 
 const SourceName = styled.span`
   font-size: 12px;
@@ -532,21 +444,18 @@ export default function CRMDashboard() {
         <InsightsCard>
           <InsightsTitleRow>
             <GradientTitle>AI Insights</GradientTitle>
-            <LiveBadge>LIVE</LiveBadge>
           </InsightsTitleRow>
 
-          <InsightsList>
-            {AI_INSIGHTS.map((item, i) => (
-              <InsightItem key={i}>
-                <InsightEmoji>{item.emoji}</InsightEmoji>
-                <InsightBody>
-                  <InsightTitle>{item.title}</InsightTitle>
-                  <InsightDesc>{item.desc}</InsightDesc>
-                </InsightBody>
-                <PriorityBadge $level={item.priority}>{item.priority}</PriorityBadge>
-              </InsightItem>
-            ))}
-          </InsightsList>
+          <InsightsEmptyState>
+            <InsightsEmptyIcon>🤖</InsightsEmptyIcon>
+            <InsightsEmptyText>
+              AI Insights will appear here once you have active campaigns and leads.
+              Connect an integration to get started.
+            </InsightsEmptyText>
+            <InsightsEmptyBtn onClick={() => navigate('/crm/settings')}>
+              Connect Integration →
+            </InsightsEmptyBtn>
+          </InsightsEmptyState>
         </InsightsCard>
 
         {/* Right — Sources + Pipeline */}
@@ -565,7 +474,7 @@ export default function CRMDashboard() {
                   return (
                     <SourceRow key={key}>
                       <SourceMeta>
-                        <SourceEmoji>{SOURCE_EMOJI[key] || '📌'}</SourceEmoji>
+                        <PlatformLogo name={key} size={20} />
                         <SourceName>{SOURCE_LABEL[key] || key}</SourceName>
                         <SourceCount>{row.count} leads</SourceCount>
                         <SourcePct>{pct}%</SourcePct>
@@ -614,7 +523,7 @@ export default function CRMDashboard() {
               <LeadName>{lead.first_name} {lead.last_name}</LeadName>
               <LeadMeta>
                 {lead.company || lead.email} &nbsp;·&nbsp;
-                {SOURCE_EMOJI[lead.source] || '📌'} {SOURCE_LABEL[lead.source] || lead.source}
+                <PlatformLogo name={lead.source} size={14} />{' '}{SOURCE_LABEL[lead.source] || lead.source}
               </LeadMeta>
             </LeadInfo>
 

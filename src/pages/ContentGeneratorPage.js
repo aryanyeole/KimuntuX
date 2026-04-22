@@ -1,456 +1,494 @@
-import React, { useMemo, useState } from 'react';
-import styled from 'styled-components';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import styled, { keyframes } from 'styled-components';
 import CampaignPlatformPreview from '../components/CampaignPlatformPreview';
 import { createCampaignForScheduler } from '../services/contentSchedulerRepository';
 import { generateCampaign } from '../services/campaignGeneratorService';
+import { crm as C } from '../styles/crmTheme';
 
-const PageContainer = styled.div`
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const pulse = keyframes`
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50% { transform: scale(1.25); opacity: 1; }
+`;
+
+const Page = styled.div`
   min-height: 100vh;
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
-  padding: 120px 20px 2rem 20px;
-`;
-
-const Container = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
-`;
-
-const Title = styled.h1`
-  margin: 0 0 1rem 0;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-`;
-
-const Layout = styled.div`
-  display: grid;
-  grid-template-columns: minmax(280px, 420px) 1fr;
-  gap: 1.2rem;
-
-  @media (max-width: 980px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Panel = styled.section`
-  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow:
-    0 0 0 1px ${props => `${props.theme?.colors?.primary || '#00C896'}14`},
-    0 0 18px ${props => `${props.theme?.colors?.primary || '#00C896'}1A`};
-`;
-
-const FieldLabel = styled.label`
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.55rem;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-`;
-
-const PromptInput = styled.textarea`
-  width: 100%;
-  min-height: 130px;
-  resize: vertical;
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  border-radius: 10px;
-  padding: 0.75rem;
-  font-size: 0.95rem;
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme?.colors?.primary || '#00C896'};
-  }
-`;
-
-const TextInput = styled.input`
-  width: 100%;
-  height: 40px;
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  border-radius: 10px;
-  padding: 0.75rem;
-  font-size: 0.95rem;
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme?.colors?.primary || '#00C896'};
-  }
-`;
-
-const NumberSelect = styled.select`
-  width: 100%;
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  border-radius: 10px;
-  padding: 0.75rem;
-  font-size: 0.95rem;
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme?.colors?.primary || '#00C896'};
-  }
-`;
-
-const ActionRow = styled.div`
-  margin-top: 0.85rem;
+  background: ${C.bg};
+  color: ${C.text};
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+  flex-direction: column;
+  overflow: hidden;
+  animation: ${fadeIn} 0.18s ease;
+  font-family: ${C.fontFamily};
 `;
 
-const TabRow = styled.div`
+const StickyActionsBar = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 8px 20px;
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.85rem;
-`;
-
-const TabButton = styled.button`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  background: ${props => (props.active ? (props.theme?.colors?.primary || '#00C896') : 'transparent')};
-  color: ${props => (props.active ? '#ffffff' : (props.theme?.colors?.text || '#111111'))};
-  border-radius: 8px;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-`;
-
-const PlatformGrid = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.85rem;
-`;
-
-const PlatformToggle = styled.button`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  background: ${props => (props.active ? (props.theme?.colors?.primary || '#00C896') : 'transparent')};
-  color: ${props => (props.active ? '#ffffff' : (props.theme?.colors?.text || '#111111'))};
-  border-radius: 8px;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-`;
-
-const SectionDivider = styled.hr`
-  border: none;
-  border-top: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  margin: 0.85rem 0;
-`;
-
-const CollapsibleHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  cursor: pointer;
-  margin-bottom: 0.5rem;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  gap: 12px;
+  background: ${C.surface};
+  border-bottom: 1px solid ${C.border};
 `;
 
-const Button = styled.button`
-  border: none;
-  border-radius: 10px;
-  padding: 0.7rem 1rem;
-  font-weight: 700;
+const StickyStatus = styled.div`
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: ${C.text};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const StickyButtonGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+`;
+
+const HeaderButton = styled.button`
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: ${props => {
-    if (props.variant === 'secondary') return props.theme?.colors?.accent || '#DAA520';
-    if (props.variant === 'ghost') return 'transparent';
-    return props.theme?.colors?.primary || '#00C896';
-  }};
-  color: ${props => (props.variant === 'ghost' ? (props.theme?.colors?.text || '#111111') : '#ffffff')};
-  border: ${props => (props.variant === 'ghost' ? `1px solid ${props.theme?.colors?.border || '#e5e5e5'}` : 'none')};
+  transition: all 0.16s ease;
+  border: ${props => (props.$ghost ? `1px solid ${C.accent}` : 'none')};
+  background: ${props => (props.$ghost ? 'transparent' : C.accent)};
+  color: ${props => (props.$ghost ? C.accent : '#ffffff')};
+
+  &:hover:not(:disabled) {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.55;
   }
+`;
 
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    opacity: 0.92;
+const Shell = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(340px, 38%) minmax(0, 62%);
+  overflow: hidden;
+
+  @media (max-width: 1080px) {
+    grid-template-columns: 1fr;
   }
 `;
 
-const Viewport = styled(Panel)`
-  min-height: 480px;
+const LeftPanel = styled.aside`
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 16px;
+  background: ${C.surface};
+  border-right: 1px solid ${C.border};
+
+  @media (max-width: 1080px) {
+    border-right: none;
+    border-bottom: 1px solid ${C.border};
+  }
+`;
+
+const RightPanel = styled.section`
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  background: ${C.bg};
+  overflow: hidden;
 `;
 
-const StatusText = styled.div`
-  font-size: 0.9rem;
-  opacity: 0.8;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+const PanelSection = styled.section`
+  padding: 18px 0;
+  border-top: 1px solid ${C.border};
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
 `;
 
-const Card = styled.div`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  border-radius: 12px;
-  padding: 1rem;
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
+const SectionLabel = styled.div`
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: ${C.muted};
 `;
 
-const CardTitle = styled.h3`
-  margin: 0 0 0.6rem 0;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+const FieldLabel = styled.label`
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${C.text};
 `;
 
-const MetaRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem;
-  margin-bottom: 0.7rem;
+const baseInputStyles = `
+  width: 100%;
+  border: 1px solid ${C.border};
+  border-radius: 8px;
+  background: ${C.card};
+  color: ${C.text};
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: ${C.accent};
+  }
 `;
 
-const MetaPill = styled.span`
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  border-radius: 999px;
-  padding: 0.3rem 0.65rem;
-  font-size: 0.8rem;
-  background: ${props => props.theme?.colors?.cardBackground || '#ffffff'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
+const TextInput = styled.input`
+  ${baseInputStyles}
+  height: 40px;
+  padding: 0 12px;
 `;
 
-const BodyText = styled.p`
-  margin: 0;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+const SelectInput = styled.select`
+  ${baseInputStyles}
+  height: 40px;
+  padding: 0 12px;
+`;
+
+const PromptInput = styled.textarea`
+  ${baseInputStyles}
+  min-height: 110px;
+  resize: vertical;
+  padding: 10px 12px;
   line-height: 1.5;
 `;
 
-const Notice = styled.div`
-  border-radius: 10px;
-  padding: 0.65rem 0.75rem;
-  font-size: 0.9rem;
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
+const ToggleGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 `;
 
-const JsonArea = styled.textarea`
+const ToggleChip = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  min-height: 260px;
-  resize: vertical;
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  border-radius: 10px;
-  padding: 0.75rem;
-  font-size: 0.88rem;
-  font-family: 'Consolas', 'Courier New', monospace;
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid ${props => (props.$active ? C.accent : C.border)};
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  background: ${props => (props.$active ? `${C.accent}22` : C.card)};
+  color: ${props => (props.$active ? C.accent : C.muted)};
+  transition: all 0.15s ease;
 
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme?.colors?.primary || '#00C896'};
+  &:hover {
+    border-color: ${C.accent};
+    color: ${C.text};
   }
 `;
 
-const JsonPreview = styled.pre`
+const ChipIcon = styled.span`
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: currentColor;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+`;
+
+const CollapsibleHeader = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: ${C.text};
+`;
+
+const CollapsibleTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+`;
+
+const SmallMuted = styled.span`
+  font-size: 11px;
+  font-weight: 500;
+  color: ${C.muted};
+`;
+
+const Chevron = styled.span`
+  color: ${C.muted};
+  font-size: 11px;
+  line-height: 1;
+`;
+
+const InlineTagBox = styled.div`
+  min-height: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: ${C.card};
+  border: 1px solid ${C.border};
+  border-radius: 8px;
+`;
+
+const TagPill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid ${C.accent}44;
+  background: ${C.accent}22;
+  color: ${C.accent};
+  font-size: 11px;
+`;
+
+const TagRemove = styled.button`
+  border: none;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1;
+`;
+
+const TagInput = styled.input`
+  border: none;
+  outline: none;
+  background: transparent;
+  color: ${C.text};
+  font-size: 12px;
+  min-width: 120px;
+  flex: 1;
+`;
+
+const SectionGrid = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+const RightBody = styled.div`
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px;
+`;
+
+const EmptyState = styled.div`
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  color: ${C.muted};
+  padding: 40px 20px;
+`;
+
+const EmptyIcon = styled.div`
+  width: 56px;
+  height: 56px;
+  color: ${C.borderLight};
+
+  svg {
+    width: 56px;
+    height: 56px;
+    display: block;
+  }
+`;
+
+const EmptySub = styled.div`
+  font-size: 12px;
+  color: ${C.borderLight};
+`;
+
+const ActionDock = styled.div`
+  flex-shrink: 0;
+  background: ${C.surface};
+  border-top: 1px solid ${C.border};
+`;
+
+const RawDrawer = styled.div`
+  overflow: hidden;
+  max-height: ${props => (props.$open ? '300px' : '0px')};
+  transition: max-height 0.22s ease;
+  border-bottom: ${props => (props.$open ? `1px solid ${C.border}` : 'none')};
+  background: ${C.surface};
+`;
+
+const RawDrawerInner = styled.pre`
   margin: 0;
+  padding: 16px 20px;
+  background: ${C.card};
+  border-radius: 8px;
+  font-size: 11px;
+  font-family: Consolas, 'Courier New', monospace;
+  color: ${C.text};
+  overflow: auto;
+  max-height: 300px;
   white-space: pre-wrap;
   word-break: break-word;
-  max-height: 260px;
-  overflow: auto;
-  border-radius: 10px;
-  border: 1px solid ${props => props.theme?.colors?.border || '#e5e5e5'};
-  padding: 0.75rem;
-  font-size: 0.82rem;
-  font-family: 'Consolas', 'Courier New', monospace;
-  background: ${props => props.theme?.colors?.background || '#f8f9fa'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
 `;
 
-const List = styled.ul`
-  margin: 0.45rem 0 0 1.1rem;
+const ActionBar = styled.div`
+  min-height: 52px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+const GhostToggle = styled.button`
+  border: 1px solid ${props => (props.$active ? C.accent : C.border)};
+  background: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: ${props => (props.$active ? C.accent : C.muted)};
+  cursor: pointer;
+`;
+
+const SaveFeedback = styled.div`
+  font-size: 11px;
+  color: ${props => (props.$danger ? C.danger : C.muted)};
+  text-align: right;
+  line-height: 1.4;
+`;
+
+const SaveErrors = styled.ul`
+  margin: 6px 0 0 14px;
   padding: 0;
+  font-size: 10px;
+  color: ${C.danger};
 `;
 
-const PLATFORM_OPTIONS = ['Email', 'YouTube', 'LinkedIn', 'X', 'Facebook', 'Instagram'];
-const COLOR_OPTIONS = ['#00C896', '#DAA520', '#60A5FA', '#F97316', '#A78BFA', '#10B981'];
-const THEMES = ['Spring Boost', 'Flash Sale', 'Weekly Deal', 'Product Reveal', 'Referral Push'];
-const PLATFORM_SELECTOR_OPTIONS = ['Email', 'Instagram', 'LinkedIn', 'Facebook', 'X', 'YouTube'];
+const PlatformPreviews = styled.div`
+  min-height: 0;
+`;
 
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+const NumberSelect = styled(SelectInput)`
+  appearance: auto;
+`;
 
-function pickRandom(arr) {
-  return arr[randomInt(0, arr.length - 1)];
-}
+const platformOptions = [
+  { value: 'Email', label: 'Email' },
+  { value: 'Instagram', label: 'Instagram' },
+  { value: 'LinkedIn', label: 'LinkedIn' },
+  { value: 'Facebook', label: 'Facebook' },
+  { value: 'X', label: 'X' },
+  { value: 'YouTube', label: 'YouTube' },
+];
 
-function toTimeString(totalMinutes) {
-  const h = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
-  const m = String(totalMinutes % 60).padStart(2, '0');
-  return `${h}:${m}`;
-}
+const commissionOptions = [10, 20, 25, 30, 40, 50, 60, 75];
+const ageRangeOptions = ['Any', '18-24', '25-34', '35-44', '45-54', '55+'];
+const genderOptions = ['All', 'Male', 'Female', 'Non-binary'];
+const incomeOptions = ['Any', 'Low', 'Mid', 'High'];
+const languageOptions = [
+  { value: 'en', label: 'English (en)' },
+  { value: 'fr', label: 'French (fr)' },
+  { value: 'es', label: 'Spanish (es)' },
+  { value: 'pt', label: 'Portuguese (pt)' },
+  { value: 'ar', label: 'Arabic (ar)' },
+  { value: 'zh', label: 'Chinese (zh)' },
+];
 
-function makeIsoDateTime(dateString, timeString) {
-  if (!dateString || !timeString) return null;
-  return `${dateString}T${timeString}:00`;
-}
-
-function generateMockCampaignContract(promptText, seq) {
-  const basePrompt = promptText?.trim() || 'no text entered!';
-  const theme = pickRandom(THEMES);
-  const name = `${theme} #${seq} - ${basePrompt.slice(0, 28)}`;
-  const body = `Campaign ${seq}: ${basePrompt}.`;
-  const sendTime = toTimeString(randomInt(8 * 60, 20 * 60));
-  const platformCount = randomInt(1, 3);
-  const platforms = [...PLATFORM_OPTIONS].sort(() => 0.5 - Math.random()).slice(0, platformCount);
-  const cost = randomInt(120, 1600);
-  const color = pickRandom(COLOR_OPTIONS);
-  const today = new Date();
-  const inTwoDays = new Date(today);
-  inTwoDays.setDate(today.getDate() + 2);
-  const scheduledDate = `${inTwoDays.getFullYear()}-${String(inTwoDays.getMonth() + 1).padStart(2, '0')}-${String(inTwoDays.getDate()).padStart(2, '0')}`;
-
-  const pieceId = `piece_${Date.now()}_${seq}`;
-  const primaryPlatform = platforms[0] || 'Email';
-  const isScheduled = randomInt(0, 1) === 1;
-  const publishAt = isScheduled ? makeIsoDateTime(scheduledDate, sendTime) : null;
-
-  return {
-    name,
-    status: 'draft',
-    version: 1,
-    previous_version_id: null,
-    platforms,
-    theme_color: color,
-    tags: ['mock', 'pre-llm'],
-    affiliate_product: {
-      product_id: `cb-${10000 + seq}`,
-      vendor: 'ClickBank Vendor',
-      offer_name: `${theme} Offer`,
-      hoplink: `https://example.com/hop/cb-${10000 + seq}`,
-      commission: {
-        model: 'percentage',
-        value: 0.5,
-        currency: 'USD',
-        payout_frequency: 'weekly',
-      },
-      niche: 'business',
-      source_network: 'clickbank',
-    },
-    audience: {
-      personas: ['new affiliate marketers'],
-      demographics: {
-        age_range: '25-44',
-        gender_focus: 'all',
-        income_band: 'mid',
-        interests: ['online business', 'growth marketing'],
-      },
-      region: {
-        countries: ['US'],
-        languages: ['en'],
-        timezone: 'UTC',
-      },
-    },
-    tracking: {
-      base_hoplink: `https://example.com/hop/cb-${10000 + seq}`,
-      tracking_template: '{base}?tid={subid}',
-      tracking_links: [
-        {
-          platform: primaryPlatform,
-          content_piece_id: pieceId,
-          final_url: `https://example.com/hop/cb-${10000 + seq}?utm_source=${primaryPlatform.toLowerCase()}`,
-          subid_map: {
-            campaign: `mock-${seq}`,
-          },
-          utm: {
-            source: primaryPlatform.toLowerCase(),
-            medium: 'affiliate',
-            campaign: `mock_${seq}`,
-          },
-        },
-      ],
-      attribution_model: 'last_click',
-    },
-    scheduling: {
-      timezone: 'UTC',
-      campaign_window: {
-        start_at: null,
-        end_at: null,
-        cadence_default: 'once',
-      },
-    },
-    metrics: {
-      intent: {
-        primary_goal: 'clicks',
-        budget: {
-          amount: cost,
-          currency: 'USD',
-          cap_type: 'lifetime',
-        },
-        target_clicks: 100,
-      },
-      actuals: {
-        impressions: 0,
-        clicks: 0,
-        conversions: 0,
-        revenue: 0,
-        spend: 0,
-      },
-    },
-    content_pieces: [
-      {
-        piece_id: pieceId,
-        platform: primaryPlatform,
-        format: primaryPlatform === 'Email' ? 'email' : 'post',
-        status: isScheduled ? 'scheduled' : 'draft',
-        sequence_index: 0,
-        objective: 'Drive qualified clicks',
-        cta_text: 'Learn More',
-        cta_link: `https://example.com/hop/cb-${10000 + seq}`,
-        hashtags: ['#affiliate', '#marketing', '#growth'],
-        copy: {
-          hook: `Try this ${theme.toLowerCase()} angle`,
-          headline: `${theme} for your next promo`,
-          body,
-          caption: body,
-          subject_line: `${theme} for your audience`,
-          script: `${body} CTA: Learn More.`,
-        },
-        media: {
-          image_prompt: `Modern social visual for ${theme}`,
-          image_url: null,
-          video_prompt: `15 second short promoting ${theme}`,
-          thumbnail_prompt: `${theme} thumbnail with bold text`,
-        },
-        compliance: {
-          disclosures: ['Affiliate links may generate commissions'],
-          restricted_terms: [],
-        },
-        schedule: {
-          publish_at: publishAt,
-          timezone: isScheduled ? 'UTC' : null,
-          recurrence: 'once',
-          end_at: null,
-        },
-        publish_result: null,
-      },
-    ],
-    notes: body,
-    archive_reason: null,
-    deleted_at: null,
-  };
-}
-
-function getPrimaryPiece(campaign) {
-  if (!campaign || !Array.isArray(campaign.content_pieces)) {
-    return null;
+function platformIcon(platform) {
+  switch (platform) {
+    case 'Email':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="M3 7l9 6 9-6" />
+        </svg>
+      );
+    case 'Instagram':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="5" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case 'LinkedIn':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <path d="M7 10v7" />
+          <path d="M7 7h.01" />
+          <path d="M11 17v-4a2 2 0 1 1 4 0v4" />
+        </svg>
+      );
+    case 'Facebook':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 2h-3a4 4 0 0 0-4 4v3H8v4h3v9h4v-9h3l1-4h-4V6a1 1 0 0 1 1-1h3z" />
+        </svg>
+      );
+    case 'X':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 4l16 16" />
+          <path d="M20 4L4 20" />
+        </svg>
+      );
+    case 'YouTube':
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="6" width="18" height="12" rx="4" />
+          <path d="M11 9l5 3-5 3z" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    default:
+      return null;
   }
-  return campaign.content_pieces[0] || null;
+}
+
+function isCommaOrEnter(event) {
+  return event.key === 'Enter' || event.key === ',';
+}
+
+function splitCommaList(value) {
+  return String(value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 export default function ContentGeneratorPage() {
-  const [mode, setMode] = useState('auto');
+  const [mode] = useState('single');
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationCount, setGenerationCount] = useState(0);
@@ -468,8 +506,27 @@ export default function ContentGeneratorPage() {
   const [hoplink, setHoplink] = useState('');
   const [commission, setCommission] = useState(50);
   const [showProductForm, setShowProductForm] = useState(true);
+  const [showAudienceForm, setShowAudienceForm] = useState(false);
+  const [showSettingsForm, setShowSettingsForm] = useState(false);
+  const [audienceAgeRange, setAudienceAgeRange] = useState('Any');
+  const [audienceGender, setAudienceGender] = useState('All');
+  const [audienceInterests, setAudienceInterests] = useState(['online business', 'growth marketing']);
+  const [interestDraft, setInterestDraft] = useState('');
+  const [audienceIncomeLevel, setAudienceIncomeLevel] = useState('Any');
+  const [audienceCountries, setAudienceCountries] = useState('US');
+  const [audienceLanguage, setAudienceLanguage] = useState('en');
 
-  const canRegenerate = useMemo(() => !!campaign && !isGenerating, [campaign, isGenerating]);
+  const saveMessageIsDanger = useMemo(() => /error|missing/i.test(saveMessage), [saveMessage]);
+  const primaryPiece = useMemo(() => {
+    if (!campaign || !Array.isArray(campaign.content_pieces)) {
+      return null;
+    }
+    return campaign.content_pieces[0] || null;
+  }, [campaign]);
+
+  useEffect(() => {
+    setManualJson(campaign ? JSON.stringify(campaign, null, 2) : '');
+  }, [campaign]);
 
   const togglePlatform = (platform) => {
     setSelectedPlatforms((prev) => (
@@ -479,7 +536,18 @@ export default function ContentGeneratorPage() {
     ));
   };
 
-  const runGeneration = async (isRegeneration = false) => {
+  const addInterest = (value) => {
+    const cleaned = String(value || '').trim().replace(/,+$/, '');
+    if (!cleaned) return;
+    setAudienceInterests((prev) => (prev.includes(cleaned) ? prev : [...prev, cleaned]));
+    setInterestDraft('');
+  };
+
+  const removeInterest = (value) => {
+    setAudienceInterests((prev) => prev.filter((item) => item !== value));
+  };
+
+  const runGeneration = async () => {
     if (!prompt.trim()) {
       setStatusMessage('Please enter a prompt.');
       return;
@@ -492,12 +560,11 @@ export default function ContentGeneratorPage() {
 
     if (isGenerating) return;
 
-    const nextCount = generationCount + 1;
-    setGenerationCount(nextCount);
+    setGenerationCount((count) => count + 1);
     setIsGenerating(true);
     setSaveMessage('');
     setSaveErrors([]);
-    setStatusMessage(isRegeneration ? 'Regenerating campaign...' : 'Generating campaign...');
+    setStatusMessage('Generating campaign...');
 
     try {
       const nextCampaign = await generateCampaign({
@@ -520,19 +587,19 @@ export default function ContentGeneratorPage() {
         audience: {
           personas: ['new affiliate marketers'],
           demographics: {
-            age_range: '25-44',
-            gender_focus: 'all',
-            income_band: 'mid',
-            interests: ['online business', 'growth marketing'],
+            age_range: audienceAgeRange,
+            gender_focus: audienceGender,
+            income_band: audienceIncomeLevel,
+            interests: audienceInterests,
           },
           region: {
-            countries: ['US'],
-            languages: ['en'],
+            countries: splitCommaList(audienceCountries),
+            languages: [audienceLanguage],
             timezone: 'UTC',
           },
         },
         num_variants: numVariants,
-        language: 'en',
+        language: audienceLanguage,
         mock_mode: null,
       });
 
@@ -545,28 +612,15 @@ export default function ContentGeneratorPage() {
     }
   };
 
-  const activateManual = () => {
-    setMode('manual');
-    if (!manualJson) {
-      const starter = generateMockCampaignContract(prompt, generationCount || 1);
-      setCampaign(starter);
-      setManualJson(JSON.stringify(starter, null, 2));
-    }
-    setSaveMessage('');
-    setSaveErrors([]);
-  };
-
   const sendToScheduler = async () => {
     if (!campaign || isGenerating) return;
 
     try {
-      const sourcePayload = mode === 'manual' ? JSON.parse(manualJson || '{}') : campaign;
-
-      const payload = !sourcePayload || !Array.isArray(sourcePayload.content_pieces) || !Object.keys(previewSelections).length
-        ? sourcePayload
+      const payload = !Object.keys(previewSelections).length
+        ? campaign
         : {
-          ...sourcePayload,
-          content_pieces: sourcePayload.content_pieces.map((piece, index) => {
+          ...campaign,
+          content_pieces: campaign.content_pieces.map((piece, index) => {
             const platformKey = piece?.platform || `Platform ${index + 1}`;
             const platformSelections = previewSelections?.[platformKey];
 
@@ -633,18 +687,18 @@ export default function ContentGeneratorPage() {
       const result = await createCampaignForScheduler(payload, { strict: false });
       if (result.campaign) {
         setCampaign(result.campaign);
-        if (mode === 'manual') {
-          setManualJson(JSON.stringify(result.campaign, null, 2));
-        }
       }
       if (result.errors.length) {
         setSaveMessage(`Campaign saved and scheduled with validation errors: ${result.errors.join('; ')}`);
+        setStatusMessage('Sent to scheduler with validation issues.');
         setSaveErrors([]);
       } else if (result.warnings.length) {
         setSaveMessage(`Campaign saved and scheduled with warnings: ${result.warnings.join('; ')}`);
+        setStatusMessage('Sent to scheduler with warnings.');
         setSaveErrors([]);
       } else {
         setSaveMessage('Campaign saved to the database and added to the scheduler.');
+        setStatusMessage('Sent to scheduler.');
         setSaveErrors([]);
       }
     } catch (err) {
@@ -660,204 +714,256 @@ export default function ContentGeneratorPage() {
 
       if (parsedErrors.length > 1) {
         setSaveMessage('Error missing information.');
+        setStatusMessage('Unable to send to scheduler.');
         setSaveErrors(parsedErrors);
       } else {
         setSaveMessage(rawMessage);
+        setStatusMessage(rawMessage);
         setSaveErrors([]);
       }
     }
   };
 
-  const primaryPiece = getPrimaryPiece(campaign);
-  const previewText = primaryPiece?.copy?.body || primaryPiece?.copy?.caption || campaign?.notes || '';
-  const previewCost = campaign?.metrics?.intent?.budget?.amount;
-  const previewRecurrence = primaryPiece?.schedule?.recurrence || campaign?.scheduling?.campaign_window?.cadence_default || 'once';
-  const previewTime = primaryPiece?.schedule?.publish_at
-    ? new Date(primaryPiece.schedule.publish_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : '-';
+  const rawJson = manualJson || (campaign ? JSON.stringify(campaign, null, 2) : '');
+
+  const handleSelectionsChange = useCallback((newSelections) => {
+    setPreviewSelections((prev) => ({
+      ...prev,
+      ...newSelections,
+    }));
+  }, []);
 
   return (
-    <PageContainer>
-      <Container>
-        <Title>Campaign Generator</Title>
+    <Page data-mode={mode}>
+      <StickyActionsBar>
+        <StickyStatus>
+          {isGenerating ? 'Generating campaign...' : statusMessage}
+        </StickyStatus>
+        <StickyButtonGroup>
+        <HeaderButton type="button" onClick={runGeneration} disabled={isGenerating}>
+          {isGenerating ? 'Generating...' : 'Generate'}
+        </HeaderButton>
+        <HeaderButton type="button" $ghost onClick={sendToScheduler} disabled={!campaign || isGenerating}>
+          Send to Scheduler
+        </HeaderButton>
+        </StickyButtonGroup>
+      </StickyActionsBar>
 
-        <Layout>
-          <Panel>
-            <TabRow>
-              <TabButton active={mode === 'auto'} onClick={() => setMode('auto')}>Auto Mock</TabButton>
-              <TabButton active={mode === 'manual'} onClick={activateManual}>Manual</TabButton>
-            </TabRow>
-
-            <FieldLabel htmlFor="prompt-input">Prompt</FieldLabel>
+      <Shell>
+        <LeftPanel>
+          <PanelSection>
+            <SectionLabel>Prompt</SectionLabel>
             <PromptInput
               id="prompt-input"
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe what you want to generate"
+              onChange={(event) => setPrompt(event.target.value)}
+              placeholder="Describe the product you want to promote and the angle you want to take. e.g. Promote a premium cotton minimalist t-shirt for streetwear fans aged 18-30..."
             />
+          </PanelSection>
 
-            {mode === 'auto' && (
-              <>
-                <FieldLabel>Platforms</FieldLabel>
-                <PlatformGrid>
-                  {PLATFORM_SELECTOR_OPTIONS.map((platform) => (
-                    <PlatformToggle
-                      key={platform}
-                      type="button"
-                      active={selectedPlatforms.includes(platform)}
-                      onClick={() => togglePlatform(platform)}
-                    >
-                      {platform}
-                    </PlatformToggle>
-                  ))}
-                </PlatformGrid>
-                {selectedPlatforms.length === 0 && (
-                  <div style={{ color: '#DC2626', fontSize: '0.8rem', marginBottom: '0.5rem' }}>
-                    Select at least one platform
-                  </div>
-                )}
-
-                <SectionDivider />
-
-                <CollapsibleHeader onClick={() => setShowProductForm((prev) => !prev)}>
-                  <FieldLabel style={{ marginBottom: 0, cursor: 'pointer' }}>Affiliate Product</FieldLabel>
-                  <span>{showProductForm ? '▼' : '▶'}</span>
-                </CollapsibleHeader>
-
-                {showProductForm && (
-                  <>
-                    <FieldLabel>Offer Name</FieldLabel>
-                    <TextInput
-                      value={offerName}
-                      onChange={(e) => setOfferName(e.target.value)}
-                      placeholder="Offer name"
-                    />
-
-                    <FieldLabel style={{ marginTop: '0.7rem' }}>Vendor</FieldLabel>
-                    <TextInput
-                      value={vendor}
-                      onChange={(e) => setVendor(e.target.value)}
-                      placeholder="Vendor"
-                    />
-
-                    <FieldLabel style={{ marginTop: '0.7rem' }}>Affiliate Link</FieldLabel>
-                    <TextInput
-                      value={hoplink}
-                      onChange={(e) => setHoplink(e.target.value)}
-                      placeholder="https://"
-                    />
-
-                    <FieldLabel style={{ marginTop: '0.7rem' }}>Commission %</FieldLabel>
-                    <NumberSelect
-                      value={commission}
-                      onChange={(e) => setCommission(Number(e.target.value))}
-                    >
-                      {[10, 20, 25, 30, 40, 50, 60, 75].map((option) => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </NumberSelect>
-                  </>
-                )}
-
-                <SectionDivider />
-
-                <FieldLabel>Content Variants per Platform</FieldLabel>
-                <NumberSelect
-                  value={numVariants}
-                  onChange={(e) => setNumVariants(Number(e.target.value))}
+          <PanelSection>
+            <SectionLabel>Platforms</SectionLabel>
+            <ToggleGrid>
+              {platformOptions.map((platform) => (
+                <ToggleChip
+                  key={platform.value}
+                  type="button"
+                  $active={selectedPlatforms.includes(platform.value)}
+                  onClick={() => togglePlatform(platform.value)}
                 >
-                  {[1, 3, 5].map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </NumberSelect>
+                  <ChipIcon>{platformIcon(platform.value)}</ChipIcon>
+                  {platform.label}
+                </ToggleChip>
+              ))}
+            </ToggleGrid>
+          </PanelSection>
 
-                <ActionRow>
-                  <Button onClick={() => runGeneration(false)} disabled={isGenerating}>Create</Button>
-                  <Button variant="secondary" onClick={() => runGeneration(true)} disabled={!canRegenerate}>Regenerate</Button>
-                  <Button variant="ghost" onClick={sendToScheduler} disabled={!campaign || isGenerating}>Send To Scheduler</Button>
-                </ActionRow>
-              </>
-            )}
+          <PanelSection>
+            <CollapsibleHeader type="button" onClick={() => setShowProductForm((prev) => !prev)}>
+              <CollapsibleTitle>Affiliate Product</CollapsibleTitle>
+              <Chevron>{showProductForm ? '▼' : '▶'}</Chevron>
+            </CollapsibleHeader>
 
-            {mode === 'manual' && (
-              <>
-                <FieldLabel htmlFor="manual-json" style={{ marginTop: '0.9rem' }}>Campaign JSON</FieldLabel>
-                <JsonArea
-                  id="manual-json"
-                  value={manualJson}
-                  onChange={(e) => setManualJson(e.target.value)}
-                  spellCheck={false}
-                />
+            {showProductForm ? (
+              <SectionGrid style={{ marginTop: '12px' }}>
+                <div>
+                  <FieldLabel>Offer Name</FieldLabel>
+                  <TextInput value={offerName} onChange={(event) => setOfferName(event.target.value)} placeholder="Offer name" />
+                </div>
 
-                <ActionRow>
-                  <Button variant="ghost" onClick={sendToScheduler} disabled={!manualJson.trim()}>Send To Scheduler</Button>
-                </ActionRow>
-              </>
-            )}
+                <div>
+                  <FieldLabel>Vendor</FieldLabel>
+                  <TextInput value={vendor} onChange={(event) => setVendor(event.target.value)} placeholder="Vendor" />
+                </div>
 
-            {saveMessage && (
-              <Notice>
-                <strong>{saveMessage}</strong>
-                {!!saveErrors.length && (
-                  <List>
-                    {saveErrors.map((item) => (
-                      <li key={item}>{item}</li>
+                <div>
+                  <FieldLabel>Affiliate Link</FieldLabel>
+                  <TextInput value={hoplink} onChange={(event) => setHoplink(event.target.value)} placeholder="https://" />
+                </div>
+
+                <div>
+                  <FieldLabel>Commission %</FieldLabel>
+                  <NumberSelect value={commission} onChange={(event) => setCommission(Number(event.target.value))}>
+                    {commissionOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
                     ))}
-                  </List>
-                )}
-              </Notice>
-            )}
-          </Panel>
+                  </NumberSelect>
+                </div>
+              </SectionGrid>
+            ) : null}
+          </PanelSection>
 
-          <Viewport>
-            <StatusText>{statusMessage}</StatusText>
+          <PanelSection>
+            <CollapsibleHeader type="button" onClick={() => setShowAudienceForm((prev) => !prev)}>
+              <CollapsibleTitle>
+                Target Audience <SmallMuted>(Optional)</SmallMuted>
+              </CollapsibleTitle>
+              <Chevron>{showAudienceForm ? '▼' : '▶'}</Chevron>
+            </CollapsibleHeader>
 
-            {!campaign && !isGenerating && (
-              <Notice>
-                Output viewport: generated campaign details will appear here after you click Create.
-              </Notice>
-            )}
+            {showAudienceForm ? (
+              <SectionGrid style={{ marginTop: '12px' }}>
+                <div>
+                  <FieldLabel>Age Range</FieldLabel>
+                  <SelectInput value={audienceAgeRange} onChange={(event) => setAudienceAgeRange(event.target.value)}>
+                    {ageRangeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </SelectInput>
+                </div>
 
-            {campaign && (
-              <>
-                <Card>
-                  <CardTitle>{campaign.name}</CardTitle>
-                  <MetaRow>
-                    <MetaPill>Time: {previewTime}</MetaPill>
-                    <MetaPill>Cost: ${previewCost}</MetaPill>
-                    <MetaPill>Interval: {previewRecurrence}</MetaPill>
-                    <MetaPill>Platforms: {campaign.platforms.join(', ')}</MetaPill>
-                    <MetaPill>Status: {campaign.status}</MetaPill>
-                    <MetaPill>Version: {campaign.version}</MetaPill>
-                  </MetaRow>
-                  <BodyText>{previewText}</BodyText>
-                </Card>
+                <div>
+                  <FieldLabel>Gender</FieldLabel>
+                  <SelectInput value={audienceGender} onChange={(event) => setAudienceGender(event.target.value)}>
+                    {genderOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </SelectInput>
+                </div>
 
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <FieldLabel>Interests</FieldLabel>
+                  <InlineTagBox>
+                    {audienceInterests.map((interest) => (
+                      <TagPill key={interest}>
+                        {interest}
+                        <TagRemove type="button" onClick={() => removeInterest(interest)} aria-label={`Remove ${interest}`}>
+                          ×
+                        </TagRemove>
+                      </TagPill>
+                    ))}
+                    <TagInput
+                      value={interestDraft}
+                      onChange={(event) => setInterestDraft(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (!isCommaOrEnter(event)) return;
+                        event.preventDefault();
+                        addInterest(interestDraft);
+                      }}
+                      onBlur={() => addInterest(interestDraft)}
+                      placeholder="Add interest and press Enter"
+                    />
+                  </InlineTagBox>
+                </div>
+
+                <div>
+                  <FieldLabel>Income Level</FieldLabel>
+                  <SelectInput value={audienceIncomeLevel} onChange={(event) => setAudienceIncomeLevel(event.target.value)}>
+                    {incomeOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </SelectInput>
+                </div>
+
+                <div>
+                  <FieldLabel>Countries</FieldLabel>
+                  <TextInput value={audienceCountries} onChange={(event) => setAudienceCountries(event.target.value)} placeholder="e.g. US, UK, Canada" />
+                </div>
+
+                <div>
+                  <FieldLabel>Language</FieldLabel>
+                  <SelectInput value={audienceLanguage} onChange={(event) => setAudienceLanguage(event.target.value)}>
+                    {languageOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </SelectInput>
+                </div>
+              </SectionGrid>
+            ) : null}
+          </PanelSection>
+
+          <PanelSection>
+            <CollapsibleHeader type="button" onClick={() => setShowSettingsForm((prev) => !prev)}>
+              <CollapsibleTitle>Settings</CollapsibleTitle>
+              <Chevron>{showSettingsForm ? '▼' : '▶'}</Chevron>
+            </CollapsibleHeader>
+
+            {showSettingsForm ? (
+              <SectionGrid style={{ marginTop: '12px' }}>
+                <div>
+                  <FieldLabel>Content Variants per Platform</FieldLabel>
+                  <NumberSelect value={numVariants} onChange={(event) => setNumVariants(Number(event.target.value))}>
+                    {[1, 3, 5].map((option) => <option key={option} value={option}>{option}</option>)}
+                  </NumberSelect>
+                </div>
+              </SectionGrid>
+            ) : null}
+          </PanelSection>
+        </LeftPanel>
+
+        <RightPanel>
+          <RightBody>
+            {campaign ? (
+              <PlatformPreviews>
                 <CampaignPlatformPreview
                   contentPieces={campaign.content_pieces}
                   selections={previewSelections}
-                  onSelectionsChange={setPreviewSelections}
+                  onSelectionsChange={handleSelectionsChange}
                 />
-
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowRawJson((prev) => !prev)}
-                  style={{ alignSelf: 'flex-start' }}
-                >
-                  {showRawJson ? 'Hide Raw JSON' : 'View Raw JSON'}
-                </Button>
-
-                {showRawJson && (
-                  <Card>
-                    <CardTitle>Campaign Contract JSON</CardTitle>
-                    <JsonPreview>{JSON.stringify(campaign, null, 2)}</JsonPreview>
-                  </Card>
-                )}
-              </>
+              </PlatformPreviews>
+            ) : isGenerating ? (
+              <EmptyState>
+                <EmptyIcon>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z" />
+                    <path d="M19 14l.9 2.7L23 18l-3.1 1.3L19 22l-.9-2.7L15 18l3.1-1.3L19 14z" />
+                  </svg>
+                </EmptyIcon>
+                <div>Your generated campaign is being built</div>
+                <EmptySub>Hang tight while the preview is prepared</EmptySub>
+              </EmptyState>
+            ) : (
+              <EmptyState>
+                <EmptyIcon>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z" />
+                    <path d="M19 14l.9 2.7L23 18l-3.1 1.3L19 22l-.9-2.7L15 18l3.1-1.3L19 14z" />
+                  </svg>
+                </EmptyIcon>
+                <div>Your generated campaign will appear here</div>
+                <EmptySub>Fill in the details on the left and click Generate</EmptySub>
+              </EmptyState>
             )}
-          </Viewport>
-        </Layout>
-      </Container>
-    </PageContainer>
+          </RightBody>
+
+          <ActionDock>
+            {showRawJson ? (
+              <RawDrawer $open>
+                <RawDrawerInner>{rawJson || '{ }'}</RawDrawerInner>
+              </RawDrawer>
+            ) : null}
+
+            <ActionBar>
+              <GhostToggle type="button" $active={showRawJson} onClick={() => setShowRawJson((prev) => !prev)}>
+                {showRawJson ? 'Hide Raw JSON' : 'View Raw JSON'}
+              </GhostToggle>
+
+              {saveMessage ? (
+                <SaveFeedback $danger={saveMessageIsDanger}>
+                  <div>{saveMessage}</div>
+                  {!!saveErrors.length && (
+                    <SaveErrors>
+                      {saveErrors.map((item) => <li key={item}>{item}</li>)}
+                    </SaveErrors>
+                  )}
+                </SaveFeedback>
+              ) : <span />}
+            </ActionBar>
+          </ActionDock>
+        </RightPanel>
+      </Shell>
+    </Page>
   );
 }

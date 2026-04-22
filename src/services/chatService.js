@@ -384,7 +384,7 @@ export const chatService = {
     // Default response with lead qualification offer
     const defaultResponses = [
       'I\'m not sure I understand. Can you rephrase that?',
-      'I can help you with questions about KimuntuX, or connect you with our sales team. What would you like to know?',
+      'I can help you with questions about KimuX, or connect you with our sales team. What would you like to know?',
       'Try asking about our features, pricing, or say "talk to a human" to speak with someone.'
     ];
     

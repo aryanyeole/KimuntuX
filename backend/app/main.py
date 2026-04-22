@@ -10,11 +10,18 @@ from app.models import Campaign, ContactSubmission, User  # noqa: F401
 from app.routers import auth, campaigns, contacts
 from app.routers import auth, contacts, crm
 
+# ── Fail-fast checks ──────────────────────────────────────────────────────────
+# Catch missing Phase 2 secrets before the server accepts any requests.
+if not settings.kimux_fernet_key:
+    raise RuntimeError(
+        "KIMUX_FERNET_KEY is not set. "
+        "Generate one with: cd backend && python -m app.scripts.generate_fernet_key"
+    )
 
 app = FastAPI(
     title=settings.app_name,
     version="0.1.0",
-    description="Backend API for KimuntuX auth, contact forms, and future CRM features.",
+    description="Backend API for KimuX auth, contact forms, and future CRM features.",
 )
 
 app.add_middleware(

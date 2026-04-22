@@ -1,0 +1,221 @@
+{
+  "info": {
+    "name": "KimuX — ClickBank Integration",
+    "description": "Phase 2 endpoints: marketplace sync (platform credentials) + account connect/sync (tenant credentials).\n\nPre-requisites:\n1. Set {{base_url}} = http://localhost:8000\n2. Log in via POST /api/v1/auth/token and set {{token}} = access_token\n3. Set {{tenant_id}} = your tenant UUID (from GET /api/v1/auth/me/tenant)\n\nCredential tiers:\n- Platform: KimuX's own CLICKBANK_DEVELOPER_KEY in .env — powers marketplace for all users\n- Tenant: per-user developer key stored Fernet-encrypted in integration_credentials table",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "token",    "value": "" },
+    { "key": "tenant_id", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/v1/auth/token",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "your@email.com" },
+                { "key": "password", "value": "yourpassword" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get My Tenant",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/auth/me/tenant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marketplace (Platform Credentials)",
+      "description": "Syncs public ClickBank marketplace using KimuX's own platform developer key (CLICKBANK_DEVELOPER_KEY env var). Offers land under SYSTEM_TENANT_ID and are visible to all tenants.",
+      "item": [
+        {
+          "name": "Sync Marketplace",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/v1/crm/offers/marketplace/sync",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"synced\": 47,\n  \"created\": 47,\n  \"updated\": 0,\n  \"last_synced_at\": \"2026-04-17T10:30:00Z\"\n}"
+            },
+            {
+              "name": "503 — Platform key not configured",
+              "status": "Service Unavailable",
+              "code": 503,
+              "body": "{ \"detail\": \"Platform ClickBank credential not configured. Set CLICKBANK_DEVELOPER_KEY in .env\" }"
+            }
+          ]
+        },
+        {
+          "name": "Marketplace Status",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/crm/offers/marketplace/status",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"offer_count\": 47,\n  \"last_synced_at\": \"2026-04-17T10:30:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "List Offers (all sources)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/crm/offers?sort_by=gravity&sort_dir=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "crm", "offers"],
+              "query": [
+                { "key": "sort_by",  "value": "gravity" },
+                { "key": "sort_dir", "value": "desc" },
+                { "key": "niche",    "value": "", "disabled": true },
+                { "key": "network",  "value": "", "disabled": true },
+                { "key": "source",   "value": "clickbank_marketplace", "disabled": true }
+              ]
+            },
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account (Tenant Credentials)",
+      "description": "Per-tenant ClickBank account connection. Uses the tenant's own developer key, encrypted with Fernet and stored in integration_credentials table. Lets tenants sync their own products and see account-specific data.",
+      "item": [
+        {
+          "name": "Connect Account",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/v1/crm/integrations/clickbank/account/connect",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID",  "value": "{{tenant_id}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"developer_key\": \"YOUR_CLICKBANK_DEVELOPER_KEY\",\n  \"account_nickname\": \"My Vendor Account\"\n}"
+            }
+          },
+          "response": [
+            {
+              "name": "200 Connected",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"connected\": true,\n  \"account_nickname\": \"My Vendor Account\",\n  \"last_sync_at\": null,\n  \"offer_count\": 0,\n  \"account_summary\": {}\n}"
+            },
+            {
+              "name": "400 — Invalid key",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{ \"detail\": \"Invalid ClickBank credentials: ClickBank rejected credentials (HTTP 401)\" }"
+            },
+            {
+              "name": "502 — ClickBank unreachable",
+              "status": "Bad Gateway",
+              "code": 502,
+              "body": "{ \"detail\": \"Could not reach ClickBank to verify credentials: ...\" }"
+            }
+          ]
+        },
+        {
+          "name": "Account Status",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/crm/integrations/clickbank/account/status",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ]
+          },
+          "response": [
+            {
+              "name": "200 Connected",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"connected\": true,\n  \"account_nickname\": \"My Vendor Account\",\n  \"last_sync_at\": \"2026-04-17T11:00:00Z\",\n  \"offer_count\": 3,\n  \"account_summary\": {}\n}"
+            },
+            {
+              "name": "200 Not connected",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"connected\": false,\n  \"offer_count\": 0\n}"
+            }
+          ]
+        },
+        {
+          "name": "Sync Account Offers",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/v1/crm/integrations/clickbank/account/sync",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"synced\": 3,\n  \"created\": 3,\n  \"updated\": 0,\n  \"last_synced_at\": \"2026-04-17T11:00:00Z\"\n}"
+            },
+            {
+              "name": "400 — Not connected",
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{ \"detail\": \"No ClickBank account connected. Connect your account in Settings first.\" }"
+            }
+          ]
+        },
+        {
+          "name": "Disconnect Account",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/v1/crm/integrations/clickbank/account/disconnect",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
+            ]
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "body": "{ \"detail\": \"ClickBank account disconnected. Synced offers are retained.\" }"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

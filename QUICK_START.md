@@ -5,7 +5,7 @@
 ### 1. Start the App
 The app should already be running. If not:
 ```bash
-cd KimuntuX
+cd KimuX
 npm start
 ```
 Visit: http://localhost:3000
@@ -17,8 +17,8 @@ Look for the **purple circular button** with 💬 in the bottom-right corner. Cl
 
 #### Test FAQ System:
 ```
-You: What is KimuntuX?
-Bot: [Explains KimuntuX is an AI-driven platform...]
+You: What is KimuX?
+Bot: [Explains KimuX is an AI-driven platform...]
 
 You: How much does it cost?
 Bot: [Provides pricing information...]
@@ -101,7 +101,7 @@ Now complete a lead qualification or request handoff. Events will log!
 ## 🎯 Expected Results
 
 ✅ Chatbot button appears bottom-right  
-✅ Clicking opens a drawer with "KimuntuX Assistant" header  
+✅ Clicking opens a drawer with "KimuX Assistant" header  
 ✅ Welcome message mentions current page feature  
 ✅ FAQ questions get relevant answers  
 ✅ Lead qualification collects 5 fields  

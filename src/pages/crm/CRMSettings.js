@@ -1,20 +1,10 @@
 import { useState } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import useIntegrations from '../../hooks/useIntegrations';
+import { crm as C } from '../../styles/crmTheme';
+import PlatformLogo from '../../components/crm/PlatformLogo';
+import ClickBankSection from '../../components/crm/ClickBankSection';
 
-// ── Palette ───────────────────────────────────────────────────────────────────
-const C = {
-  bg: '#060d1b', surface: '#0c1527', card: '#121e34', border: '#1a2d4d',
-  text: '#e4eaf4', muted: '#6b7fa3', accent: '#2d7aff',
-  success: '#00c48c', warning: '#ffb020', danger: '#ff4757', purple: '#8b5cf6',
-};
-
-const PLATFORM_EMOJI = {
-  ClickBank: '🟠', BuyGoods: '🟢', MaxWeb: '🔵', Digistore24: '🟣',
-  'Facebook Ads': '📘', 'Google Ads': '🔍', 'TikTok Ads': '🎵',
-  Instagram: '📸', YouTube: '▶️', Stripe: '💳', PayPal: '🅿️',
-  Zapier: '⚡', Slack: '💬', Mailchimp: '🐒',
-};
 const PLATFORM_DESC = {
   ClickBank: 'Affiliate marketplace for digital products',
   BuyGoods: 'Health & wellness affiliate network',
@@ -35,10 +25,10 @@ const STATUS_COLOR = { connected: C.success, pending: C.warning, disconnected: C
 const STATUS_LABEL = { connected: 'Connected', pending: 'Pending', disconnected: 'Disconnected' };
 
 const VALIDATION_URLS = [
-  { network: 'ClickBank',    emoji: '🟠', url: 'https://kimux.io/track/cb/{affiliate_id}' },
-  { network: 'BuyGoods',     emoji: '🟢', url: 'https://kimux.io/track/bg/{affiliate_id}' },
-  { network: 'MaxWeb',       emoji: '🔵', url: 'https://kimux.io/track/mw/{affiliate_id}' },
-  { network: 'Digistore24',  emoji: '🟣', url: 'https://kimux.io/track/ds/{affiliate_id}' },
+  { network: 'ClickBank',    code: 'CB', url: 'https://kimux.io/track/cb/{affiliate_id}' },
+  { network: 'BuyGoods',     code: 'BG', url: 'https://kimux.io/track/bg/{affiliate_id}' },
+  { network: 'MaxWeb',       code: 'MW', url: 'https://kimux.io/track/mw/{affiliate_id}' },
+  { network: 'Digistore24',  code: 'D24', url: 'https://kimux.io/track/ds/{affiliate_id}' },
 ];
 
 const TEAM = [
@@ -82,7 +72,6 @@ const IntCard = styled.div`
   background:${C.card};border:1px solid ${C.border};border-radius:12px;padding:16px;
   display:flex;flex-direction:column;gap:6px;
 `;
-const IntEmoji = styled.div`font-size:28px;`;
 const IntName = styled.div`font-size:13px;font-weight:700;color:${C.text};`;
 const IntDesc = styled.div`font-size:11px;color:${C.muted};line-height:1.4;flex:1;`;
 const IntFooter = styled.div`display:flex;align-items:center;justify-content:space-between;margin-top:4px;`;
@@ -177,7 +166,22 @@ const CopyBtn = styled.button`
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function CRMSettings() {
-  const { integrations, loading, connect, disconnect } = useIntegrations();
+  const {
+    integrations,
+    loading,
+    connect,
+    disconnect,
+    marketplaceStatus,
+    marketplaceLoading,
+    fetchMarketplaceStatus,
+    syncMarketplace,
+    clickbankAccount,
+    clickbankAccountLoading,
+    fetchClickbankAccountStatus,
+    connectClickbankAccount,
+    disconnectClickbankAccount,
+    syncClickbankAccount,
+  } = useIntegrations();
   const [connecting, setConnecting] = useState({});
 
   // AI toggle state
@@ -209,11 +213,25 @@ export default function CRMSettings() {
       <SectionTitle>Platform Integrations</SectionTitle>
       <SectionSub>Connect affiliate networks, ad platforms, payment gateways, and tools.</SectionSub>
 
+      {/* ── ClickBank deep integration ── */}
+      <ClickBankSection
+        marketplaceStatus={marketplaceStatus}
+        marketplaceLoading={marketplaceLoading}
+        onSyncMarketplace={syncMarketplace}
+        onFetchMarketplaceStatus={fetchMarketplaceStatus}
+        clickbankAccount={clickbankAccount}
+        clickbankAccountLoading={clickbankAccountLoading}
+        onConnectAccount={connectClickbankAccount}
+        onDisconnectAccount={disconnectClickbankAccount}
+        onSyncAccount={syncClickbankAccount}
+        onFetchAccountStatus={fetchClickbankAccountStatus}
+      />
+
       <IntegrationsGrid>
         {loading && <div style={{ color: C.muted, fontSize: 13 }}>Loading integrations…</div>}
         {!loading && integrations.map(int => (
           <IntCard key={int.id || int.platform_name}>
-            <IntEmoji>{PLATFORM_EMOJI[int.platform_name] || '🔌'}</IntEmoji>
+            <PlatformLogo name={int.platform_name} size={40} />
             <IntName>{int.platform_name}</IntName>
             <IntDesc>{PLATFORM_DESC[int.platform_name] || int.platform_type}</IntDesc>
             <IntFooter>
@@ -273,7 +291,7 @@ export default function CRMSettings() {
           <ValidTitle>Validation URLs</ValidTitle>
           {VALIDATION_URLS.map(v => (
             <UrlRow key={v.network}>
-              <UrlNetwork>{v.emoji} {v.network}</UrlNetwork>
+              <UrlNetwork>{v.code} {v.network}</UrlNetwork>
               <UrlInput readOnly value={v.url} />
               <CopyBtn
                 $copied={copied[v.network]}

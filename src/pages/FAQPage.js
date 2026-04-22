@@ -360,9 +360,9 @@ export default function FAQPage() {
       q: "Who is behind KimuX?",
       a: (
         <>
-          <p>KimuX was initiated by Kimuntu Power Inc., a global innovation company focused on intelligent digital ecosystems.</p>
+          <p>KimuX was initiated as a global innovation platform focused on intelligent digital ecosystems.</p>
           <p>The project was developed through the Arizona State University Capstone Program with the contribution of five talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, Julian Korn, and Sarjan Patel.</p>
-          <p>Kimuntu Power Inc. continues to lead the project’s growth as the strategic owner, investor, and technology accelerator, expanding KimuntuX as a global AI-powered SaaS and digital infrastructure platform.</p>
+          <p>KimuX continues to grow as a strategic AI-powered SaaS and digital infrastructure platform for digital brokerage, fintech, and intelligent operations.</p>
         </>
       )
     },

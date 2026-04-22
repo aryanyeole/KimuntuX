@@ -241,7 +241,7 @@ const SignupPage = () => {
         joinDate: data.user.created_at
       };
 
-      login(userData, data.access_token);
+      login(userData, data.access_token, data.tenant || null);
       setSuccess('Account created successfully! Redirecting...');
       setTimeout(() => navigate('/dashboard'), 1200);
     } catch (err) {
@@ -255,10 +255,10 @@ const SignupPage = () => {
     <SignupContainer>
       <SignupCard>
         <Logo>
-          <img src="/light_logo.jpg" alt="KimuntuX" />
+          <img src="/light_logo.jpg" alt="KimuX" />
         </Logo>
         <Title>Create Account</Title>
-        <Subtitle>Join the KimuntuX intelligent brokerage universe</Subtitle>
+        <Subtitle>Join the KimuX intelligent brokerage universe</Subtitle>
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && <SuccessMessage>{success}</SuccessMessage>}

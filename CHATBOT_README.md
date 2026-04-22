@@ -1,7 +1,7 @@
-# KimuntuX Chatbot Feature
+# KimuX Chatbot Feature
 
 ## Overview
-A fully-featured, context-aware chatbot widget integrated into the KimuntuX React application. The chatbot provides intelligent FAQ responses, lead qualification, and human handoff capabilities.
+A fully-featured, context-aware chatbot widget integrated into the KimuX React application. The chatbot provides intelligent FAQ responses, lead qualification, and human handoff capabilities.
 
 ## Features
 
@@ -252,8 +252,8 @@ background: linear-gradient(135deg, #YOUR_COLOR 0%, #YOUR_COLOR2 100%);
 For questions or issues:
 - Check console logs (all requests logged with timing)
 - Review Cypress tests for examples
-- Contact: support@kimuntux.com
+- Contact: support@KimuX.com
 
 ---
 
-**Built with ❤️ for KimuntuX**
+**Built with ❤️ for KimuX**

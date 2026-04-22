@@ -158,19 +158,19 @@ class GenerationConfig(BaseModel):
 
 
 class ContentCopy(BaseModel):
-    hook: str | None = None
-    headline: str | None = None
-    body: str | None = None
-    caption: str | None = None
-    subject_line: str | None = None
-    script: str | None = None
+    hook: list | str | None = None
+    headline: list | str | None = None
+    body: list | str | None = None
+    caption: list | str | None = None
+    subject_line: list | str | None = None
+    script: list | str | None = None
 
 
 class ContentMedia(BaseModel):
-    image_prompt: str | None = None
+    image_prompt: list | str | None = None
     image_url: str | None = None
-    video_prompt: str | None = None
-    thumbnail_prompt: str | None = None
+    video_prompt: list | str | None = None
+    thumbnail_prompt: list | str | None = None
 
 
 class ContentCompliance(BaseModel):
@@ -207,11 +207,11 @@ class ContentPiece(BaseModel):
     status: str = "draft"
     sequence_index: int = Field(default=0, ge=0)
     objective: str | None = None
-    cta_text: str | None = None
+    cta_text: list | str | None = None
     cta_link: str | None = None
-    hashtags: list[str] = Field(default_factory=list)
-    copy: dict[str, str | None] | None = None
-    media: dict[str, str | None] | None = None
+    hashtags: list | None = None
+    copy: ContentCopy | None = None
+    media: ContentMedia | None = None
     compliance: dict[str, list[str]] | None = None
     compliance_score: float | None = Field(default=None, ge=0, le=10)
     compliance_status: str | None = None

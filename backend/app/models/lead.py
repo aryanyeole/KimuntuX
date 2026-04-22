@@ -45,7 +45,11 @@ class Lead(Base):
         primary_key=True,
         default=lambda: str(uuid4()),
     )
-    tenant_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="SET NULL"),
+        nullable=True,
+    )
 
     # Contact info
     first_name: Mapped[str] = mapped_column(String(255), nullable=False)

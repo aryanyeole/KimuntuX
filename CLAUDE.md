@@ -1,5 +1,117 @@
 # CLAUDE.md — KimuX CRM Development Guide
 
+## Current Status (as of April 2026)
+
+The CRM module is fully built and wired end-to-end. This is not a prototype — every page talks to the real backend.
+
+**Backend**
+- 10 SQLAlchemy models with Alembic migrations: Tenant, TenantMembership, User, Lead, Activity, Communication, Campaign, Offer, Integration, IntegrationCredential
+- 30+ CRM API endpoints under `/api/v1/crm/` — all require JWT auth + tenant resolution (`X-Tenant-ID` header or `default_tenant_id`)
+- Service layer: `lead_service`, `campaign_service`, `offer_service`, `communication_service`, `integration_service`, `dashboard_service`, `ai_service`
+- Gemini AI integration (gemini-2.5-flash via `google-genai`) for lead scoring and outreach generation; rule-based fallback when key is absent or call fails
+- Contact-to-lead pipeline: every landing page form submission automatically creates a CRM lead assigned to the system tenant
+- Seed script at `backend/app/scripts/seed.py` — run with `python -m app.scripts.seed` (creates KimuX Demo tenant; **DEV ONLY:** also grants all existing users membership to demo tenant so dev accounts see data — remove before production)
+- **57 passing integration tests** including 7 tenant isolation tests + 22 ClickBank tests: `cd backend && python -m pytest tests/ -v`
+- Multi-tenancy: every query in every service is filtered by `tenant_id`; `SYSTEM_TENANT_ID = "00000000-0000-0000-0000-000000000001"` holds contact-form leads + marketplace offers
+- Fernet encryption for tenant credentials (`KIMUX_FERNET_KEY` env var); `backend/app/core/encryption.py`
+- ClickBank API client at `backend/app/integrations/clickbank.py` — single developer key, `Authorization: <key>` header (post-Aug 2023 auth model)
+- Fail-fast: server refuses to start if `KIMUX_FERNET_KEY` is missing
+
+**Frontend**
+- `src/services/api.js` — centralized fetch wrapper with JWT auth headers + `X-Tenant-ID` header (reads from `localStorage.kimuntu_tenant_id`)
+- `src/contexts/TenantContext.js` — `currentTenant` state, `setCurrentTenant`, `clearTenant`; persisted to localStorage; listens for `kimuntu-tenant-updated` custom DOM event to re-hydrate when UserContext bootstraps tenant during boot
+- `src/contexts/UserContext.js` — async boot: if `kimuntu_token` exists but `kimuntu_tenant_id` is absent, calls `GET /auth/me/tenant` and writes tenant to localStorage before setting `isLoading = false` (fixes pre-Phase-1 users seeing "No tenant selected")
+- `src/layouts/CRMLayout.js` — loading gate: returns spinner while `isLoading` is true, preventing CRM API calls before tenant is resolved
+- 8 custom hooks in `src/hooks/`: `useApi`, `useDashboard`, `useLeads`, `useLead`, `useCampaigns`, `useOffers`, `useCommunications`, `useIntegrations`
+- CRM nested routing under `/crm` with collapsible sidebar (`src/layouts/CRMLayout.js`); global Header/Footer suppressed inside CRM
+- Tenant name shown in CRM TopBar
+- 8 CRM pages all wired to real backend data:
+  - `/crm/dashboard` — KPIs, AI insights, pipeline summary, source breakdown, recent leads
+  - `/crm/leads` — paginated table, search/filter/sort, slide-in detail drawer with AI assist
+  - `/crm/pipeline` — HTML5 drag-and-drop kanban, stage changes persisted via API
+  - `/crm/campaigns` — metrics table with computed KPIs
+  - `/crm/offers` — affiliate offer discovery with niche/network filters
+  - `/crm/communication` — split-pane inbox, AI reply via Gemini
+  - `/crm/analytics` — score distribution, pipeline bars, ROI table
+  - `/crm/settings` — integrations connect/disconnect, AI config toggles, team list
+
+**What is NOT yet built**
+- Background jobs / task queue (Celery, ARQ, etc.)
+- Webhook receivers for ad platforms
+- Real integration SDK wiring for non-ClickBank platforms (connections are mock status toggles)
+- Multi-step campaign creation modal
+- SQLAlchemy do_orm_execute guard (service-layer filtering is enforced; DB-level guard is a future hardening step)
+- Tenant switcher UI (single tenant per user for now)
+
+---
+
+---
+
+## Roadmap to Production (Path A — started April 2026)
+
+The CRM is functionally complete as a standalone tool but has integration
+placeholders that need to be made real before public launch. These five phases
+take it from "working shell" to "deployable SaaS."
+
+### Phase 1 — Multi-tenancy enforcement ✅ COMPLETE
+Tenant + TenantMembership tables. All CRM queries scoped by tenant_id.
+X-Tenant-ID header on frontend requests. Async boot sequence resolves
+tenant before CRM renders. Seed script grants all existing users demo
+tenant membership (DEV ONLY). 7 tenant isolation tests pass.
+
+### Phase 2 — ClickBank integration ✅ COMPLETE
+Dual credential tiers: platform key (env var) for public marketplace visible
+to all tenants; tenant key (Fernet-encrypted DB) for per-tenant account data.
+IntegrationCredential model, ClickBank API client, 6 new endpoints, source
+badges on Offers page, ClickBankSection on Settings page. 22 new tests.
+
+**Phase 2 implementation notes:**
+- ClickBank auth (post-Aug 2023): single Developer API Key. Header format:
+  `Authorization: <developer_key>`. No secondary clerk key required.
+- Marketplace offers stored under `SYSTEM_TENANT_ID` with `source="clickbank_marketplace"`.
+  All tenants see them via an OR query in `offer_service._list_offers_for_tenant`
+  (approved bypass — see "Tenant isolation exceptions" below).
+- Tenant account offers stored under the real `tenant_id` with `source="clickbank_account"`.
+  Other tenants cannot see them — enforced by the same OR query.
+- Cold-start: `_maybe_cold_start_sync` in offer_service triggers a marketplace sync
+  synchronously on first offer list call if < 10 marketplace rows exist.
+- Postman collection: `docs/postman/KimuX_ClickBank.postman_collection.json`
+- Generate Fernet key: `cd backend && python -m app.scripts.generate_fernet_key`
+
+**Tenant isolation exceptions (approved OR-query bypasses):**
+The following queries intentionally include rows from multiple tenants.
+Each is documented here as the canonical list of approved escapes:
+1. `offer_service._list_offers_for_tenant`: includes `SYSTEM_TENANT_ID`
+   marketplace offers alongside tenant's own offers. Rationale: marketplace
+   data is intentionally shared across all tenants — it's public ClickBank
+   data, not another tenant's private data.
+
+### Phase 3 — SendGrid integration ⬜ NOT STARTED
+Outbound email send from outreach drawer. Inbound parse webhook creates
+Communication rows from replies. Open/click webhooks create Activity rows.
+Makes Communication inbox, outreach, and activity timeline real.
+
+### Phase 4 — Google OAuth (login only) ⬜ NOT STARTED
+"Sign in with Google" on login page. Establishes the OAuth pattern that
+Meta/Google Ads/TikTok Ads will reuse. oauth_accounts table.
+
+### Phase 5 — AWS deployment + monitoring + honest UI ⬜ NOT STARTED
+RDS Postgres, ECS Fargate, S3+CloudFront, Route 53, ACM SSL, Sentry on
+frontend and backend. Integration settings gets honest status labels
+(available | coming_soon | in_review | connected) so unconnected
+integrations do not lie to users.
+
+### Explicitly deferred until after launch
+- Meta/Google/TikTok/Instagram Ads OAuth + data sync (scaffolded with
+  "in_review" labels at launch)
+- Other affiliate networks (BuyGoods, MaxWeb, Digistore24)
+- Background job queue (Celery/ARQ)
+- Content Creation Suite, Funnel Builder, KimuX Academy
+- Role-based permissions beyond basic tenant membership
+- Billing and plan enforcement
+
+---
+
 ## Project Identity
 
 **KimuX** is an AI-powered digital brokerage, fintech, and marketing platform. The CRM is one core module inside a larger modular, API-first, multi-tenant SaaS product. The broader platform vision includes affiliate/reseller tools, funnel/page builder, campaign analytics, blockchain-backed transparency, fintech/payment features, eCommerce, and a developer ecosystem. **The immediate goal is building the CRM module properly inside the existing web app.**
@@ -86,15 +198,21 @@
 - `backend/app/schemas/auth.py` — Pydantic schemas for auth
 - `backend/app/schemas/contact.py` — Pydantic schemas for contact form
 
-### Backend — what does NOT exist yet
-- No CRM models (Lead, Activity, Communication, Campaign, Offer, Integration)
-- No CRM API endpoints
-- No service layer
-- No Alembic migrations
-- No AI service
-- No background jobs / task queue
-- No webhook receivers
-- No integration SDK wiring
+### Backend — CRM (all real, all wired)
+- `backend/app/models/` — Lead, Activity, Communication, Campaign, Offer, Integration (+ User, ContactSubmission)
+- `backend/app/schemas/` — Pydantic v2 schemas for all models (Create, Update, Response, List variants)
+- `backend/app/services/` — lead_service, campaign_service, offer_service, communication_service, integration_service, dashboard_service, ai_service
+- `backend/app/routers/crm.py` — 25+ routes, all authenticated
+- `backend/app/routers/contacts.py` — now auto-creates a CRM lead on every form submission
+- `backend/app/scripts/seed.py` — seeds 48 leads, campaigns, offers, integrations, communications
+- `backend/alembic/` — Alembic migration environment configured
+- `backend/tests/` — conftest.py + test_leads.py, 28 passing tests
+
+### Backend — what is NOT yet built
+- Background jobs / task queue (Celery, ARQ, etc.)
+- Webhook receivers for ad platforms
+- Real integration SDK wiring (connect/disconnect are mock status toggles)
+- Scheduled AI re-scoring jobs
 
 ## Coding Conventions
 
@@ -293,50 +411,50 @@ The CRM should have its own sidebar navigation (not the global Header). The glob
 
 ## Implementation Order
 
-### Phase 1 — Backend Foundation
-1. Set up Alembic in the backend directory
-2. Create all CRM models (Lead, Activity, Communication, Campaign, Offer, Integration)
-3. Generate and run initial migration
-4. Create Pydantic schemas for each model (Create, Update, Response, List)
-5. Create service layer files (lead_service.py, campaign_service.py, etc.)
-6. Implement leads CRUD endpoints first (router + service + schemas)
-7. Implement dashboard summary endpoint
-8. Seed database with realistic demo data (a seed script in `backend/app/scripts/seed.py`)
-9. Test all endpoints manually or with the FastAPI docs UI at /docs
+### Phase 1 — Backend Foundation ✅ COMPLETE
+1. ✅ Set up Alembic in the backend directory
+2. ✅ Create all CRM models (Lead, Activity, Communication, Campaign, Offer, Integration)
+3. ✅ Generate and run initial migration
+4. ✅ Create Pydantic schemas for each model (Create, Update, Response, List)
+5. ✅ Create service layer files (lead_service.py, campaign_service.py, etc.)
+6. ✅ Implement leads CRUD endpoints (router + service + schemas)
+7. ✅ Implement dashboard summary endpoint
+8. ✅ Seed database with realistic demo data (`backend/app/scripts/seed.py`)
+9. ✅ 28 passing integration tests (`backend/tests/`)
 
-### Phase 2 — Frontend Data Layer
-1. Create `src/services/api.js` — centralized fetch wrapper with auth headers
-2. Create custom hooks in `src/hooks/`: useLeads, useDashboard, useCampaigns, etc.
-3. Set up CRM nested routing in App.js with a CRM layout component
-4. Create the CRM sidebar navigation component
+### Phase 2 — Frontend Data Layer ✅ COMPLETE
+1. ✅ `src/services/api.js` — centralized fetch wrapper with JWT auth headers
+2. ✅ 8 custom hooks in `src/hooks/`
+3. ✅ CRM nested routing in App.js with CRMLayout component
+4. ✅ Collapsible CRM sidebar navigation
 
-### Phase 3 — Frontend CRM Pages (connect to real backend)
-1. Dashboard page — wire KPIs and lead list to real API
-2. Leads page — wire LeadsTable to real API with search/filter/pagination
-3. Lead detail panel — wire to real lead data + activities endpoint
-4. Pipeline kanban — wire to leads API, make drag-and-drop persist via PATCH stage
-5. Campaigns page — wire to campaigns API
-6. Offers page — wire to offers API
-7. Communication page — wire to communications API
-8. Analytics page — wire to reports endpoints
-9. Settings page — wire to integrations API
+### Phase 3 — Frontend CRM Pages ✅ COMPLETE
+1. ✅ Dashboard (`/crm/dashboard`) — KPIs, AI insights, pipeline, source breakdown
+2. ✅ Leads (`/crm/leads`) — paginated table, drawer, AI assist tab
+3. ✅ Pipeline (`/crm/pipeline`) — drag-and-drop kanban, persists via PATCH /stage
+4. ✅ Campaigns (`/crm/campaigns`) — metrics table, computed KPIs
+5. ✅ Offers (`/crm/offers`) — niche/network filter, trending tables
+6. ✅ Communication (`/crm/communication`) — split-pane inbox, AI reply
+7. ✅ Analytics (`/crm/analytics`) — score distribution, pipeline bars, ROI table
+8. ✅ Settings (`/crm/settings`) — integrations grid, AI toggles, team list
 
-### Phase 4 — AI Features
-1. Create `backend/app/services/ai_service.py`
-2. Implement lead scoring (rule-based first, LLM-enhanced later)
-3. Implement outreach generation (requires LLM API key)
-4. Wire AI endpoints to frontend (score button, outreach draft generator)
+### Phase 4 — AI Features ✅ COMPLETE
+1. ✅ `backend/app/services/ai_service.py` — dual-mode (Gemini + rule-based fallback)
+2. ✅ Lead scoring via Gemini 2.5 Flash; returns score, classification, conversion_probability, recommended_action, reasoning
+3. ✅ Outreach generation via Gemini; returns subject, body, estimated_open_rate, estimated_reply_rate
+4. ✅ `POST /api/v1/crm/leads/ai/score-all?force=true` for bulk re-scoring
 
-### Phase 5 — Campaign Creation Flow
+### Phase 5 — Campaign Creation Flow ⬜ NOT STARTED
 1. Multi-step campaign creation modal (Details → Budget → Review → Launch)
 2. Link campaigns to offers
-3. AI compliance check (mock initially)
+3. AI compliance check
 4. Campaign metrics tracking
 
-### Phase 6 — Integrations Framework
-1. Build integration connection UI in Settings
-2. Create mock integration services that return realistic data
-3. Structure code so real API credentials can be swapped in later without frontend changes
+### Phase 6 — Integrations Framework ⬜ NOT STARTED
+1. Real OAuth flows for ad platforms (Facebook, Google, TikTok)
+2. Real affiliate network API polling (ClickBank, MaxWeb, etc.)
+3. Webhook receivers for conversion tracking
+4. Background job queue for scheduled sync
 
 ## Things NOT to Do
 
@@ -366,8 +484,10 @@ Before touching anything, read these files to understand the existing patterns:
 - backend/app/core/security.py (auth dependency pattern)
 
 **Read for CRM context:**
-- src/pages/CRMMain.js (unused but better CRM shell)
-- src/components/LeadsTable.js (UI pattern for leads)
-- src/components/LeadDrawer.js (UI pattern for detail panel)
-- src/components/KpiCard.js (reusable component)
-- src/data/leads.json (sample data structure)
+- src/layouts/CRMLayout.js (sidebar + outlet shell for all CRM pages)
+- src/pages/crm/CRMDashboard.js (reference implementation — patterns used across all pages)
+- src/pages/crm/CRMLeads.js (most complex page — drawer, tabs, AI assist, debounced search)
+- src/hooks/useLeads.js (data fetching pattern to follow for new hooks)
+- backend/app/services/lead_service.py (service layer pattern to follow)
+- backend/app/routers/crm.py (all CRM routes — check before adding new endpoints)
+- backend/tests/conftest.py (test setup — session-scoped fixtures, in-memory SQLite)

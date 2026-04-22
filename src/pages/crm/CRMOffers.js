@@ -1,13 +1,8 @@
 import { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import useOffers from '../../hooks/useOffers';
-
-// ── Palette ───────────────────────────────────────────────────────────────────
-const C = {
-  bg: '#060d1b', surface: '#0c1527', card: '#121e34', border: '#1a2d4d',
-  text: '#e4eaf4', muted: '#6b7fa3', accent: '#2d7aff', accentHover: '#4d93ff',
-  success: '#00c48c', warning: '#ffb020', danger: '#ff4757', purple: '#8b5cf6',
-};
+import { crm as C } from '../../styles/crmTheme';
+import PlatformLogo from '../../components/crm/PlatformLogo';
 
 const NICHES = [
   'All Niches', 'Weight Loss', 'Muscle Building', 'Skin Care', 'Hair Growth',
@@ -15,21 +10,32 @@ const NICHES = [
 ];
 
 const NETWORKS = [
-  { id: 'ClickBank',   emoji: '🟠' },
-  { id: 'BuyGoods',   emoji: '🟢' },
-  { id: 'MaxWeb',     emoji: '🔵' },
-  { id: 'Digistore24',emoji: '🟣' },
+  { id: 'ClickBank',    emoji: 'CB' },
+  { id: 'BuyGoods',    emoji: 'BG' },
+  { id: 'MaxWeb',      emoji: 'MW' },
+  { id: 'Digistore24', emoji: 'D24' },
 ];
-
-const PLATFORM_EMOJI = {
-  ClickBank: '🟠', BuyGoods: '🟢', MaxWeb: '🔵', Digistore24: '🟣',
-};
 
 const SORT_OPTIONS = [
   { value: 'gravity',         label: 'Sort by Gravity' },
   { value: 'aov',             label: 'Sort by AOV' },
   { value: 'commission_rate', label: 'Sort by Commission' },
 ];
+
+const SOURCE_OPTIONS = [
+  { value: '',                        label: 'All Sources' },
+  { value: 'seed',                    label: 'Demo Data' },
+  { value: 'clickbank_marketplace',   label: 'CB Marketplace' },
+  { value: 'clickbank_account',       label: 'My CB Account' },
+  { value: 'manual',                  label: 'Manual' },
+];
+
+const SOURCE_BADGE = {
+  seed:                    { label: 'Demo',        color: '#64748b' },
+  clickbank_marketplace:   { label: 'CB Market',   color: '#0ea5e9' },
+  clickbank_account:       { label: 'My CB Acct',  color: '#8b5cf6' },
+  manual:                  { label: 'Manual',      color: '#10b981' },
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const pct = n => (n !== null && n !== undefined) ? `${(n * 100).toFixed(0)}%` : '—';
@@ -88,6 +94,7 @@ const FullCard = styled(Card)`margin-bottom:0;`;
 const TableHeader = styled.div`
   display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;
 `;
+const FilterRow = styled.div`display:flex;gap:8px;align-items:center;flex-wrap:wrap;`;
 const SortSelect = styled.select`
   background:${C.surface};border:1px solid ${C.border};border-radius:8px;
   color:${C.text};font-size:12px;padding:6px 10px;outline:none;cursor:pointer;
@@ -108,6 +115,12 @@ const NicheBadge = styled.span`
   font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;
   background:${C.surface};border:1px solid ${C.border};color:${C.muted};
 `;
+const SourceBadge = styled.span`
+  font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;
+  background:${({ $color }) => $color + '22'};
+  color:${({ $color }) => $color};
+  border:1px solid ${({ $color }) => $color + '44'};
+`;
 const PromoteBtn = styled.button`
   background:none;border:1px solid ${C.accent};color:${C.accent};border-radius:6px;
   font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;
@@ -121,6 +134,7 @@ const EmptyMsg = styled.div`padding:24px;text-align:center;color:${C.muted};font
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function CRMOffers() {
   const [niche, setNiche] = useState('');
+  const [source, setSource] = useState('');
   const [checkedNetworks, setCheckedNetworks] = useState(
     Object.fromEntries(NETWORKS.map(n => [n.id, true]))
   );
@@ -128,14 +142,15 @@ export default function CRMOffers() {
 
   const { offers, loading, refetch } = useOffers();
 
-  // Refetch when niche or sort changes
+  // Refetch when server-side filters change
   useEffect(() => {
     refetch({
       niche: niche || undefined,
+      source: source || undefined,
       sort_by: sortBy,
       sort_dir: 'desc',
     });
-  }, [niche, sortBy]); // eslint-disable-line
+  }, [niche, source, sortBy]); // eslint-disable-line
 
   // Client-side network filter
   const activeNetworks = NETWORKS.filter(n => checkedNetworks[n.id]).map(n => n.id);
@@ -184,7 +199,7 @@ export default function CRMOffers() {
       {/* ── Row 2: Trending Up + Down ── */}
       <TwoCol>
         <Card>
-          <CardTitle>📈 Trending Up</CardTitle>
+          <CardTitle>Trending Up</CardTitle>
           {loading ? <EmptyMsg>Loading…</EmptyMsg> : trendingUp.length === 0 ? (
             <EmptyMsg>No trending offers found.</EmptyMsg>
           ) : (
@@ -210,7 +225,7 @@ export default function CRMOffers() {
         </Card>
 
         <Card>
-          <CardTitle>📉 Trending Down</CardTitle>
+          <CardTitle>Trending Down</CardTitle>
           {loading ? <EmptyMsg>Loading…</EmptyMsg> : trendingDown.length === 0 ? (
             <EmptyMsg>No declining offers found.</EmptyMsg>
           ) : (
@@ -240,9 +255,14 @@ export default function CRMOffers() {
       <FullCard>
         <TableHeader>
           <CardTitle style={{ margin: 0 }}>Best Offers to Promote</CardTitle>
-          <SortSelect value={sortBy} onChange={e => setSortBy(e.target.value)}>
-            {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </SortSelect>
+          <FilterRow>
+            <SortSelect value={source} onChange={e => setSource(e.target.value)}>
+              {SOURCE_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </SortSelect>
+            <SortSelect value={sortBy} onChange={e => setSortBy(e.target.value)}>
+              {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </SortSelect>
+          </FilterRow>
         </TableHeader>
 
         {loading ? <EmptyMsg>Loading offers…</EmptyMsg> : filtered.length === 0 ? (
@@ -252,6 +272,7 @@ export default function CRMOffers() {
             <thead>
               <tr>
                 <OTh>Offer</OTh>
+                <OTh>Source</OTh>
                 <OTh>Network</OTh>
                 <OTh>Niche</OTh>
                 <OTh>AOV</OTh>
@@ -262,22 +283,40 @@ export default function CRMOffers() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(o => (
-                <OTr key={o.id}>
-                  <OTd style={{ fontWeight: 700 }}>{o.name}</OTd>
-                  <OTd>{PLATFORM_EMOJI[o.network] || '🌐'} {o.network}</OTd>
-                  <OTd><NicheBadge>{o.niche}</NicheBadge></OTd>
-                  <OTd style={{ fontWeight: 700 }}>{fmtMoney(o.aov)}</OTd>
-                  <OTd style={{ color: C.success, fontWeight: 600 }}>{pct(o.commission_rate)}</OTd>
-                  <OTd style={{ color: C.muted }}>{o.conversion_rate ? pct(o.conversion_rate) : '—'}</OTd>
-                  <OTd>
-                    {o.trend_direction === 'up' && <TrendUp>↑ +{o.trend_value?.toFixed(1)}%</TrendUp>}
-                    {o.trend_direction === 'down' && <TrendDown>↓ {o.trend_value?.toFixed(1)}%</TrendDown>}
-                    {o.trend_direction === 'stable' && <span style={{ color: C.muted }}>—</span>}
-                  </OTd>
-                  <OTd><PromoteBtn>Promote</PromoteBtn></OTd>
-                </OTr>
-              ))}
+              {filtered.map(o => {
+                const src = SOURCE_BADGE[o.source] || { label: o.source, color: '#64748b' };
+                return (
+                  <OTr key={o.id}>
+                    <OTd style={{ fontWeight: 700 }}>{o.name}</OTd>
+                    <OTd>
+                      <SourceBadge $color={src.color}>{src.label}</SourceBadge>
+                    </OTd>
+                    <OTd>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <PlatformLogo name={o.network} size={20} />
+                        {o.network}
+                      </span>
+                    </OTd>
+                    <OTd><NicheBadge>{o.niche}</NicheBadge></OTd>
+                    <OTd style={{ fontWeight: 700 }}>{fmtMoney(o.aov)}</OTd>
+                    <OTd style={{ color: C.success, fontWeight: 600 }}>{pct(o.commission_rate)}</OTd>
+                    <OTd style={{ color: C.muted }}>{o.conversion_rate ? pct(o.conversion_rate) : '—'}</OTd>
+                    <OTd>
+                      {o.trend_direction === 'up' && <TrendUp>↑ +{o.trend_value?.toFixed(1)}%</TrendUp>}
+                      {o.trend_direction === 'down' && <TrendDown>↓ {o.trend_value?.toFixed(1)}%</TrendDown>}
+                      {o.trend_direction === 'stable' && <span style={{ color: C.muted }}>—</span>}
+                    </OTd>
+                    <OTd>
+                      {o.external_url
+                        ? <a href={o.external_url} target="_blank" rel="noopener noreferrer">
+                            <PromoteBtn as="span">Promote</PromoteBtn>
+                          </a>
+                        : <PromoteBtn disabled style={{ opacity: 0.4 }}>Promote</PromoteBtn>
+                      }
+                    </OTd>
+                  </OTr>
+                );
+              })}
             </tbody>
           </OffersTable>
         )}
