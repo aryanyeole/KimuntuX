@@ -1,6 +1,6 @@
-# KimuntuX Backend
+# KimuX Backend
 
-This folder contains the FastAPI backend for the KimuntuX project.
+This folder contains the FastAPI backend for the KimuX project.
 
 ## Current scope
 

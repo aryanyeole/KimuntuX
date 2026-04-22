@@ -16,9 +16,12 @@ from app.schemas.campaign import (
 )
 
 
-def _get_or_404(db: Session, campaign_id: str, tenant_id: str) -> Campaign:
+def _get_or_404(db: Session, campaign_id: str, tenant_id: str | None = None) -> Campaign:
     campaign = db.scalar(
-        select(Campaign).where(Campaign.id == campaign_id, Campaign.tenant_id == tenant_id)
+        select(Campaign).where(
+            Campaign.id == campaign_id,
+            Campaign.deleted_at.is_(None),
+        )
     )
     if campaign is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Campaign not found")
@@ -27,48 +30,51 @@ def _get_or_404(db: Session, campaign_id: str, tenant_id: str) -> Campaign:
 
 def get_campaigns(
     db: Session,
-    tenant_id: str,
+    tenant_id: str | None = None,
     *,
     page: int = 1,
     limit: int = 20,
 ) -> CampaignListResponse:
-    total = db.scalar(
-        select(func.count(Campaign.id)).where(Campaign.tenant_id == tenant_id)
-    ) or 0
+    base_query = select(Campaign).where(Campaign.deleted_at.is_(None))
+
+    total = db.scalar(select(func.count()).select_from(base_query.subquery())) or 0
     campaigns = list(
         db.scalars(
-            select(Campaign)
-            .where(Campaign.tenant_id == tenant_id)
+            base_query
             .order_by(Campaign.created_at.desc())
             .offset((page - 1) * limit)
             .limit(limit)
         )
     )
-    total_pages = max(1, math.ceil(total / limit))
+
+    pages = max(1, math.ceil(total / limit))
     return CampaignListResponse(
-        data=[CampaignResponse.model_validate(c) for c in campaigns],
+        items=[CampaignResponse.model_validate(c) for c in campaigns],
         total=total,
         page=page,
-        limit=limit,
-        total_pages=total_pages,
+        per_page=limit,
+        pages=pages,
     )
 
 
-def get_campaign_by_id(db: Session, campaign_id: str, tenant_id: str) -> Campaign:
-    return _get_or_404(db, campaign_id, tenant_id)
+def get_campaign_by_id(db: Session, campaign_id: str, tenant_id: str | None = None) -> Campaign:
+    return _get_or_404(db, campaign_id)
 
 
-def create_campaign(db: Session, data: CampaignCreate, tenant_id: str) -> Campaign:
-    campaign = Campaign(**data.model_dump(), tenant_id=tenant_id)
+def create_campaign(db: Session, data: CampaignCreate, tenant_id: str | None = None, *, user_id: str | None = None) -> Campaign:
+    campaign = Campaign(
+        user_id=user_id or "system",
+        **data.model_dump(mode="json"),
+    )
     db.add(campaign)
     db.commit()
     db.refresh(campaign)
     return campaign
 
 
-def update_campaign(db: Session, campaign_id: str, data: CampaignUpdate, tenant_id: str) -> Campaign:
-    campaign = _get_or_404(db, campaign_id, tenant_id)
-    updates = data.model_dump(exclude_unset=True)
+def update_campaign(db: Session, campaign_id: str, data: CampaignUpdate, tenant_id: str | None = None) -> Campaign:
+    campaign = _get_or_404(db, campaign_id)
+    updates = data.model_dump(exclude_unset=True, mode="json")
     for field, value in updates.items():
         setattr(campaign, field, value)
     campaign.updated_at = datetime.now(timezone.utc)

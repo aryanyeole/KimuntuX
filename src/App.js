@@ -8,6 +8,7 @@ import { GlobalStyles } from './styles/GlobalStyles';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
+import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './components/LandingPage';
 import AboutPage from './pages/AboutPage';
 import PricingPage from './pages/PricingPage';
@@ -18,9 +19,6 @@ import FAQPage from './pages/FAQPage';
 import SolutionsPage from './pages/SolutionsPage';
 import BenefitsBySectorPage from './pages/BenefitsBySectorPage';
 import BlogPage from './pages/BlogPage';
-
-// Legacy CRM pages — kept for reference, no longer routed
-import CRMPage from './pages/CRMPage'; // eslint-disable-line no-unused-vars
 
 import B2BBrokeragePage from './pages/B2BBrokeragePage';
 import B2CMarketplacePage from './pages/B2CMarketplacePage';
@@ -33,6 +31,8 @@ import CommerceIntelligencePage from './pages/CommerceIntelligencePage';
 import DeveloperPage from './pages/DeveloperPage';
 import MonetizationPage from './pages/MonetizationPage';
 import USBHPage from './pages/USBHPage';
+import ContentGeneratorPage from './pages/ContentGeneratorPage';
+import MarketingReportPage from './pages/MarketingReportPage';
 
 // CRM layout + pages
 import CRMLayout from './layouts/CRMLayout';
@@ -44,12 +44,12 @@ import CRMPipeline from './pages/crm/CRMPipeline';
 import CRMCommunication from './pages/crm/CRMCommunication';
 import CRMAnalytics from './pages/crm/CRMAnalytics';
 import CRMSettings from './pages/crm/CRMSettings';
+import ContentSchedulerPage from './pages/ContentSchedulerPage';
 import CRMStrategy from './pages/crm/CRMStrategy';
 import CRMFintech from './pages/crm/CRMFintech';
 import CRMAcademy from './pages/crm/CRMAcademy';
 import CRMContentScheduler from './pages/crm/CRMContentScheduler';
 
-// Inner component — needs to be inside <Router> so it can call useLocation
 function AppInner() {
   const location = useLocation();
   const isCRM = location.pathname.startsWith('/crm');
@@ -58,7 +58,6 @@ function AppInner() {
     <div className="App">
       {!isCRM && <Header />}
       <Routes>
-        {/* ── Marketing routes ── */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/pricing" element={<PricingPage />} />
@@ -80,16 +79,26 @@ function AppInner() {
         <Route path="/developer" element={<DeveloperPage />} />
         <Route path="/monetization" element={<MonetizationPage />} />
         <Route path="/usbh" element={<USBHPage />} />
+        <Route
+          path="/content-scheduler"
+          element={(
+            <ProtectedRoute>
+              <ContentSchedulerPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route path="/digital-marketing-report" element={<MarketingReportPage />} />
 
-        {/* ── CRM routes — own layout, no Header/Footer ── */}
         <Route path="/crm" element={<CRMLayout />}>
           <Route index element={<Navigate to="/crm/dashboard" replace />} />
           <Route path="dashboard" element={<CRMDashboard />} />
           <Route path="offers" element={<CRMOffers />} />
           <Route path="campaigns" element={<CRMCampaigns />} />
+          <Route path="content-gen" element={<ContentGeneratorPage />} />
           <Route path="leads" element={<CRMLeads />} />
           <Route path="pipeline" element={<CRMPipeline />} />
           <Route path="communication" element={<CRMCommunication />} />
+          <Route path="blockchain" element={<Navigate to="/crm/fintech" replace />} />
           <Route path="strategy" element={<CRMStrategy />} />
           <Route path="fintech" element={<CRMFintech />} />
           <Route path="academy" element={<CRMAcademy />} />
@@ -98,6 +107,7 @@ function AppInner() {
           <Route path="settings" element={<CRMSettings />} />
         </Route>
       </Routes>
+      {!isCRM && <ChatWidget />}
       {!isCRM && <Footer />}
     </div>
   );

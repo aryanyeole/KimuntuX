@@ -1,23 +1,62 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
-import useCampaigns from '../../hooks/useCampaigns';
-import { crm as C } from '../../styles/crmTheme';
-import PlatformLogo from '../../components/crm/PlatformLogo';
+import { getAccessToken } from '../../services/authService';
+import { mapSchedulerCardToCampaignPayload, updateCampaignRecord } from '../../services/contentSchedulerRepository';
 
-const PLATFORM_LABEL = {
-  facebook_ads: 'Facebook Ads', google_ads: 'Google Ads', tiktok_ads: 'TikTok Ads',
-  instagram: 'Instagram', youtube: 'YouTube', email: 'Email',
+// ── Palette ───────────────────────────────────────────────────────────────────
+const C = {
+  bg: '#060d1b', surface: '#0c1527', card: '#121e34', border: '#1a2d4d',
+  text: '#e4eaf4', muted: '#6b7fa3', accent: '#2d7aff',
+  success: '#00c48c', warning: '#ffb020', danger: '#ff4757', purple: '#8b5cf6',
 };
 
 const STATUS_COLOR = {
-  active: C.success, paused: C.warning, completed: C.muted, draft: C.border,
+  scheduled: C.success, draft: C.muted,
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const fmtMoney = n => (n != null) ? '$' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '—';
-const fmtPct = n => (n != null) ? `${Number(n).toFixed(1)}%` : '—';
-const fmtX = n => (n != null) ? `${Number(n).toFixed(2)}x` : '—';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
+
+const fmtMoney = n => '$' + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+const fmtPct = n => `${Number(n || 0).toFixed(2)}%`;
+const fmtCpl = n => `$${Number(n || 0).toFixed(2)}`;
+const fmtX = n => `${Number(n || 0).toFixed(2)}x`;
 const safeNum = n => (typeof n === 'number' && !isNaN(n)) ? n : 0;
+
+async function apiRequest(path, { method = 'GET', signal } = {}) {
+  const token = getAccessToken();
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers,
+    signal,
+  });
+
+  const text = await response.text();
+  let payload = null;
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { detail: text };
+    }
+  }
+
+  if (!response.ok) {
+    const message = typeof payload?.detail === 'string' ? payload.detail : 'Failed to fetch campaigns';
+    throw new Error(message);
+  }
+
+  return payload;
+}
 
 // ── Animations ────────────────────────────────────────────────────────────────
 const fadeIn = keyframes`from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}`;
@@ -56,9 +95,14 @@ const Th = styled.th`
 `;
 const Tr = styled.tr`
   border-bottom:1px solid ${C.border};&:last-child{border-bottom:none;}
-  transition:background .12s;&:hover{background:${C.surface};}
+  transition:background .12s;
+  background:${({ $selected }) => ($selected ? `${C.accent}1A` : 'transparent')};
+  &:hover{background:${({ $selected }) => ($selected ? `${C.accent}1A` : C.surface)};}
 `;
-const Td = styled.td`padding:11px 14px;font-size:12px;color:${C.text};vertical-align:middle;`;
+const Td = styled.td`
+  padding:11px 14px;font-size:12px;color:${C.text};vertical-align:middle;
+  border-left:${({ $selectedFirst }) => ($selectedFirst ? `3px solid ${C.accent}` : '3px solid transparent')};
+`;
 
 const StatusBadge = styled.span`
   font-size:10px;font-weight:700;text-transform:capitalize;letter-spacing:.05em;
@@ -71,6 +115,11 @@ const RoasBadge = styled.span`
 const EmptyRow = styled.tr``;
 const EmptyCell = styled.td`
   padding:40px;text-align:center;color:${C.muted};font-size:13px;
+`;
+const InlineMessage = styled.div`
+  padding:10px 12px;
+  font-size:12px;
+  color:${({ $type }) => ($type === 'error' ? C.danger : C.muted)};
 `;
 
 // ── AI Optimization ───────────────────────────────────────────────────────────
@@ -122,25 +171,86 @@ const AI_SUGGESTIONS = [
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function CRMCampaigns() {
-  const { campaigns, loading } = useCampaigns();
+  const navigate = useNavigate();
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCampaignId, setSelectedCampaignId] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+
+  async function loadCampaigns(signal) {
+    setLoading(true);
+    try {
+      const response = await apiRequest('/crm/campaigns', { signal });
+      setCampaigns(Array.isArray(response?.items) ? response.items : []);
+    } catch {
+      setCampaigns([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    loadCampaigns(controller.signal);
+    return () => controller.abort();
+  }, []);
+
+  const handlePauseSelectedCampaign = async () => {
+    setErrorMessage('');
+    setStatusMessage('');
+
+    if (!selectedCampaignId) {
+      return;
+    }
+
+    const selectedCampaign = campaigns.find(c => c.id === selectedCampaignId);
+    if (!selectedCampaign) {
+      return;
+    }
+
+    if (!selectedCampaign.is_used) {
+      setStatusMessage('Campaign is not scheduled');
+      return;
+    }
+
+    try {
+      const payload = mapSchedulerCardToCampaignPayload(selectedCampaign, {
+        campaignId: selectedCampaign.id,
+        used: false,
+        startDate: '',
+        endDate: '',
+      });
+      await updateCampaignRecord(selectedCampaign.id, payload);
+      await loadCampaigns();
+      setSelectedCampaignId(null);
+    } catch (err) {
+      setErrorMessage(err?.message || 'Unable to pause campaign');
+    }
+  };
 
   // Compute KPI aggregates client-side
   const kpis = useMemo(() => {
-    const active = campaigns.filter(c => c.status === 'active').length;
-    let spend = 0, roasSum = 0, roasCount = 0, leads = 0, conversions = 0;
+    const active = campaigns.filter(c => c.is_used === true).length;
+    let spend = 0;
+    let roasSum = 0;
+    let roasCount = 0;
     campaigns.forEach(c => {
-      const m = c.metrics || {};
-      spend += safeNum(m.spend);
-      leads += safeNum(m.leads);
-      conversions += safeNum(m.conversions);
-      if (m.roas != null) { roasSum += safeNum(m.roas); roasCount++; }
+      const actuals = c?.metrics?.actuals || {};
+      spend += safeNum(actuals.spend);
+      if (actuals.roas != null) {
+        roasSum += safeNum(actuals.roas);
+        roasCount += 1;
+      }
     });
+
     return {
       active,
       spend,
       avgRoas: roasCount ? roasSum / roasCount : 0,
-      leads,
-      conversions,
+      leads: 0,
+      conversions: 0,
     };
   }, [campaigns]);
 
@@ -202,33 +312,41 @@ export default function CRMCampaigns() {
                 <EmptyRow><EmptyCell colSpan={11}>No campaigns found.</EmptyCell></EmptyRow>
               )}
               {!loading && campaigns.map(c => {
-                const m = c.metrics || {};
-                const roas = m.roas;
-                const platform = c.platform?.toLowerCase().replace(' ', '_');
+                const actuals = c?.metrics?.actuals || {};
+                const spend = actuals.spend;
+                const revenue = actuals.revenue;
+                const roas = actuals.roas;
+                const platformLabel = Array.isArray(c?.platforms) && c.platforms.length
+                  ? c.platforms.join(', ')
+                  : '—';
+                const statusValue = c?.is_used ? 'scheduled' : 'draft';
+                const statusText = c?.is_used ? 'Scheduled' : 'Draft';
+                const offerName = c?.affiliate_product?.offer_name || '—';
+                const isSelected = selectedCampaignId === c.id;
+
                 return (
-                  <Tr key={c.id}>
-                    <Td style={{ fontWeight: 700, maxWidth: 200 }}>{c.name}</Td>
+                  <Tr
+                    key={c.id}
+                    $selected={isSelected}
+                    onClick={() => {
+                      setErrorMessage('');
+                      setStatusMessage('');
+                      setSelectedCampaignId(prev => (prev === c.id ? null : c.id));
+                    }}
+                  >
+                    <Td $selectedFirst={isSelected} style={{ fontWeight: 700, maxWidth: 200 }}>{c.name}</Td>
+                    <Td><span style={{ color: C.muted }}>{platformLabel}</span></Td>
+                    <Td style={{ color: C.accent }}>{offerName}</Td>
+                    <Td><StatusBadge $status={statusValue}>{statusText}</StatusBadge></Td>
+                    <Td>0</Td>
+                    <Td>0</Td>
+                    <Td>{fmtMoney(spend)}</Td>
+                    <Td style={{ color: C.success }}>{fmtMoney(revenue)}</Td>
                     <Td>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                        <PlatformLogo name={c.platform} size={20} />
-                        <span style={{ color: C.muted }}>
-                          {PLATFORM_LABEL[platform] || c.platform}
-                        </span>
-                      </span>
+                      <RoasBadge $good={safeNum(roas) >= 3}>{fmtX(roas)}</RoasBadge>
                     </Td>
-                    <Td style={{ color: C.accent }}>{c.offer_name || '—'}</Td>
-                    <Td><StatusBadge $status={c.status}>{c.status}</StatusBadge></Td>
-                    <Td>{safeNum(m.leads).toLocaleString() || '—'}</Td>
-                    <Td>{safeNum(m.conversions).toLocaleString() || '—'}</Td>
-                    <Td>{m.spend != null ? fmtMoney(m.spend) : '—'}</Td>
-                    <Td style={{ color: C.success }}>{m.revenue != null ? fmtMoney(m.revenue) : '—'}</Td>
-                    <Td>
-                      {roas != null
-                        ? <RoasBadge $good={roas >= 3}>{fmtX(roas)}</RoasBadge>
-                        : <span style={{ color: C.muted }}>—</span>}
-                    </Td>
-                    <Td style={{ color: C.muted }}>{m.ctr != null ? fmtPct(m.ctr) : '—'}</Td>
-                    <Td style={{ color: C.muted }}>{m.cpl != null ? fmtMoney(m.cpl) : '—'}</Td>
+                    <Td style={{ color: C.muted }}>{fmtPct(0)}</Td>
+                    <Td style={{ color: C.muted }}>{fmtCpl(0)}</Td>
                   </Tr>
                 );
               })}
@@ -236,6 +354,8 @@ export default function CRMCampaigns() {
           </Table>
         </TableScroll>
       </TableCard>
+      {!!statusMessage && <InlineMessage>{statusMessage}</InlineMessage>}
+      {!!errorMessage && <InlineMessage $type="error">{errorMessage}</InlineMessage>}
 
       {/* ── AI Optimization ── */}
       <AiCard>
@@ -248,7 +368,18 @@ export default function CRMCampaigns() {
               <SuggestionEmoji>{s.emoji}</SuggestionEmoji>
               <SuggestionTitle>{s.title}</SuggestionTitle>
               <SuggestionDesc>{s.desc}</SuggestionDesc>
-              <SuggestionAction>{s.action}</SuggestionAction>
+              <SuggestionAction
+                onClick={() => {
+                  if (s.action === 'Create Campaign') {
+                    navigate('/crm/content-gen');
+                  }
+                  if (s.action === 'Pause Campaign') {
+                    handlePauseSelectedCampaign();
+                  }
+                }}
+              >
+                {s.action}
+              </SuggestionAction>
             </SuggestionCard>
           ))}
         </SuggestionsGrid>

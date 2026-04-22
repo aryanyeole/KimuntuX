@@ -101,16 +101,6 @@ def login(payload: UserLogin, db: Session = Depends(get_db)) -> TokenResponse:
     )
 
 
-@router.post("/token", response_model=OAuthTokenResponse)
-def issue_oauth_token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
-) -> OAuthTokenResponse:
-    user = authenticate_user(form_data.username, form_data.password, db)
-    token = create_access_token(user.id)
-    return OAuthTokenResponse(access_token=token)
-
-
 @router.get("/me", response_model=UserResponse)
 def read_current_user(current_user: User = Depends(get_current_user)) -> UserResponse:
     return UserResponse.model_validate(current_user)

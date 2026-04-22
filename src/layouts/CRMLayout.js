@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useUser } from '../contexts/UserContext';
 import { useTenant } from '../contexts/TenantContext';
 import useStrategy from '../hooks/useStrategy';
 import { crm as C } from '../styles/crmTheme';
+import darkNewLogo from '../assets/dark_new_logo.jpeg';
 
 // ── Root shell ────────────────────────────────────────────────────────────────
 const Shell = styled.div`
@@ -41,33 +42,27 @@ const LogoRow = styled.div`
 const LogoMark = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
   overflow: hidden;
 `;
 
-const LogoBox = styled.div`
+const LogoImage = styled.img`
+  display: block;
+  object-fit: contain;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  background: ${C.accent};
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 14px;
-  color: #fff;
-  letter-spacing: -0.5px;
+  max-width: ${({ $collapsed }) => ($collapsed ? '36px' : '128px')};
+  height: ${({ $collapsed }) => ($collapsed ? '36px' : '40px')};
 `;
 
-const LogoText = styled.span`
-  font-weight: 700;
-  font-size: 15px;
-  color: ${C.text};
+const HiddenTextForA11y = styled.span`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  opacity: ${({ $collapsed }) => ($collapsed ? 0 : 1)};
-  width: ${({ $collapsed }) => ($collapsed ? 0 : 'auto')};
-  transition: opacity 0.15s ease;
+  border: 0;
 `;
 
 const CollapseBtn = styled.button`
@@ -435,6 +430,20 @@ const icons = {
       <path d="M2 12l10 5 10-5"/>
     </svg>
   ),
+  scheduler: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
+  contentGenerator: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3l1.6 3.9L18 8.5l-3.4 2.7L15.6 16 12 13.8 8.4 16l1-4.8L6 8.5l4.4-1.6L12 3z"/>
+      <path d="M5 19l2 .8L8 22l.8-2.2L11 19l-2.2-.8L8 16l-1 2.2L5 19z"/>
+    </svg>
+  ),
   leads: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
@@ -459,6 +468,18 @@ const icons = {
   messages: (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+    </svg>
+  ),
+  blockchain: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <line x1="10" y1="6.5" x2="14" y2="6.5"/>
+      <line x1="10" y1="17.5" x2="14" y2="17.5"/>
+      <line x1="6.5" y1="10" x2="6.5" y2="14"/>
+      <line x1="17.5" y1="10" x2="17.5" y2="14"/>
     </svg>
   ),
   funnel: (
@@ -556,6 +577,7 @@ const NAV_SECTIONS = [
         label: 'Campaigns', to: '/crm/campaigns', icon: 'campaigns', expandable: true,
         children: [
           { label: 'Content Scheduler', to: '/crm/content-scheduler', icon: 'calendar' },
+          { label: 'Content Generator', to: '/crm/content-gen', icon: 'contentGenerator' },
         ],
       },
       { label: 'Messages',        to: '/crm/communication', icon: 'messages'   },
@@ -592,6 +614,7 @@ const PATH_TITLES = {
   pipeline:      'Pipeline',
   campaigns:           'Campaigns',
   'content-scheduler': 'Content Scheduler',
+  'content-gen':   'Content Generator',
   communication:       'Messages',
   offers:        'Offer Discovery',
   fintech:       'Fintech Hub',
@@ -623,6 +646,16 @@ export default function CRMLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+useEffect(() => {
+  const inCampaignSection =
+    location.pathname.startsWith('/crm/campaigns') ||
+    location.pathname === '/crm/content-gen' ||
+    location.pathname === '/crm/content-scheduler';
+  if (!inCampaignSection) {
+    setCampaignsExpanded(false);
+  }
+}, [location.pathname]);
+
   // Block rendering until auth + tenant bootstrap is complete
   if (isLoading) return <LoadingShell>Loading…</LoadingShell>;
 
@@ -645,8 +678,8 @@ export default function CRMLayout() {
       <Sidebar $collapsed={collapsed}>
         <LogoRow $collapsed={collapsed}>
           <LogoMark>
-            <LogoBox>KX</LogoBox>
-            <LogoText $collapsed={collapsed}>KimuX</LogoText>
+            <LogoImage src={darkNewLogo} alt="KimuX" $collapsed={collapsed} />
+            <HiddenTextForA11y>KimuX</HiddenTextForA11y>
           </LogoMark>
           {!collapsed && (
             <CollapseBtn onClick={() => setCollapsed(true)} title="Collapse sidebar">

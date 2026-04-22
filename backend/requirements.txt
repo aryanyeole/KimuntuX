@@ -5,6 +5,8 @@ alembic
 psycopg[binary]
 pydantic-settings
 python-jose[cryptography]
+passlib[bcrypt]
+email-validator
 passlib
 email-validator
 python-multipart
