@@ -5,7 +5,7 @@
  * Follows the chatService.js pattern with named exports.
  */
 
-import { BrowserProvider, Contract, parseEther } from 'ethers';
+import { BrowserProvider, Contract, formatEther, parseEther } from 'ethers';
 
 const API_URL = process.env.REACT_APP_BLOCKCHAIN_API_URL || 'http://localhost:8000';
 const NETWORK = process.env.REACT_APP_BLOCKCHAIN_NETWORK || 'localhost';
@@ -183,6 +183,24 @@ export const connectMetaMask = async () => {
   return address;
 };
 
+export const getMetaMaskNativeBalance = async (address = null) => {
+  const provider = getEthereumProvider();
+  if (!provider) {
+    throw new Error('MetaMask is not installed.');
+  }
+
+  await ensureMetaMaskNetwork();
+  const browserProvider = new BrowserProvider(provider);
+  const targetAddress = address || await getConnectedMetaMaskAddress();
+
+  if (!validateAddress(targetAddress)) {
+    throw new Error('No valid MetaMask account is connected yet.');
+  }
+
+  const balance = await browserProvider.getBalance(targetAddress);
+  return Number(formatEther(balance));
+};
+
 export const watchMetaMaskAccount = (handler) => {
   const provider = getEthereumProvider();
   if (!provider?.on) {
@@ -203,12 +221,13 @@ export const watchMetaMaskAccount = (handler) => {
 
 export const getHealth = async () => {
   const data = await apiFetch('/health');
+  const normalizedStatus = data.status === 'ok' ? 'healthy' : data.status;
   return {
-    status: data.status,
-    chain_id: data.chain_id,
-    latest_block: data.latest_block,
-    gas_price_gwei: Number(data.gas_price_gwei || 0),
-    platform_balance_eth: Number(data.platform_balance_eth || 0),
+    status: normalizedStatus,
+    chain_id: data.chain_id ?? null,
+    latest_block: data.latest_block ?? null,
+    gas_price_gwei: data.gas_price_gwei !== undefined ? Number(data.gas_price_gwei || 0) : null,
+    platform_balance_eth: data.platform_balance_eth !== undefined ? Number(data.platform_balance_eth || 0) : null,
     contracts: data.contracts || {},
     error: data.error || null,
   };
@@ -757,6 +776,7 @@ const blockchainService = {
   getConnectedMetaMaskAddress,
   ensureMetaMaskNetwork,
   connectMetaMask,
+  getMetaMaskNativeBalance,
   watchMetaMaskAccount,
   getHealth,
   getContractStats,

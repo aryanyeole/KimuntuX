@@ -251,7 +251,7 @@ class CommissionContract:
         """
         address = Web3.to_checksum_address(affiliate)
         tx_hash = self._send("registerAffiliate", address)
-        logger.info("registerAffiliate tx sent: %s → %s", address, tx_hash)
+        logger.info("registerAffiliate tx sent: %s -> %s", address, tx_hash)
         return tx_hash
 
     def register_self(self) -> str:
@@ -319,7 +319,7 @@ class CommissionContract:
             value_wei=commission_wei,
         )
         logger.info(
-            "recordCommission tx sent: affiliate=%s, sale=%.6f ETH, rate=%d bps, tx_id=%s → %s",
+            "recordCommission tx sent: affiliate=%s, sale=%.6f ETH, rate=%d bps, tx_id=%s -> %s",
             address,
             sale_amount_eth,
             commission_rate_bps,
@@ -336,7 +336,7 @@ class CommissionContract:
         """
         address = Web3.to_checksum_address(affiliate)
         tx_hash = self._send("approveCommission", address, index)
-        logger.info("approveCommission tx sent: %s[%d] → %s", address, index, tx_hash)
+        logger.info("approveCommission tx sent: %s[%d] -> %s", address, index, tx_hash)
         return tx_hash
 
     def auto_approve(self, affiliate: str, transaction_id: str) -> str:
@@ -348,7 +348,7 @@ class CommissionContract:
         address = Web3.to_checksum_address(affiliate)
         tx_hash = self._send("autoApprove", address, transaction_id)
         logger.info(
-            "autoApprove tx sent: %s, tx_id=%s → %s", address, transaction_id, tx_hash
+            "autoApprove tx sent: %s, tx_id=%s -> %s", address, transaction_id, tx_hash
         )
         return tx_hash
 
@@ -370,7 +370,7 @@ class CommissionContract:
         """
         amount_wei = self._eth_to_wei(amount_eth)
         tx_hash = self._send("withdrawAmount", amount_wei)
-        logger.info("withdrawAmount tx sent: %.6f ETH → %s", amount_eth, tx_hash)
+        logger.info("withdrawAmount tx sent: %.6f ETH -> %s", amount_eth, tx_hash)
         return tx_hash
 
     def authorize_merchant(self, merchant: str, status: bool) -> str:
@@ -382,7 +382,7 @@ class CommissionContract:
         address = Web3.to_checksum_address(merchant)
         tx_hash = self._send("authorizeMerchant", address, status)
         logger.info(
-            "authorizeMerchant tx sent: %s status=%s → %s", address, status, tx_hash
+            "authorizeMerchant tx sent: %s status=%s -> %s", address, status, tx_hash
         )
         return tx_hash
 
@@ -395,7 +395,7 @@ class CommissionContract:
         if not 0 <= rate_bps <= 1000:
             raise ValueError(f"rate_bps must be 0–1000, got {rate_bps}")
         tx_hash = self._send("setPlatformFeeRate", rate_bps)
-        logger.info("setPlatformFeeRate tx sent: %d bps → %s", rate_bps, tx_hash)
+        logger.info("setPlatformFeeRate tx sent: %d bps -> %s", rate_bps, tx_hash)
         return tx_hash
 
     def set_minimum_payout(self, amount_eth: float) -> str:
@@ -406,7 +406,7 @@ class CommissionContract:
         """
         amount_wei = self._eth_to_wei(amount_eth)
         tx_hash = self._send("setMinimumPayout", amount_wei)
-        logger.info("setMinimumPayout tx sent: %.6f ETH → %s", amount_eth, tx_hash)
+        logger.info("setMinimumPayout tx sent: %.6f ETH -> %s", amount_eth, tx_hash)
         return tx_hash
 
     def withdraw_platform_fees(self) -> str:

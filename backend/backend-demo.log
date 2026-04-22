@@ -1,104 +1,39 @@
-INFO:     Started server process [27708]
+C:\Users\allan\Documents\GitHub\KimuntuX\backend\app\schemas\campaign.py:203: UserWarning: Field name "copy" in "ContentPiece" shadows an attribute in parent "BaseModel"
+  class ContentPiece(BaseModel):
+INFO:     Started server process [32088]
 INFO:     Waiting for application startup.
-2026-04-20T13:44:45 INFO     main — Starting KimuX Backend …
-2026-04-20T13:44:45 INFO     blockchain.web3_client — Connected to RPC via primary endpoint (http://127.0.0.1:8545)
-2026-04-20T13:44:45 INFO     blockchain.web3_client — Network validated — chain id: 31337
-2026-04-20T13:44:45 INFO     blockchain.web3_client — Platform wallet: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-2026-04-20T13:44:45 INFO     blockchain.web3_client — Contracts loaded — CommissionSystem: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 | Wallet: 0x5FbDB2315678afecb367f032d93F642f64180aa3 | Escrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
-2026-04-20T13:44:45 INFO     main — Blockchain ready — block=3, gas=1.6 gwei, platform_balance=9999.992850 ETH
+2026-04-22T11:36:47 INFO     main — Starting KimuX Backend …
+2026-04-22T11:36:47 INFO     blockchain.web3_client — Connected to RPC via primary endpoint (http://127.0.0.1:8545)
+2026-04-22T11:36:47 INFO     blockchain.web3_client — Network validated — chain id: 31337
+2026-04-22T11:36:47 INFO     blockchain.web3_client — Platform wallet: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+2026-04-22T11:36:47 INFO     blockchain.web3_client — Contracts loaded — CommissionSystem: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 | Wallet: 0x5FbDB2315678afecb367f032d93F642f64180aa3 | Escrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+2026-04-22T11:36:47 INFO     main — Blockchain ready — block=3, gas=1.6 gwei, platform_balance=9999.992850 ETH
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:50061 - "GET /health HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53477 - "GET /health HTTP/1.1" 200 OK
-2026-04-20T13:45:41 INFO     blockchain.web3_client — Transaction sent: 0xb0df492a76f73005bfca3ec3faef9cbfcd5e4ac4c8f47804908513fa4cec222d
-2026-04-20T13:45:41 INFO     blockchain.contracts.wallet — createWallet tx sent: 0xb0df492a76f73005bfca3ec3faef9cbfcd5e4ac4c8f47804908513fa4cec222d
-INFO:     127.0.0.1:53477 - "POST /api/v1/wallets/create HTTP/1.1" 202 Accepted
-2026-04-20T13:45:41 INFO     blockchain.web3_client — Transaction sent: 0x18327e83be4f6074b37296bc773ef4d3fae5f9a752a59b7ead9b63e30fe04643
-2026-04-20T13:45:41 INFO     blockchain.contracts.wallet — createWalletFor tx sent: user=0x70997970C51812dc3A010C7d01b50e0d17dc79C8 -> 0x18327e83be4f6074b37296bc773ef4d3fae5f9a752a59b7ead9b63e30fe04643
-INFO:     127.0.0.1:53477 - "POST /api/v1/wallets/create-for HTTP/1.1" 202 Accepted
-2026-04-20T13:45:41 INFO     blockchain.web3_client — Transaction sent: 0x362535455a6c628c9fa9e2810a496ff32b9c72a4e5ba2eb17abbf10289f8593d
-2026-04-20T13:45:41 INFO     blockchain.contracts.wallet — depositETH tx sent: 0.050000 ETH -> 0x362535455a6c628c9fa9e2810a496ff32b9c72a4e5ba2eb17abbf10289f8593d
-INFO:     127.0.0.1:53477 - "POST /api/v1/wallets/deposit-eth HTTP/1.1" 202 Accepted
-2026-04-20T13:45:41 INFO     blockchain.web3_client — Transaction sent: 0xb07400cb63b3e23213662d73d614640c7ae4b1dd117cda4d2ecf63e16cadda8f
-2026-04-20T13:45:41 INFO     blockchain.contracts.wallet — creditETH tx sent: user=0x70997970C51812dc3A010C7d01b50e0d17dc79C8, 0.020000 ETH -> 0xb07400cb63b3e23213662d73d614640c7ae4b1dd117cda4d2ecf63e16cadda8f
-INFO:     127.0.0.1:53477 - "POST /api/v1/wallets/credit-eth HTTP/1.1" 202 Accepted
-2026-04-20T13:45:41 INFO     blockchain.web3_client — Transaction sent: 0x52b973ca1caa9314d0dcf61dda783928366c070c269bd983d31d6768de77b069
---- Logging error ---
-Traceback (most recent call last):
-  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
-    stream.write(msg + self.terminator)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
-    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
-           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 133: character maps to <undefined>
-Call stack:
-  File "C:\Python314\Lib\threading.py", line 1044, in _bootstrap
-    self._bootstrap_inner()
-  File "C:\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
-    self._context.run(self.run)
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
-    result = context.run(func, *args)
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\api\endpoints\commission.py", line 328, in register_affiliate
-    tx_hash = _commission_contract().register_affiliate(body.affiliate)
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\blockchain\contracts\commission.py", line 254, in register_affiliate
-    logger.info("registerAffiliate tx sent: %s \u2192 %s", address, tx_hash)
-Message: 'registerAffiliate tx sent: %s \u2192 %s'
-Arguments: ('0x70997970C51812dc3A010C7d01b50e0d17dc79C8', '0x52b973ca1caa9314d0dcf61dda783928366c070c269bd983d31d6768de77b069')
-INFO:     127.0.0.1:53477 - "POST /api/v1/commissions/affiliates/register HTTP/1.1" 202 Accepted
-2026-04-20T13:45:41 INFO     blockchain.web3_client — Transaction sent: 0x515136c9dd497795975e01eecb194fc039928dcdd71501fd32a0c3462c2b2af3
---- Logging error ---
-Traceback (most recent call last):
-  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
-    stream.write(msg + self.terminator)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
-    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
-           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 203: character maps to <undefined>
-Call stack:
-  File "C:\Python314\Lib\threading.py", line 1044, in _bootstrap
-    self._bootstrap_inner()
-  File "C:\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
-    self._context.run(self.run)
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
-    result = context.run(func, *args)
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\api\endpoints\commission.py", line 259, in record_commission
-    tx_hash = _commission_contract().record_commission(
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\blockchain\contracts\commission.py", line 321, in record_commission
-    logger.info(
-Message: 'recordCommission tx sent: affiliate=%s, sale=%.6f ETH, rate=%d bps, tx_id=%s \u2192 %s'
-Arguments: ('0x70997970C51812dc3A010C7d01b50e0d17dc79C8', 0.1, 1000, 'KMX-DEMO-1776717941', '0x515136c9dd497795975e01eecb194fc039928dcdd71501fd32a0c3462c2b2af3')
-INFO:     127.0.0.1:53477 - "POST /api/v1/commissions/record HTTP/1.1" 202 Accepted
-2026-04-20T13:45:42 INFO     blockchain.web3_client — Transaction sent: 0xd8c264ac665251b2be430e771e6bc912c5bd8237377d521672c6861678ababa4
---- Logging error ---
-Traceback (most recent call last):
-  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
-    stream.write(msg + self.terminator)
-    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
-    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
-           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 136: character maps to <undefined>
-Call stack:
-  File "C:\Python314\Lib\threading.py", line 1044, in _bootstrap
-    self._bootstrap_inner()
-  File "C:\Python314\Lib\threading.py", line 1082, in _bootstrap_inner
-    self._context.run(self.run)
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
-    result = context.run(func, *args)
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\api\endpoints\commission.py", line 276, in approve_commission
-    tx_hash = _commission_contract().approve_commission(
-  File "C:\Users\allan\Documents\GitHub\KimuntuX\backend\blockchain\contracts\commission.py", line 339, in approve_commission
-    logger.info("approveCommission tx sent: %s[%d] \u2192 %s", address, index, tx_hash)
-Message: 'approveCommission tx sent: %s[%d] \u2192 %s'
-Arguments: ('0x70997970C51812dc3A010C7d01b50e0d17dc79C8', 0, '0xd8c264ac665251b2be430e771e6bc912c5bd8237377d521672c6861678ababa4')
-INFO:     127.0.0.1:53477 - "POST /api/v1/commissions/approve HTTP/1.1" 202 Accepted
-INFO:     127.0.0.1:53477 - "GET /api/v1/commissions/balance/0x70997970C51812dc3A010C7d01b50e0d17dc79C8 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53477 - "GET /api/v1/wallets/0x70997970C51812dc3A010C7d01b50e0d17dc79C8/details HTTP/1.1" 200 OK
-2026-04-20T13:45:42 INFO     blockchain.web3_client — Transaction sent: 0x6d4b8384eefde8497a626759f06a0452c6ca58894f69329206f358a5356a945a
-2026-04-20T13:45:42 INFO     blockchain.contracts.escrow — createEscrow tx sent: seller=0x70997970C51812dc3A010C7d01b50e0d17dc79C8 product_id=KMX-PROD-DEMO amount=0.030000 ETH -> 0x6d4b8384eefde8497a626759f06a0452c6ca58894f69329206f358a5356a945a
-INFO:     127.0.0.1:53477 - "POST /api/v1/escrows/create HTTP/1.1" 202 Accepted
-INFO:     127.0.0.1:53483 - "GET /api/v1/network/transactions/0xb0df492a76f73005bfca3ec3faef9cbfcd5e4ac4c8f47804908513fa4cec222d HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53483 - "GET /api/v1/network/transactions/0x515136c9dd497795975e01eecb194fc039928dcdd71501fd32a0c3462c2b2af3 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53483 - "GET /api/v1/network/transactions/0x6d4b8384eefde8497a626759f06a0452c6ca58894f69329206f358a5356a945a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/crm/offers?sort_by=gravity&sort_dir=desc HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62481 - "GET /api/v1/crm/offers?sort_by=gravity&sort_dir=desc HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62481 - "GET /api/v1/crm/offers?sort_by=gravity&sort_dir=desc HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62481 - "GET /api/v1/crm/offers?sort_by=gravity&sort_dir=desc HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62481 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61397 - "GET /api/v1/wallets/0x4c12be6471bfd4952226e2003930d0bb5282fb84/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61397 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53772 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52157 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60544 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61679 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53448 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60760 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51198 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52736 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51198 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63810 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63810 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63810 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK

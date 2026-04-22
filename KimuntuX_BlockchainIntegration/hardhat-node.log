@@ -127,7 +127,7 @@ Private Key: 0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            2773917 of 16777216
-  Block #1:            0xa302581652037634687f216c396108873f81c08ab4248b8f8b428aaaf0afb809
+  Block #1:            0x6c03c42ca75cf9a411108b6d2aa46b20aa84d3f9f50e5e9fe5bc5deef1b32644
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -161,7 +161,7 @@ Private Key: 0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            2152644 of 16777216
-  Block #2:            0x7b87978ad99b5ba8d033f8a8a3c304ca9e98e15f44063e4fe75d5dc4f714edd5
+  Block #2:            0x13bb4cdb1f2a5c990a42cee5d08da70c626ba1ce0da4ee9940acb4978a93c24b
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -195,7 +195,7 @@ Private Key: 0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   Value:               0 ETH
   Gas used:            2263966 of 16777216
-  Block #3:            0xc416529f6ae8a08ff35e556bb59a679ed99b6b77850925fe9c715ffc4c187c26
+  Block #3:            0xa6354fb2ffcaa4a99b9d6e731ec68c3d526bc8a6196fc45f7fc8c838eb544dcb
 
 [32meth_getTransactionByHash[0m
 [32meth_getTransactionReceipt[0m
@@ -213,180 +213,267 @@ Private Key: 0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e
 [32meth_gasPrice[0m
 [32meth_getBalance[0m
 [32meth_chainId[0m
-[32meth_blockNumber[0m
-[32meth_gasPrice[0m
-[32meth_getBalance[0m
-[32meth_chainId[0m
-[32meth_getBalance[0m
-[32meth_getTransactionCount[0m
-[32meth_gasPrice[0m
-[32meth_chainId[0m
 [32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_sendRawTransaction[0m
-  Contract call:       KimuXWallet#createWallet
-  Transaction:         0xb0df492a76f73005bfca3ec3faef9cbfcd5e4ac4c8f47804908513fa4cec222d
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
-  Value:               0 ETH
-  Gas used:            180216 of 217000
-  Block #4:            0xa6de5c17d1a51261bec2d08706cc38ab4a12da7d0e5b9a30c862c9fcfab67326
-
-[32meth_getBalance[0m
-[32meth_getTransactionCount[0m
-[32meth_gasPrice[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_sendRawTransaction[0m
-  Contract call:       KimuXWallet#createWalletFor
-  Transaction:         0x18327e83be4f6074b37296bc773ef4d3fae5f9a752a59b7ead9b63e30fe04643
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
-  Value:               0 ETH
-  Gas used:            148772 of 179000
-  Block #5:            0x230150c2ffaa84e3f0f8156fa9cf0029feba6fd070e0517e0dc800ca80a12053
-
-[32meth_getBalance[0m
-[32meth_getTransactionCount[0m
-[32meth_gasPrice[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_sendRawTransaction[0m
-  Contract call:       KimuXWallet#depositETH
-  Transaction:         0x362535455a6c628c9fa9e2810a496ff32b9c72a4e5ba2eb17abbf10289f8593d
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
-  Value:               0.5 ETH
-  Gas used:            71919 of 87000
-  Block #6:            0x3a5956a4716ae8ec70d582b6d573f9cfc8a02e4bcfc3c171ae208459a10b9800
-
-[32meth_getBalance[0m
-[32meth_getTransactionCount[0m
-[32meth_gasPrice[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_sendRawTransaction[0m
-  Contract call:       KimuXWallet#creditETH
-  Transaction:         0xb07400cb63b3e23213662d73d614640c7ae4b1dd117cda4d2ecf63e16cadda8f
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
-  Value:               0.2 ETH
-  Gas used:            74906 of 90000
-  Block #7:            0xab7cc0752ed82b97b6dad9b0c41f5be0b80ffb9f5e2d5bf97bfd7916cc50a681
-
-[32meth_getBalance[0m
-[32meth_getTransactionCount[0m
-[32meth_gasPrice[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_sendRawTransaction[0m
-  Contract call:       KimuXCommissionSystem#registerAffiliate
-  Transaction:         0x52b973ca1caa9314d0dcf61dda783928366c070c269bd983d31d6768de77b069
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
-  Value:               0 ETH
-  Gas used:            47867 of 58000
-  Block #8:            0xee7ae3e82cd8c486916c5e1632233b819ed68935f58f9c41de98bc97f841a8d4
-
-[32meth_getBalance[0m
-[32meth_getTransactionCount[0m
-[32meth_gasPrice[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_sendRawTransaction[0m
-  Contract call:       KimuXCommissionSystem#recordCommission
-  Transaction:         0x515136c9dd497795975e01eecb194fc039928dcdd71501fd32a0c3462c2b2af3
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
-  Value:               0.1 ETH
-  Gas used:            171466 of 206000
-  Block #9:            0xd6bced6d55acec87e9e50cc53296e03a03b4904217ba778afe7548d03eb08dc3
-
-[32meth_getBalance[0m
-[32meth_getTransactionCount[0m
-[32meth_gasPrice[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_sendRawTransaction[0m
-  Contract call:       KimuXCommissionSystem#approveCommission
-  Transaction:         0xd8c264ac665251b2be430e771e6bc912c5bd8237377d521672c6861678ababa4
-  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
-  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
-  Value:               0 ETH
-  Gas used:            74963 of 90000
-  Block #10:           0x1594bf8d8604e1b527f98cdca7c6baccfb320efbdfc6d136048aa7fc6ec39226
-
-[32meth_chainId[0m
 [32meth_accounts[0m
 [32meth_call[0m
-  Contract call:       KimuXCommissionSystem#getBalance
+  Contract call:       KimuXCommissionSystem#getContractStats
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
 
 [32meth_chainId[0m
 [32meth_chainId (2)[0m
 [32meth_call[0m
-  Contract call:       KimuXWallet#getWalletDetails
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_blockNumber[0m
+[32meth_gasPrice[0m
+[32meth_getBalance[0m
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       KimuXCommissionSystem#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       KimuXWallet#hasWallet
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
 
 [32meth_chainId[0m
+[32meth_blockNumber[0m
+[32meth_gasPrice[0m
 [32meth_getBalance[0m
-[32meth_getTransactionCount[0m
+[32meth_chainId[0m
+[32meth_blockNumber[0m
+[32meth_blockNumber (2)[0m
+[32meth_estimateGas[0m
+[32meth_getCode[0m
+[32meth_getCode (2)[0m
+[32meth_gasPrice[0m
+[32meth_getBalance[0m
+[32meth_blockNumber[0m
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[31meth_call[0m
+  Contract call:       KimuXWallet#<unrecognized-selector>
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x5fbdb2315678afecb367f032d93f642f64180aa3
+
+  Error: reverted with reason string 'Function does not exist'
+
+[32meth_blockNumber[0m
 [32meth_gasPrice[0m
 [32meth_chainId[0m
-[32meth_chainId (2)[0m
-[32meth_estimateGas[0m
+[32meth_getBalance[0m
 [32meth_chainId[0m
 [32meth_chainId (2)[0m
-[32meth_estimateGas[0m
-[32meth_chainId[0m
-[32meth_sendRawTransaction[0m
-  Contract call:       PaymentEscrow#createEscrow
-  Transaction:         0x6d4b8384eefde8497a626759f06a0452c6ca58894f69329206f358a5356a945a
+[32meth_call[0m
+  Contract call:       KimuXCommissionSystem#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
   From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
   To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
-  Value:               0.3 ETH
-  Gas used:            372205 of 447000
-  Block #11:           0x77e6c4ae50f5a16b8d8a7e00202797cb5df9ff59998da5a7393b897eac2129d2
 
-[32meth_getTransactionReceipt[0m
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_chainId (3)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
 [32meth_blockNumber[0m
-[32meth_getTransactionReceipt[0m
+[32meth_getTransactionCount[0m
 [32meth_blockNumber[0m
-[32meth_getTransactionReceipt[0m
+[32meth_blockNumber (2)[0m
+[32meth_gasPrice[0m
+[32meth_chainId[0m
+[32meth_getBalance[0m
+[32meth_chainId[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_call[0m
+  Contract call:       KimuXCommissionSystem#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_chainId (3)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
 [32meth_blockNumber[0m
+[32meth_gasPrice[0m
+[32meth_getBalance[0m
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       KimuXCommissionSystem#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_blockNumber[0m
+[32meth_chainId[0m
+[32meth_call[0m
+  Contract call:       KimuXCommissionSystem#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+
+[32meth_gasPrice[0m
+[32meth_chainId[0m
+[32meth_getBalance[0m
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_blockNumber[0m
+[32meth_gasPrice[0m
+[32meth_getBalance[0m
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       KimuXCommissionSystem#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0xe7f1725e7734ce288f8367e1bb143e90bb3f0512
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m
+[32meth_chainId (2)[0m
+[32meth_call[0m
+  Contract call:       PaymentEscrow#getContractStats
+  From:                0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+  To:                  0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
+
+[32meth_chainId[0m

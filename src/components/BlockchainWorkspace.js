@@ -314,21 +314,6 @@ const getWalletAgeLabel = (createdAt) => {
   return days === 1 ? '1 day live' : `${days} days live`;
 };
 
-const strategyCards = [
-  {
-    title: 'Income Focus',
-    body: 'Use affiliate commissions and lower-volatility treasury balances as your core engine. This works best when you want repeatable yield, visible payout rules, and tighter cash discipline.',
-  },
-  {
-    title: 'Core + Reserve',
-    body: 'Keep the wallet anchored around ETH and stablecoin awareness, then use escrow and commission tracking to understand liquidity before taking larger directional bets.',
-  },
-  {
-    title: 'Opportunistic Rotation',
-    body: 'Watch 24-hour momentum on majors, but size entries only after your operating wallet and payout runway are funded. This helps avoid mixing speculation with needed settlement funds.',
-  },
-];
-
 const BlockchainWorkspace = ({ showHeader = true }) => {
   const [health, setHealth] = useState(null);
   const [protocolMetrics, setProtocolMetrics] = useState(null);
@@ -336,6 +321,8 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
   const [priceMap, setPriceMap] = useState(null);
   const [connectedAddress, setConnectedAddress] = useState(null);
   const [connectedWallet, setConnectedWallet] = useState(null);
+  const [externalWalletBalance, setExternalWalletBalance] = useState(null);
+  const [walletRegistryExists, setWalletRegistryExists] = useState(false);
   const [affiliateSnapshot, setAffiliateSnapshot] = useState(null);
   const [loadError, setLoadError] = useState('');
 
@@ -344,7 +331,7 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
 
     const load = async () => {
       try {
-        const [healthData, commissionStats, escrowStats, prices, markets] = await Promise.all([
+        const [healthResult, commissionResult, escrowResult, pricesResult, marketsResult] = await Promise.allSettled([
           blockchainService.getHealth(),
           blockchainService.getContractStats(),
           blockchainService.getEscrowStats(),
@@ -356,19 +343,59 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
           return;
         }
 
+        const healthData = healthResult.status === 'fulfilled'
+          ? healthResult.value
+          : {
+            status: 'unknown',
+            chain_id: null,
+            latest_block: null,
+            gas_price_gwei: null,
+            platform_balance_eth: null,
+            contracts: {},
+            error: healthResult.reason?.message || 'Blockchain status unavailable.',
+          };
+        const commissionStats = commissionResult.status === 'fulfilled'
+          ? commissionResult.value
+          : {
+            contract_balance_eth: 0,
+            total_paid_eth: 0,
+            platform_fee_rate_bps: 0,
+            minimum_payout_eth: 0,
+          };
+        const escrowStats = escrowResult.status === 'fulfilled'
+          ? escrowResult.value
+          : {
+            active_escrows: 0,
+            total_locked_value: 0,
+            total_escrows: 0,
+            completed_escrows: 0,
+            escrow_fee_rate_bps: 0,
+            recent_escrows: [],
+          };
+        const prices = pricesResult.status === 'fulfilled' ? pricesResult.value : null;
+        const markets = marketsResult.status === 'fulfilled' ? marketsResult.value : [];
+
         setHealth(healthData);
         setPriceMap(prices);
         setMarketData(markets);
         setProtocolMetrics({
           commissionPoolEth: commissionStats.contract_balance_eth || 0,
-          commissionPoolUsd: (commissionStats.contract_balance_eth || 0) * (prices.ethereum?.usd || 0),
+          commissionPoolUsd: (commissionStats.contract_balance_eth || 0) * (prices?.ethereum?.usd || 0),
           totalPaidEth: commissionStats.total_paid_eth || 0,
-          totalPaidUsd: (commissionStats.total_paid_eth || 0) * (prices.ethereum?.usd || 0),
+          totalPaidUsd: (commissionStats.total_paid_eth || 0) * (prices?.ethereum?.usd || 0),
           activeEscrows: escrowStats.active_escrows || 0,
           lockedValueEth: escrowStats.total_locked_value || 0,
-          lockedValueUsd: (escrowStats.total_locked_value || 0) * (prices.ethereum?.usd || 0),
+          lockedValueUsd: (escrowStats.total_locked_value || 0) * (prices?.ethereum?.usd || 0),
         });
-        setLoadError('');
+
+        const errors = [
+          healthResult.status === 'rejected' ? 'Blockchain connection is unavailable.' : null,
+          pricesResult.status === 'rejected' || marketsResult.status === 'rejected'
+            ? 'Live crypto pricing is temporarily unavailable.'
+            : null,
+        ].filter(Boolean);
+
+        setLoadError(errors.join(' '));
       } catch (error) {
         if (!active) {
           return;
@@ -392,6 +419,8 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
     const loadWalletSnapshot = async () => {
       if (!connectedAddress) {
         setConnectedWallet(null);
+        setExternalWalletBalance(null);
+        setWalletRegistryExists(false);
         setAffiliateSnapshot(null);
         return;
       }
@@ -433,29 +462,82 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
   }, [connectedAddress, priceMap]);
 
   const walletSummary = useMemo(() => {
-    if (!connectedWallet) {
+    if (!connectedAddress) {
       return null;
     }
 
     const ethPrice = priceMap?.ethereum?.usd || 0;
-    const walletEth = Number(connectedWallet.eth_balance || 0);
+    const walletEth = Number(externalWalletBalance || 0);
     const walletUsd = walletEth * ethPrice;
+    const internalWalletEth = Number(connectedWallet?.eth_balance || 0);
     const commissionEth = Number(affiliateSnapshot?.balance_eth || 0);
 
     return {
       walletEth,
       walletUsd,
+      internalWalletEth,
+      internalWalletUsd: internalWalletEth * ethPrice,
       commissionEth,
       commissionUsd: commissionEth * ethPrice,
-      totalDepositsEth: Number(connectedWallet.total_deposits || 0),
-      totalWithdrawalsEth: Number(connectedWallet.total_withdrawals || 0),
-      walletAge: getWalletAgeLabel(connectedWallet.created_at),
+      totalDepositsEth: Number(connectedWallet?.total_deposits || 0),
+      totalWithdrawalsEth: Number(connectedWallet?.total_withdrawals || 0),
+      walletAge: getWalletAgeLabel(connectedWallet?.created_at),
       isAffiliate: Boolean(affiliateSnapshot?.is_affiliate),
       isMerchant: Boolean(affiliateSnapshot?.is_merchant),
+      walletRegistryExists,
     };
-  }, [affiliateSnapshot, connectedWallet, priceMap]);
+  }, [affiliateSnapshot, connectedAddress, connectedWallet, externalWalletBalance, priceMap, walletRegistryExists]);
 
   const watchlistLead = marketData[0];
+
+  const dynamicGuidance = useMemo(() => {
+    if (!connectedAddress) {
+      return {
+        title: 'Connect MetaMask first',
+        body: 'Use MetaMask onboarding below to connect the active account and switch to the local KimuX chain. This first step is now read-only so the user can inspect the wallet before approving any transaction.',
+      };
+    }
+
+    if (!walletSummary) {
+      return {
+        title: 'Finish wallet inspection',
+        body: 'The account is connected, but the wallet summary has not loaded yet. Refresh the wallet panel to confirm the live MetaMask balance and whether an internal KimuX wallet exists.',
+      };
+    }
+
+    if (!walletSummary.walletRegistryExists) {
+      return {
+        title: 'Create the KimuX wallet only when needed',
+        body: 'The external MetaMask wallet is connected successfully. Create the internal KimuX wallet only when the user is ready to use site-managed transfers, payouts, or escrow actions.',
+      };
+    }
+
+    if (walletSummary.walletEth < 0.01) {
+      return {
+        title: 'Fund the operating wallet',
+        body: 'The connected MetaMask wallet is light on ETH. Keep enough native ETH available to cover contract interactions and any wallet-managed transfers without friction.',
+      };
+    }
+
+    if (!walletSummary.isAffiliate) {
+      return {
+        title: 'Register the wallet as an affiliate',
+        body: 'Before commissions can become practical, this wallet should be registered through the affiliate flow. That unlocks a cleaner path to record, approve, and withdraw earnings.',
+      };
+    }
+
+    if (Math.abs(priceMap?.ethereum?.change_24h || 0) >= 5) {
+      return {
+        title: 'Use a defensive treasury posture today',
+        body: 'ETH volatility is elevated right now. Keep enough balance reserved for operating activity and avoid mixing escrow or payout funds with more speculative moves.',
+      };
+    }
+
+    return {
+      title: 'Operate from a balanced posture',
+      body: 'The wallet is connected, funded, and ready. Use the transaction console for commissions and escrow, while the market panel helps you time any larger treasury decisions more carefully.',
+    };
+  }, [connectedAddress, priceMap, walletSummary]);
 
   return (
     <Section>
@@ -534,33 +616,33 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
         <Card $span={4}>
           <CardTitle>Wallet Dashboard</CardTitle>
           <CardCopy>
-            A concise view of the connected wallet so the user can understand working capital, claimable commission balance, and wallet tenure.
+            A concise view of the connected wallet so the user can understand external balance, internal KimuX wallet status, and claimable commission balance.
           </CardCopy>
           {walletSummary ? (
             <MiniGrid>
               <MiniMetric>
                 <MiniValue>{formatEth(walletSummary.walletEth)}</MiniValue>
-                <MiniLabel>Wallet ETH balance</MiniLabel>
+                <MiniLabel>MetaMask ETH balance</MiniLabel>
               </MiniMetric>
               <MiniMetric>
                 <MiniValue>{formatUsd(walletSummary.walletUsd)}</MiniValue>
-                <MiniLabel>Wallet USD value</MiniLabel>
+                <MiniLabel>MetaMask USD value</MiniLabel>
+              </MiniMetric>
+              <MiniMetric>
+                <MiniValue>{walletSummary.walletRegistryExists ? formatEth(walletSummary.internalWalletEth) : 'Not created'}</MiniValue>
+                <MiniLabel>Internal KimuX wallet</MiniLabel>
               </MiniMetric>
               <MiniMetric>
                 <MiniValue>{formatEth(walletSummary.commissionEth)}</MiniValue>
                 <MiniLabel>Claimable commission</MiniLabel>
               </MiniMetric>
               <MiniMetric>
-                <MiniValue>{formatUsd(walletSummary.commissionUsd)}</MiniValue>
-                <MiniLabel>Commission USD value</MiniLabel>
-              </MiniMetric>
-              <MiniMetric>
                 <MiniValue>{walletSummary.walletAge}</MiniValue>
                 <MiniLabel>Wallet age</MiniLabel>
               </MiniMetric>
               <MiniMetric>
-                <MiniValue>{walletSummary.isAffiliate ? 'Affiliate' : 'Standard'}</MiniValue>
-                <MiniLabel>{walletSummary.isMerchant ? 'Merchant access active' : 'Merchant access inactive'}</MiniLabel>
+                <MiniValue>{walletSummary.walletRegistryExists ? (walletSummary.isAffiliate ? 'Affiliate' : 'Standard') : 'External only'}</MiniValue>
+                <MiniLabel>{walletSummary.walletRegistryExists ? (walletSummary.isMerchant ? 'Merchant access active' : 'Merchant access inactive') : 'Create wallet for internal actions'}</MiniLabel>
               </MiniMetric>
             </MiniGrid>
           ) : (
@@ -594,18 +676,14 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
         </Card>
 
         <Card $span={4}>
-          <CardTitle>Strategy Playbook</CardTitle>
+          <CardTitle>Suggested Next Step</CardTitle>
           <CardCopy>
-            The page should not only show transactions. It should help users decide how to use the wallet responsibly.
+            This section now reacts to the user state instead of showing a static strategy list.
           </CardCopy>
-          <StrategyList>
-            {strategyCards.map((strategy) => (
-              <StrategyCard key={strategy.title}>
-                <StrategyTitle>{strategy.title}</StrategyTitle>
-                <StrategyBody>{strategy.body}</StrategyBody>
-              </StrategyCard>
-            ))}
-          </StrategyList>
+          <StrategyCard>
+            <StrategyTitle>{dynamicGuidance.title}</StrategyTitle>
+            <StrategyBody>{dynamicGuidance.body}</StrategyBody>
+          </StrategyCard>
         </Card>
 
         <Card $span={7}>
@@ -634,34 +712,48 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
         </Card>
 
         <Card $span={5}>
-          <CardTitle>Practical Guidance</CardTitle>
+          <CardTitle>Operating Perspective</CardTitle>
           <CardCopy>
-            A short checklist to keep the user flow intentional rather than purely experimental.
+            Concise guidance based on the current chain and wallet state, without turning the page into a static checklist.
           </CardCopy>
           <StrategyList>
             <StrategyCard>
-              <StrategyTitle>1. Fund the operating wallet first</StrategyTitle>
-              <StrategyBody>Make sure the wallet has enough ETH for settlement actions and gas before attempting transfers, commission withdrawals, or escrow creation.</StrategyBody>
+              <StrategyTitle>Wallet readiness</StrategyTitle>
+              <StrategyBody>
+                {connectedAddress
+                  ? (walletSummary
+                    ? `This MetaMask wallet currently holds ${formatEth(walletSummary.walletEth)}${walletSummary.walletRegistryExists ? `, while the internal KimuX wallet holds ${formatEth(walletSummary.internalWalletEth)}` : ''}, and has ${formatEth(walletSummary.commissionEth)} in claimable commission balance.`
+                    : 'The wallet is connected, but the wallet summary has not loaded yet.')
+                  : 'No wallet is connected yet. Start with MetaMask onboarding below to unlock wallet-specific actions.'}
+              </StrategyBody>
             </StrategyCard>
             <StrategyCard>
-              <StrategyTitle>2. Separate operating cash from speculation</StrategyTitle>
-              <StrategyBody>Use the wallet dashboard and market pulse together. If balances are needed for payments or escrow, avoid overcommitting to higher-volatility moves.</StrategyBody>
+              <StrategyTitle>Market context</StrategyTitle>
+              <StrategyBody>
+                {priceMap?.ethereum
+                  ? `ETH is ${formatUsd(priceMap.ethereum.usd)} with a 24-hour move of ${formatChange(priceMap.ethereum.change_24h)}. Use that swing to judge whether today is better for steady settlement or more active treasury decisions.`
+                  : 'Live market data is unavailable right now, so treasury decisions should rely on wallet balances and required settlement obligations first.'}
+              </StrategyBody>
             </StrategyCard>
             <StrategyCard>
-              <StrategyTitle>3. Watch payouts against market conditions</StrategyTitle>
-              <StrategyBody>When ETH is moving quickly, USD-denominated value can swing even if your on-chain ETH balance stays constant. This page helps users see that clearly.</StrategyBody>
+              <StrategyTitle>Execution flow</StrategyTitle>
+              <StrategyBody>
+                The intended user flow is now: connect MetaMask, inspect the live balance, create the internal KimuX wallet only if needed, then move into transfers, commissions, or escrow from a better-informed position.
+              </StrategyBody>
             </StrategyCard>
           </StrategyList>
         </Card>
       </Grid>
 
       <SectionTitle>Wallet Management</SectionTitle>
-      <WalletConnector onWalletConnected={(address, details) => {
+      <WalletConnector onWalletConnected={(address, details, meta) => {
         setConnectedAddress(address);
         setConnectedWallet(details);
+        setExternalWalletBalance(meta?.externalBalance ?? null);
+        setWalletRegistryExists(Boolean(meta?.walletExists));
       }} />
 
-      {connectedAddress && (
+      {connectedAddress && walletRegistryExists && (
         <>
           <SectionTitle>Transaction Operations</SectionTitle>
           <TransactionDemo connectedAddress={connectedAddress} />
@@ -669,6 +761,15 @@ const BlockchainWorkspace = ({ showHeader = true }) => {
           <SectionTitle>Settlement Activity</SectionTitle>
           <DatabaseMonitor connectedAddress={connectedAddress} autoRefresh={true} />
         </>
+      )}
+
+      {connectedAddress && !walletRegistryExists && (
+        <Card $span={12}>
+          <CardTitle>Internal Transactions Unlock After Wallet Creation</CardTitle>
+          <CardCopy>
+            MetaMask is connected and the live external balance is visible. Create the internal KimuX wallet in the wallet panel when you want to use site-managed transfers, commission actions, and escrow operations from inside the app.
+          </CardCopy>
+        </Card>
       )}
     </Section>
   );
