@@ -9,7 +9,7 @@ from app.schemas.support import SupportInquiryCreate, SupportInquiryResponse
 
 router = APIRouter(prefix="/support", tags=["support"])
 
-SUPPORT_TO = "support@kimux.io"
+SUPPORT_TO = "contact@kimux.co"
 
 
 @router.post("/inquiry", response_model=SupportInquiryResponse, status_code=status.HTTP_201_CREATED)

@@ -223,7 +223,7 @@ const Header = () => {
 
   const mainNavItems = [
     { path: '/about', label: 'About' },
-    { path: '/pricing', label: 'Price' },
+    { path: '/pricing', label: 'Pricing' },
     { path: '/solutions', label: 'Solutions' },
     { path: '/benefits', label: 'Benefits' },
     { path: '/crm', label: 'CRM' },

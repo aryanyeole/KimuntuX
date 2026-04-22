@@ -109,7 +109,8 @@ const ActionCell = styled.td`
 
 const ActionGroup = styled.div`
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: 0.45rem;
   align-items: center;
 `;
@@ -120,6 +121,7 @@ const ActionBtn = styled.button`
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   border: 1px solid ${TEAL};
   background: rgba(0, 200, 150, 0.12);
   color: ${TEAL};
@@ -234,7 +236,7 @@ function formatApiError(status, data) {
 const TABS = [
   { id: 'users', label: 'User profiles' },
   { id: 'contacts', label: 'Contact form results' },
-  { id: 'support', label: 'Support inbox (support@kimux.io)' }
+  { id: 'support', label: 'Support inbox (contact@kimux.co)' }
 ];
 
 const AdminPage = () => {
@@ -392,7 +394,7 @@ const AdminPage = () => {
       <Inner>
         <PageTitle>Admin Dashboard</PageTitle>
         <PageSubtitle>
-          Manage registered users, homepage contact leads, and messages sent to support@kimux.io. Only
+          Manage registered users, homepage contact leads, and messages sent to contact@kimux.co. Only
           administrator accounts can view this area.
         </PageSubtitle>
 
@@ -522,7 +524,7 @@ const AdminPage = () => {
             <>
               <PanelTitle>Support inbox</PanelTitle>
               <EmptyNote style={{ marginBottom: '1rem' }}>
-                Messages addressed to <strong style={{ color: TEAL }}>support@kimux.io</strong>
+                Messages addressed to <strong style={{ color: TEAL }}>contact@kimux.co</strong>
               </EmptyNote>
               {loadError && <ErrorBox>{loadError}</ErrorBox>}
               {loading ? (

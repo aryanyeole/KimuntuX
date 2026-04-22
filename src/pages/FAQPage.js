@@ -630,8 +630,8 @@ export default function FAQPage() {
         <>
           <p>KimuX actively seeks partnerships with fintechs, tech agencies, investors, and governments. For collaboration or investment opportunities, please contact:</p>
           <ul>
-            <li>Contact: contact@kimux.io</li>
-            <li>Help Center: support@kimux.io</li>
+            <li>Contact: contact@kimux.co</li>
+            <li>Help Center: contact@kimux.co</li>
             <li>www.kimux.io</li>
           </ul>
         </>
@@ -671,8 +671,7 @@ export default function FAQPage() {
             <ContactTitle>Still have questions?</ContactTitle>
             <ContactText>Get in touch with our team for personalized assistance</ContactText>
             <ContactLinks>
-              <ContactLink href="mailto:contact@kimux.io">contact@kimux.io</ContactLink>
-              <ContactLink href="mailto:support@kimux.io">support@kimux.io</ContactLink>
+              <ContactLink href="mailto:contact@kimux.co">contact@kimux.co</ContactLink>
             </ContactLinks>
           </ContactContent>
         </ContactSection>

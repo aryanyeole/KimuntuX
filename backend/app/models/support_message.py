@@ -10,7 +10,7 @@ from app.models.base import Base
 
 
 class SupportMessage(Base):
-    """Inbound messages intended for support@kimux.io (form submissions; email ingest can write here later)."""
+    """Inbound messages intended for contact@kimux.co (form submissions; email ingest can write here later)."""
 
     __tablename__ = "support_messages"
 
@@ -19,7 +19,7 @@ class SupportMessage(Base):
         primary_key=True,
         default=lambda: str(uuid4()),
     )
-    to_address: Mapped[str] = mapped_column(String(255), default="support@kimux.io", nullable=False)
+    to_address: Mapped[str] = mapped_column(String(255), default="contact@kimux.co", nullable=False)
     from_email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     from_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     subject: Mapped[str] = mapped_column(String(500), default="(no subject)", nullable=False)

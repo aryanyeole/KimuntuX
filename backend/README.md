@@ -30,7 +30,7 @@ UPDATE users SET is_admin = true WHERE email = 'your-admin@example.com';
 
 Then sign in again so the UI receives `is_admin: true` from `/auth/me`.
 
-Support messages to **support@kimux.io** are stored when clients call `POST /api/v1/support/inquiry` (wire a form or email bridge later).
+Support messages to **contact@kimux.co** are stored when clients call `POST /api/v1/support/inquiry` (wire a form or email bridge later).
 
 ## Setup
 
