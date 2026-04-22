@@ -12,6 +12,7 @@ const NETWORK = process.env.REACT_APP_BLOCKCHAIN_NETWORK || 'localhost';
 const DEFAULT_COMMISSION_RATE_BPS = Number(process.env.REACT_APP_DEFAULT_COMMISSION_RATE_BPS || 10000);
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 const MARKET_API_URL = 'https://api.coingecko.com/api/v3';
+const METAMASK_ONBOARDING_URL = 'https://metamask.io/download/';
 const HARDHAT_CHAIN_ID = '0x7A69';
 const HARDHAT_CHAIN_DECIMAL = 31337;
 const HARDHAT_NETWORK_CONFIG = {
@@ -52,7 +53,17 @@ const getEthereumProvider = () => {
   if (typeof window === 'undefined') {
     return null;
   }
-  return window.ethereum || null;
+
+  const injected = window.ethereum || null;
+  if (!injected) {
+    return null;
+  }
+
+  if (Array.isArray(injected.providers) && injected.providers.length) {
+    return injected.providers.find((provider) => provider?.isMetaMask) || injected.providers[0] || null;
+  }
+
+  return injected;
 };
 
 export const validateAddress = (address) => {
@@ -85,6 +96,15 @@ export const apiFetch = async (endpoint, options = {}) => {
 
 export const hasMetaMask = () => Boolean(getEthereumProvider());
 
+export const openMetaMaskOnboarding = () => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  window.open(METAMASK_ONBOARDING_URL, '_blank', 'noopener,noreferrer');
+  return true;
+};
+
 export const getConnectedMetaMaskAddress = async () => {
   const provider = getEthereumProvider();
   if (!provider) {
@@ -93,6 +113,15 @@ export const getConnectedMetaMaskAddress = async () => {
 
   const accounts = await provider.request({ method: 'eth_accounts' });
   return accounts?.[0] || null;
+};
+
+export const getMetaMaskChainId = async () => {
+  const provider = getEthereumProvider();
+  if (!provider) {
+    throw new Error('MetaMask is not installed.');
+  }
+
+  return provider.request({ method: 'eth_chainId' });
 };
 
 const requireMetaMaskProvider = async () => {
@@ -169,11 +198,23 @@ export const ensureMetaMaskNetwork = async () => {
 export const connectMetaMask = async () => {
   const provider = getEthereumProvider();
   if (!provider) {
+    openMetaMaskOnboarding();
     throw new Error('MetaMask is not installed.');
   }
 
-  await ensureMetaMaskNetwork();
+  try {
+    await provider.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }],
+    });
+  } catch (error) {
+    if (error?.code !== 4001 && error?.code !== -32601) {
+      throw error;
+    }
+  }
+
   const accounts = await provider.request({ method: 'eth_requestAccounts' });
+  await ensureMetaMaskNetwork();
   const address = accounts?.[0];
 
   if (!validateAddress(address)) {
@@ -181,6 +222,49 @@ export const connectMetaMask = async () => {
   }
 
   return address;
+};
+
+export const connectMetaMaskSession = async () => {
+  const provider = getEthereumProvider();
+  if (!provider) {
+    openMetaMaskOnboarding();
+    throw new Error('MetaMask is not installed.');
+  }
+
+  try {
+    await provider.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }],
+    });
+  } catch (error) {
+    if (error?.code !== 4001 && error?.code !== -32601) {
+      throw error;
+    }
+  }
+
+  const accounts = await provider.request({ method: 'eth_requestAccounts' });
+  const address = accounts?.[0];
+
+  if (!validateAddress(address)) {
+    throw new Error('MetaMask returned an invalid wallet address.');
+  }
+
+  const currentChainId = await provider.request({ method: 'eth_chainId' });
+  const currentProvider = new BrowserProvider(provider);
+  const walletBalanceEth = Number(formatEther(await currentProvider.getBalance(address)));
+
+  const targetChainId = await ensureMetaMaskNetwork();
+  const kimuxProvider = new BrowserProvider(provider);
+  const kimuxBalanceEth = Number(formatEther(await kimuxProvider.getBalance(address)));
+
+  return {
+    address,
+    currentChainId,
+    targetChainId,
+    walletBalanceEth,
+    kimuxBalanceEth,
+    switchedNetworks: currentChainId !== targetChainId,
+  };
 };
 
 export const getMetaMaskNativeBalance = async (address = null) => {
@@ -386,6 +470,45 @@ export const getTransactionStatus = async (txHash) => {
     gas_used: data.gas_used ?? null,
     confirmations: data.confirmations ?? null,
   };
+};
+
+const wait = (ms) => new Promise((resolve) => {
+  window.setTimeout(resolve, ms);
+});
+
+export const waitForTransactionSuccess = async (txHash, options = {}) => {
+  const timeoutMs = options.timeoutMs || 45000;
+  const pollMs = options.pollMs || 1500;
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const status = await getTransactionStatus(txHash);
+    if (status.status === 'success') {
+      return status;
+    }
+    if (status.status === 'failed' || status.status === 'reverted') {
+      throw new Error(`Transaction failed with status: ${status.status}`);
+    }
+    await wait(pollMs);
+  }
+
+  throw new Error('Transaction confirmation timed out. Please refresh wallet status.');
+};
+
+export const waitForWalletStatus = async (address, options = {}) => {
+  const timeoutMs = options.timeoutMs || 45000;
+  const pollMs = options.pollMs || 1500;
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const status = await getWalletStatus(address);
+    if (status.exists) {
+      return status;
+    }
+    await wait(pollMs);
+  }
+
+  throw new Error('Wallet provisioning is taking longer than expected. Please refresh and try again.');
 };
 
 export const getCryptoMarketSnapshot = async () => {
@@ -773,9 +896,12 @@ const blockchainService = {
   validateAddress,
   apiFetch,
   hasMetaMask,
+  openMetaMaskOnboarding,
   getConnectedMetaMaskAddress,
+  getMetaMaskChainId,
   ensureMetaMaskNetwork,
   connectMetaMask,
+  connectMetaMaskSession,
   getMetaMaskNativeBalance,
   watchMetaMaskAccount,
   getHealth,
@@ -794,6 +920,8 @@ const blockchainService = {
   getEscrowConfig,
   getEscrow,
   getTransactionStatus,
+  waitForTransactionSuccess,
+  waitForWalletStatus,
   getCryptoMarketSnapshot,
   getCryptoPriceMap,
   createWalletFor,
