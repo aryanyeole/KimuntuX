@@ -321,7 +321,7 @@ export default function AboutPage() {
       <Wrap>
         <Hero>
           <HeroImageContainer>
-            <HeroImage src={aboutImage} alt="KimuntuX Team" />
+            <HeroImage src={aboutImage} alt="KimuX Team" />
             <HeroContent>
               <H1>About</H1>
               <Lead>The Intelligent Digital Marketing & Brokerage Platform Built on Blockchain</Lead>
@@ -356,7 +356,7 @@ export default function AboutPage() {
           <Title>Who We Are</Title>
           <Body>
             <p>KimuX is an AI-powered digital brokerage, fintech, and marketing platform that unites technology, creativity, and commerce. We provide a single, intelligent environment for businesses, professionals, and creators to build, manage, and scale operations across finance, logistics, real estate, technology, digital marketing, and eCommerce.</p>
-            <Muted>Born from an innovation initiative supported by Arizona State University’s Capstone Program and powered by Kimuntu Power Inc., KimuX was developed with the collaboration of five talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, Julian Korn, and Sarjan Patel.</Muted>
+            <Muted>Born from an innovation initiative supported by Arizona State University’s Capstone Program, KimuX was developed with the collaboration of five talented ASU students: Revanth Kumar Alimela, Allan Binu, Aryan Yeole, Julian Korn, and Sarjan Patel.</Muted>
             <Muted>Together, they engineered the foundation of what has become one of the most advanced AI-driven digital brokerage platforms of the decade.</Muted>
           </Body>
         </Section>

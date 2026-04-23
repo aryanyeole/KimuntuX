@@ -227,7 +227,7 @@ const DeveloperPage = () => {
           <SectionCard>
             <SectionTitle>API Documentation</SectionTitle>
             <p style={{ color: theme.colors.text, opacity: 0.8, marginBottom: '1.5rem' }}>
-              RESTful API endpoints for integrating with KimuntuX platform
+              RESTful API endpoints for integrating with KimuX platform
             </p>
             
             {apiEndpoints.map((endpoint, index) => (

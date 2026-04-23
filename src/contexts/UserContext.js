@@ -39,38 +39,43 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
-    const savedUser = localStorage.getItem('kimuntu_user');
-    const savedToken = localStorage.getItem('kimuntu_token');
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        setUser({
-          ...parsed,
-          isAdmin: !!(parsed.isAdmin ?? parsed.is_admin)
-        });
-      } catch {
-        setUser(null);
-      }
-    }
-    if (savedToken) {
-      setToken(savedToken);
-    }
+    const bootstrap = async () => {
+      const savedUser = localStorage.getItem('kimuntu_user');
+      const savedToken = localStorage.getItem('kimuntu_token');
+      const savedTenantId = localStorage.getItem('kimuntu_tenant_id');
 
-    const syncProfile = async () => {
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          setUser({
+            ...parsed,
+            isAdmin: !!(parsed.isAdmin ?? parsed.is_admin),
+          });
+        } catch {
+          setUser(null);
+        }
+      }
+      if (savedToken) {
+        setToken(savedToken);
+      }
+
       if (!savedToken) {
         setIsLoading(false);
         return;
       }
+
       const requestToken = savedToken;
       try {
         const r = await fetch(`${API_BASE}/auth/me`, {
-          headers: { Authorization: `Bearer ${requestToken}` }
+          headers: { Authorization: `Bearer ${requestToken}` },
         });
         if (r.status === 401) {
           if (localStorage.getItem('kimuntu_token') === requestToken) {
             localStorage.removeItem('kimuntu_token');
             localStorage.removeItem('kimuntu_user');
             localStorage.removeItem('kimuntu_current_user');
+            localStorage.removeItem('kimuntu_tenant');
+            localStorage.removeItem('kimuntu_tenant_id');
             setToken(null);
             setUser(null);
           }
@@ -78,39 +83,49 @@ export const UserProvider = ({ children }) => {
         }
         if (r.ok) {
           const profile = await r.json();
-          // Do not overwrite a newer session (e.g. user just logged in as admin while this was in flight).
-          if (localStorage.getItem('kimuntu_token') !== requestToken) {
-            return;
+          if (localStorage.getItem('kimuntu_token') === requestToken) {
+            const merged = {
+              id: profile.id,
+              name: profile.full_name,
+              email: profile.email,
+              isActive: profile.is_active ?? profile.isActive,
+              isAdmin: !!(profile.is_admin ?? profile.isAdmin),
+              joinDate: profile.created_at,
+            };
+            setUser(merged);
+            localStorage.setItem('kimuntu_user', JSON.stringify(merged));
           }
-          const merged = {
-            id: profile.id,
-            name: profile.full_name,
-            email: profile.email,
-            isActive: profile.is_active ?? profile.isActive,
-            isAdmin: !!(profile.is_admin ?? profile.isAdmin),
-            joinDate: profile.created_at
-          };
-          setUser(merged);
-          localStorage.setItem('kimuntu_user', JSON.stringify(merged));
         }
       } catch {
-        /* keep cached user */
-      } finally {
-        setIsLoading(false);
+        // keep cached user when network hiccups
       }
-    };
 
-    if (savedToken) {
-      syncProfile();
-    } else {
+      // If token exists but tenant not yet bootstrapped, fetch from backend.
+      if (!savedTenantId) {
+        try {
+          const resp = await fetch(`${API_BASE}/auth/me/tenant`, {
+            headers: { Authorization: `Bearer ${requestToken}` },
+          });
+          if (resp.ok) {
+            const tenant = await resp.json();
+            localStorage.setItem('kimuntu_tenant', JSON.stringify(tenant));
+            localStorage.setItem('kimuntu_tenant_id', tenant.id);
+            window.dispatchEvent(new CustomEvent('kimuntu-tenant-updated', { detail: tenant }));
+          }
+        } catch {
+          // Network error — continue without tenant; CRM can prompt later
+        }
+      }
+
       setIsLoading(false);
-    }
+    };
+    bootstrap();
   }, []);
 
-  const login = (userData, accessToken = null) => {
+  const login = (userData, accessToken = null, tenantData = null) => {
     const normalized = {
       ...userData,
-      isAdmin: !!(userData.isAdmin ?? userData.is_admin)
+      isAdmin: !!(userData.isAdmin ?? userData.is_admin),
     };
     setUser(normalized);
     localStorage.setItem('kimuntu_user', JSON.stringify(normalized));
@@ -118,6 +133,10 @@ export const UserProvider = ({ children }) => {
     if (accessToken) {
       setToken(accessToken);
       localStorage.setItem('kimuntu_token', accessToken);
+    }
+    if (tenantData) {
+      localStorage.setItem('kimuntu_tenant', JSON.stringify(tenantData));
+      localStorage.setItem('kimuntu_tenant_id', tenantData.id);
     }
   };
 
@@ -132,6 +151,8 @@ export const UserProvider = ({ children }) => {
     } catch {
       /* ignore */
     }
+    localStorage.removeItem('kimuntu_tenant');
+    localStorage.removeItem('kimuntu_tenant_id');
   };
 
   /** Restore admin session after "Access account" impersonation (see AdminPage). */

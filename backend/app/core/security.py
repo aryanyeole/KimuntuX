@@ -15,6 +15,9 @@ from app.core.database import get_db
 from app.models.user import User
 
 
+# Use a stable pure-Python hash scheme for local/dev compatibility.
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.api_v1_prefix}/auth/login")
 # Use a passlib-native scheme to avoid local bcrypt backend compatibility issues.
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.api_v1_prefix}/auth/token")

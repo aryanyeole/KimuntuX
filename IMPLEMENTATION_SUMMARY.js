@@ -1,7 +1,7 @@
 /**
  * CHATBOT IMPLEMENTATION SUMMARY
  * 
- * This file documents the complete chatbot implementation for KimuntuX.
+ * This file documents the complete chatbot implementation for KimuX.
  * Date: November 6, 2025
  */
 
@@ -290,7 +290,7 @@ const WIDGET_POSITION = {
  * 1. npm start
  * 2. Open http://localhost:3000
  * 3. Click chat button (bottom-right)
- * 4. Try asking: "What is KimuntuX?"
+ * 4. Try asking: "What is KimuX?"
  * 5. Try asking: "My name is John Doe" (starts qualification)
  * 6. Try asking: "Talk to a human" (triggers handoff)
  */

@@ -442,7 +442,7 @@ export default function PricingPage() {
               <Item>Advanced analytics, fraud detection, and audit tools</Item>
               <Item>Dedicated success manager + enterprise SLA</Item>
             </List>
-            <Button as="a" href="mailto:contact@kimuntux.com">Contact Sales</Button>
+            <Button as="a" href="mailto:contact@KimuX.com">Contact Sales</Button>
           </Tier>
         </Grid>
 

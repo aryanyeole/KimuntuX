@@ -1,1 +1,1 @@
-"""KimuntuX FastAPI backend package."""
+"""KimuX FastAPI backend package."""

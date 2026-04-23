@@ -1,0 +1,291 @@
+{
+  "scheduled": [
+    {
+      "id": 1,
+      "title": "Holiday Gift Guide Campaign",
+      "description": "Showcase top holiday gifts with seasonal promotions",
+      "sendDate": "2026-02-15",
+      "sendTime": "10:00",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "X", "Email"],
+      "cost": "250"
+    },
+    {
+      "id": 2,
+      "title": "Weekly Newsletter - Industry Insights",
+      "description": "Curated content on AI marketing trends and tools",
+      "sendDate": "2026-02-08",
+      "sendTime": "09:00",
+      "recurrence": "weekly",
+      "endDate": "2026-02-24",
+      "platforms": ["Email", "LinkedIn"],
+      "cost": "150"
+    },
+    {
+      "id": 3,
+      "title": "Product Launch Announcement",
+      "description": "New AI-powered CRM feature reveal with demo video",
+      "sendDate": "2026-02-20",
+      "sendTime": "14:00",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "LinkedIn", "X", "Email"],
+      "cost": "500"
+    },
+    {
+      "id": 4,
+      "title": "Biweekly Success Stories",
+      "description": "Client testimonials and case study highlights",
+      "sendDate": "2026-02-10",
+      "sendTime": "11:30",
+      "recurrence": "biweekly",
+      "endDate": "2026-03-20",
+      "platforms": ["LinkedIn", "Email"],
+      "cost": "200"
+    },
+    {
+      "id": 5,
+      "title": "Flash Sale - 24 Hour Promo",
+      "description": "Limited-time discount on Pro plan subscriptions",
+      "sendDate": "2026-02-25",
+      "sendTime": "08:00",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "X", "Email"],
+      "cost": "300"
+    },
+    {
+      "id": 6,
+      "title": "Spring Collection Preview",
+      "description": "Sneak peek at upcoming product lineup",
+      "sendDate": "",
+      "sendTime": "",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "X"],
+      "cost": "180"
+    },
+    {
+      "id": 7,
+      "title": "Webinar Series: AI Marketing 101",
+      "description": "Educational content for small business owners",
+      "sendDate": "",
+      "sendTime": "",
+      "recurrence": "weekly",
+      "endDate": "",
+      "platforms": ["LinkedIn", "Email"],
+      "cost": "220"
+    },
+    {
+      "id": 8,
+      "title": "Customer Appreciation Post",
+      "description": "Thank you message with exclusive loyalty rewards",
+      "sendDate": "",
+      "sendTime": "",
+      "recurrence": "monthly",
+      "endDate": "",
+      "platforms": ["Instagram", "Email"],
+      "cost": "100"
+    },
+    {
+      "id": 9,
+      "title": "Behind-the-Scenes Content",
+      "description": "Office culture and team spotlight stories",
+      "sendDate": "",
+      "sendTime": "",
+      "recurrence": "biweekly",
+      "endDate": "",
+      "platforms": ["Instagram", "LinkedIn"],
+      "cost": "120"
+    },
+    {
+      "id": 10,
+      "title": "Influencer Collaboration Announcement",
+      "description": "Partnership reveal with industry thought leaders",
+      "sendDate": "",
+      "sendTime": "",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "X", "LinkedIn"],
+      "cost": "400"
+    },
+    {
+      "id": 11,
+      "title": "March Promo Teaser #1",
+      "description": "Countdown post for March promotion",
+      "sendDate": "2026-03-06",
+      "sendTime": "08:15",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "X"],
+      "cost": "140"
+    },
+    {
+      "id": 12,
+      "title": "March Promo Teaser #2",
+      "description": "Second teaser with launch reminder",
+      "sendDate": "2026-03-06",
+      "sendTime": "09:45",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "Email"],
+      "cost": "130"
+    },
+    {
+      "id": 13,
+      "title": "Morning Offer Blast",
+      "description": "Limited-time AM offer for subscribers",
+      "sendDate": "2026-03-06",
+      "sendTime": "10:30",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Email"],
+      "cost": "160"
+    },
+    {
+      "id": 14,
+      "title": "Customer Testimonial Reel",
+      "description": "Short-form social proof video",
+      "sendDate": "2026-03-06",
+      "sendTime": "13:00",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "LinkedIn"],
+      "cost": "180"
+    },
+    {
+      "id": 15,
+      "title": "Evening Retargeting Push",
+      "description": "Evening follow-up for warm audiences",
+      "sendDate": "2026-03-06",
+      "sendTime": "18:20",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["X", "Email"],
+      "cost": "190"
+    },
+    {
+      "id": 16,
+      "title": "Launch Day Kickoff",
+      "description": "Main launch announcement post",
+      "sendDate": "2026-03-12",
+      "sendTime": "08:00",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "LinkedIn", "X"],
+      "cost": "260"
+    },
+    {
+      "id": 17,
+      "title": "Feature Spotlight",
+      "description": "Highlight one standout feature",
+      "sendDate": "2026-03-12",
+      "sendTime": "09:15",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["LinkedIn"],
+      "cost": "175"
+    },
+    {
+      "id": 18,
+      "title": "Founder Message",
+      "description": "Personal message from founder",
+      "sendDate": "2026-03-12",
+      "sendTime": "11:00",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Email", "LinkedIn"],
+      "cost": "155"
+    },
+    {
+      "id": 19,
+      "title": "Customer FAQ Carousel",
+      "description": "Top customer questions and answers",
+      "sendDate": "2026-03-12",
+      "sendTime": "12:30",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram"],
+      "cost": "165"
+    },
+    {
+      "id": 20,
+      "title": "Midday Promo Reminder",
+      "description": "Midday reminder for conversion bump",
+      "sendDate": "2026-03-12",
+      "sendTime": "14:10",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["X", "Email"],
+      "cost": "145"
+    },
+    {
+      "id": 21,
+      "title": "Last Call Tonight",
+      "description": "End-of-day urgency message",
+      "sendDate": "2026-03-12",
+      "sendTime": "20:45",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Email", "Instagram"],
+      "cost": "170"
+    },
+    {
+      "id": 22,
+      "title": "Case Study Drop",
+      "description": "New case study publication",
+      "sendDate": "2026-03-18",
+      "sendTime": "08:40",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["LinkedIn", "Email"],
+      "cost": "210"
+    },
+    {
+      "id": 23,
+      "title": "Social Snippet Series",
+      "description": "Repurposed quote graphics",
+      "sendDate": "2026-03-18",
+      "sendTime": "10:10",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Instagram", "X"],
+      "cost": "125"
+    },
+    {
+      "id": 24,
+      "title": "Webinar Reminder #1",
+      "description": "First webinar reminder",
+      "sendDate": "2026-03-18",
+      "sendTime": "12:00",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Email", "LinkedIn"],
+      "cost": "135"
+    },
+    {
+      "id": 25,
+      "title": "Webinar Reminder #2",
+      "description": "Second reminder for registrants",
+      "sendDate": "2026-03-18",
+      "sendTime": "15:30",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Email"],
+      "cost": "115"
+    },
+    {
+      "id": 26,
+      "title": "Post-Webinar Offer",
+      "description": "Follow-up offer after webinar",
+      "sendDate": "2026-03-18",
+      "sendTime": "19:10",
+      "recurrence": "once",
+      "endDate": "",
+      "platforms": ["Email", "Instagram", "X"],
+      "cost": "185"
+    }
+  ],
+  "contentTemplates": []
+}

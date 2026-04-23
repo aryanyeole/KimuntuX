@@ -244,7 +244,7 @@ const LoginPage = () => {
         joinDate: data.user.created_at
       };
 
-      login(userData, data.access_token);
+      login(userData, data.access_token, data.tenant || null);
       navigate(admin ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.message || 'Unable to sign in. Please try again.');
@@ -260,7 +260,7 @@ const LoginPage = () => {
           <img src={transparentLogo} alt="KimuX" style={{ background: 'transparent' }} />
         </Logo>
         <Title>Welcome Back</Title>
-        <Subtitle>Sign in to your KimuntuX account</Subtitle>
+        <Subtitle>Sign in to your KimuX account</Subtitle>
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
         

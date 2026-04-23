@@ -16,6 +16,15 @@ class UserLogin(BaseModel):
     password: str = Field(min_length=6, max_length=128)
 
 
+class TenantResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    name: str
+    slug: str
+    plan: str
+
+
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -24,6 +33,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     is_active: bool
     is_admin: bool
+    default_tenant_id: str | None = None
     created_at: datetime
 
     @field_validator("is_active", "is_admin", mode="before")
@@ -43,6 +53,7 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserResponse
+    tenant: TenantResponse | None = None
 
 
 class OAuthTokenResponse(BaseModel):

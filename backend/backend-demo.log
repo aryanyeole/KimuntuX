@@ -1,0 +1,39 @@
+C:\Users\allan\Documents\GitHub\KimuntuX\backend\app\schemas\campaign.py:203: UserWarning: Field name "copy" in "ContentPiece" shadows an attribute in parent "BaseModel"
+  class ContentPiece(BaseModel):
+INFO:     Started server process [32088]
+INFO:     Waiting for application startup.
+2026-04-22T11:36:47 INFO     main — Starting KimuX Backend …
+2026-04-22T11:36:47 INFO     blockchain.web3_client — Connected to RPC via primary endpoint (http://127.0.0.1:8545)
+2026-04-22T11:36:47 INFO     blockchain.web3_client — Network validated — chain id: 31337
+2026-04-22T11:36:47 INFO     blockchain.web3_client — Platform wallet: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+2026-04-22T11:36:47 INFO     blockchain.web3_client — Contracts loaded — CommissionSystem: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 | Wallet: 0x5FbDB2315678afecb367f032d93F642f64180aa3 | Escrow: 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+2026-04-22T11:36:47 INFO     main — Blockchain ready — block=3, gas=1.6 gwei, platform_balance=9999.992850 ETH
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:62481 - "GET /api/v1/crm/offers?sort_by=gravity&sort_dir=desc HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62481 - "GET /api/v1/crm/offers?sort_by=gravity&sort_dir=desc HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62481 - "GET /api/v1/crm/offers?sort_by=gravity&sort_dir=desc HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62481 - "GET /api/v1/crm/offers?sort_by=gravity&sort_dir=desc HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:62481 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62481 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61397 - "GET /api/v1/wallets/0x4c12be6471bfd4952226e2003930d0bb5282fb84/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61397 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53772 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52157 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60544 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61679 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53448 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60760 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63912 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51198 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52736 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51198 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63810 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63810 - "GET /api/v1/commissions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63810 - "GET /api/v1/escrows/stats HTTP/1.1" 200 OK

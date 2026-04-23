@@ -263,7 +263,7 @@ const SignupPage = () => {
         joinDate: data.user.created_at
       };
 
-      login(userData, data.access_token);
+      login(userData, data.access_token, data.tenant || null);
       setSuccess('Account created successfully! Redirecting...');
       setTimeout(
         () =>

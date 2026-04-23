@@ -258,7 +258,7 @@ const Header = () => {
           <Logo to="/">
             <LogoImage 
               src={transparentLogo} 
-              alt="KimuntuX Logo"
+              alt="KimuX Logo"
               style={{ background: 'transparent' }}
               onError={(e) => {
                 e.target.style.display = 'none';
