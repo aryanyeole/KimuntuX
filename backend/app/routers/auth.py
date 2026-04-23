@@ -47,6 +47,9 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
         full_name=payload.full_name.strip(),
         email=payload.email.lower(),
         hashed_password=hash_password(payload.password),
+        phone=payload.phone.strip(),
+        address=payload.address.strip(),
+        signup_plan=payload.signup_plan,
     )
     db.add(user)
     db.flush()

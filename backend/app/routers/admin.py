@@ -8,9 +8,10 @@ from app.core.database import get_db
 from app.core.security import create_access_token, get_current_admin
 from app.models.contact_submission import ContactSubmission
 from app.models.support_message import SupportMessage
+from app.models.tenant import Tenant
 from app.models.user import User
 from app.schemas.admin import AdminContactItem, AdminSupportMessageItem, AdminUserItem, AdminUserRoleUpdate
-from app.schemas.auth import TokenResponse
+from app.schemas.auth import TenantResponse, TokenResponse, UserResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -24,6 +25,9 @@ def _admin_user_item(u: User) -> AdminUserItem:
         email=u.email,
         username=u.email,
         password_note=_PASSWORD_NOTE,
+        phone=getattr(u, "phone", None),
+        address=getattr(u, "address", None),
+        signup_plan=getattr(u, "signup_plan", None),
         is_active=u.is_active,
         is_admin=bool(getattr(u, "is_admin", False)),
         created_at=u.created_at,
@@ -50,7 +54,14 @@ def issue_user_access_token(
     if target is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     token = create_access_token(target.id)
-    return TokenResponse(access_token=token, user=target)
+    tenant = None
+    if target.default_tenant_id:
+        tenant = db.get(Tenant, target.default_tenant_id)
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse.model_validate(target),
+        tenant=TenantResponse.model_validate(tenant) if tenant else None,
+    )
 
 
 @router.patch("/users/{user_id}/role", response_model=AdminUserItem)

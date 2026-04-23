@@ -219,6 +219,12 @@ const EmptyNote = styled.p`
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
 
+const PLAN_LABEL = { starter: 'Starter', growth: 'Growth', scalex: 'ScaleX' };
+function planLabel(id) {
+  if (!id) return '—';
+  return PLAN_LABEL[id] || id;
+}
+
 function formatApiError(status, data) {
   let detail = data?.detail;
   if (Array.isArray(detail)) {
@@ -259,7 +265,7 @@ const AdminPage = () => {
     }
     const admin = !!(user?.isAdmin ?? user?.is_admin);
     if (!admin) {
-      navigate('/dashboard');
+      navigate('/crm/dashboard');
     }
   }, [user, isLoading, navigate]);
 
@@ -345,8 +351,12 @@ const AdminPage = () => {
       } catch {
         /* private mode */
       }
-      login(mapTokenUserToContext(data), data.access_token);
-      navigate('/dashboard');
+      login(
+        mapTokenUserToContext(data),
+        data.access_token,
+        data.tenant === undefined ? undefined : data.tenant
+      );
+      navigate('/crm/dashboard');
     } catch (e) {
       setActionError(e.message || 'Could not open user session');
     } finally {
@@ -428,6 +438,9 @@ const AdminPage = () => {
                       <tr>
                         <Th>Full name</Th>
                         <Th>Email / username</Th>
+                        <Th>Phone</Th>
+                        <Th>Address</Th>
+                        <Th>Plan</Th>
                         <Th>Password</Th>
                         <Th>Active</Th>
                         <Th>Admin</Th>
@@ -443,6 +456,11 @@ const AdminPage = () => {
                           <tr key={u.id}>
                             <Td>{u.full_name}</Td>
                             <Td>{u.email}</Td>
+                            <Td>{u.phone || '—'}</Td>
+                            <Td title={u.address || ''}>
+                              {u.address ? (u.address.length > 40 ? `${u.address.slice(0, 40)}…` : u.address) : '—'}
+                            </Td>
+                            <Td>{planLabel(u.signup_plan)}</Td>
                             <Td title={u.password_note}>{u.password_note}</Td>
                             <Td>{u.is_active ? 'Yes' : 'No'}</Td>
                             <Td>{u.is_admin ? 'Yes' : 'No'}</Td>

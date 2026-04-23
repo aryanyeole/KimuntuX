@@ -9,19 +9,14 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.core.bootstrap_admin import ensure_bootstrap_admin
-from api.endpoints.commission import router as commission_router
-from api.endpoints.escrow import router as escrow_router
-from api.endpoints.network import router as network_router
-from api.endpoints.wallet import router as wallet_router
 from app.core.config import settings
 from app.core.database import SessionLocal, engine, ensure_sqlite_campaign_columns
 from app.models.base import Base
 from app.models import Campaign, ContactSubmission, SupportMessage, User  # noqa: F401
 from app.routers import admin, auth, campaigns, contacts, crm, support
-from blockchain.exceptions import BlockchainError, ConfigurationError, ConnectionError
-from blockchain.web3_client import get_client
 
 logger = logging.getLogger(__name__)
+TEMP_DISABLE_BLOCKCHAIN = True
 
 # ── Fail-fast checks ──────────────────────────────────────────────────────────
 # Catch missing Phase 2 secrets before the server accepts any requests.
@@ -87,39 +82,17 @@ def create_tables() -> None:
     with SessionLocal() as db:
         ensure_bootstrap_admin(db)
     ensure_sqlite_campaign_columns()
-
-    try:
-        get_client()
-    except (ConfigurationError, ConnectionError, BlockchainError) as exc:
-        logger.exception("Blockchain startup failed")
-        raise RuntimeError(f"Blockchain startup failed: {exc}") from exc
+    if TEMP_DISABLE_BLOCKCHAIN:
+        logger.warning("Blockchain startup checks are temporarily disabled.")
 
 
 @app.get("/health")
 def health_check() -> dict:
-    try:
-        blockchain_health = get_client().health_check()
-        return {
-            "status": blockchain_health.get("status", "healthy"),
-            "environment": settings.app_env,
-            "chain_id": blockchain_health.get("chain_id"),
-            "latest_block": blockchain_health.get("latest_block"),
-            "gas_price_gwei": blockchain_health.get("gas_price_gwei"),
-            "platform_balance_eth": blockchain_health.get("platform_balance_eth"),
-            "contracts": blockchain_health.get("contracts", {}),
-            "error": blockchain_health.get("error"),
-        }
-    except BlockchainError as exc:
-        return {
-            "status": "unhealthy",
-            "environment": settings.app_env,
-            "chain_id": None,
-            "latest_block": None,
-            "gas_price_gwei": None,
-            "platform_balance_eth": None,
-            "contracts": {},
-            "error": str(exc),
-        }
+    return {
+        "status": "ok",
+        "environment": settings.app_env,
+        "blockchain": "disabled_temporarily",
+    }
 
 
 app.include_router(auth.router, prefix=settings.api_v1_prefix)
@@ -128,9 +101,3 @@ app.include_router(admin.router, prefix=settings.api_v1_prefix)
 app.include_router(support.router, prefix=settings.api_v1_prefix)
 app.include_router(campaigns.router, prefix=settings.api_v1_prefix)
 app.include_router(crm.router, prefix=settings.api_v1_prefix)
-app.include_router(admin.router, prefix=settings.api_v1_prefix)
-app.include_router(support.router, prefix=settings.api_v1_prefix)
-app.include_router(commission_router, prefix=settings.api_v1_prefix)
-app.include_router(wallet_router, prefix=settings.api_v1_prefix)
-app.include_router(escrow_router, prefix=settings.api_v1_prefix)
-app.include_router(network_router, prefix=settings.api_v1_prefix)

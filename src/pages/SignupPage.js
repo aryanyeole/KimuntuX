@@ -5,23 +5,44 @@ import { useUser } from '../contexts/UserContext';
 import { parseJsonOrApiError } from '../utils/parseFetchJson';
 import transparentLogo from '../assets/dark_new_logo.jpeg';
 
+const PLANS = [
+  {
+    id: 'starter',
+    title: 'Starter',
+    subtitle: 'Starting Plan',
+    hint: '$19–$29/mo · region-adjusted (billing later)',
+  },
+  {
+    id: 'growth',
+    title: 'Growth',
+    subtitle: 'Pro Plan',
+    hint: '$49–$99/mo · region-adjusted (billing later)',
+  },
+  {
+    id: 'scalex',
+    title: 'ScaleX',
+    subtitle: 'Business Plan',
+    hint: '$199–$299/mo (billing later)',
+  },
+];
+
 const SignupContainer = styled.div`
   min-height: 100vh;
   background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 1rem 3rem;
 `;
 
 const SignupCard = styled.div`
   background: #111111;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 3rem;
+  padding: 2.5rem 2rem;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
   width: 100%;
-  max-width: 450px;
+  max-width: 520px;
   position: relative;
   overflow: hidden;
 
@@ -38,7 +59,7 @@ const SignupCard = styled.div`
 
 const Logo = styled.div`
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 
   img {
     height: 72px;
@@ -63,13 +84,15 @@ const Title = styled.h1`
 const Subtitle = styled.p`
   text-align: center;
   color: rgba(255, 255, 255, 0.72);
-  margin-bottom: 2rem;
+  margin-bottom: 1.75rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 `;
 
 const InputGroup = styled.div`
@@ -101,6 +124,102 @@ const Input = styled.input`
     outline: none;
     border-color: #00c896;
     box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.2);
+  }
+`;
+
+const Textarea = styled.textarea`
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #0d0d0d;
+  color: #ffffff;
+  min-height: 88px;
+  resize: vertical;
+  font-family: inherit;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #00c896;
+    box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.2);
+  }
+`;
+
+const PlanSectionLabel = styled.div`
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+`;
+
+const PlanSectionHelp = styled.p`
+  margin: 0 0 0.65rem;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.45;
+`;
+
+const PlanGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+`;
+
+const PlanCard = styled.label`
+  display: block;
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  border: 2px solid ${p => (p.$selected ? '#00c896' : 'rgba(255, 255, 255, 0.2)')};
+  background: ${p => (p.$selected ? 'rgba(0, 200, 150, 0.12)' : '#0d0d0d')};
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  &:hover {
+    border-color: rgba(0, 200, 150, 0.55);
+  }
+`;
+
+const PlanCardInner = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+`;
+
+const PlanRadio = styled.input`
+  margin-top: 0.2rem;
+  accent-color: #00c896;
+  flex-shrink: 0;
+`;
+
+const PlanTitle = styled.div`
+  font-weight: 700;
+  color: #fff;
+  font-size: 1rem;
+`;
+
+const PlanSub = styled.div`
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.68);
+  margin-top: 2px;
+`;
+
+const PlanPrice = styled.div`
+  font-size: 0.75rem;
+  color: rgba(0, 200, 150, 0.95);
+  margin-top: 6px;
+`;
+
+const PricingLink = styled(Link)`
+  color: #00c896;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
   }
 `;
 
@@ -142,21 +261,21 @@ const Button = styled.button`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
     transition: left 0.5s;
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px ${props => props.theme?.colors?.primary || '#00C896'}40;
-    
+
     &::before {
       left: 100%;
     }
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
   }
@@ -205,9 +324,12 @@ const SignupPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
+    address: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
+  const [selectedPlan, setSelectedPlan] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -216,9 +338,18 @@ const SignupPage = () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
+
+  const canSubmit =
+    selectedPlan &&
+    formData.name.trim() &&
+    formData.email.trim() &&
+    formData.phone.trim().length >= 5 &&
+    formData.address.trim().length >= 5 &&
+    formData.password.length >= 6 &&
+    formData.password === formData.confirmPassword;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -226,7 +357,12 @@ const SignupPage = () => {
     setError('');
     setSuccess('');
 
-    // Validation
+    if (!selectedPlan) {
+      setError('Please choose a plan to continue.');
+      setIsLoading(false);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       setIsLoading(false);
@@ -239,17 +375,32 @@ const SignupPage = () => {
       return;
     }
 
+    if (formData.phone.trim().length < 5) {
+      setError('Please enter a valid phone number.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.address.trim().length < 5) {
+      setError('Please enter your address (at least 5 characters).');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          full_name: formData.name,
-          email: formData.email,
-          password: formData.password
-        })
+          full_name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          address: formData.address.trim(),
+          signup_plan: selectedPlan,
+          password: formData.password,
+        }),
       });
 
       const data = await parseJsonOrApiError(response);
@@ -257,21 +408,23 @@ const SignupPage = () => {
       const userData = {
         id: data.user.id,
         name: data.user.full_name,
+        full_name: data.user.full_name,
         email: data.user.email,
+        phone: data.user.phone,
+        address: data.user.address,
+        signup_plan: data.user.signup_plan,
         isActive: data.user.is_active,
         isAdmin: !!(data.user?.is_admin ?? data.user?.isAdmin),
-        joinDate: data.user.created_at
+        joinDate: data.user.created_at,
       };
 
-      login(userData, data.access_token, data.tenant || null);
-      setSuccess('Account created successfully! Redirecting...');
-      setTimeout(
-        () =>
-          navigate(
-            data.user?.is_admin || data.user?.isAdmin ? '/admin' : '/dashboard'
-          ),
-        1200
+      login(
+        userData,
+        data.access_token,
+        data.tenant === undefined ? undefined : data.tenant
       );
+      setSuccess('Account created successfully! Redirecting...');
+      setTimeout(() => navigate('/crm/dashboard'), 1200);
     } catch (err) {
       setError(err.message || 'Unable to create account. Please try again.');
     } finally {
@@ -287,10 +440,10 @@ const SignupPage = () => {
         </Logo>
         <Title>Create Account</Title>
         <Subtitle>Join the KimuX intelligent brokerage universe</Subtitle>
-        
+
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && <SuccessMessage>{success}</SuccessMessage>}
-        
+
         <Form onSubmit={handleSubmit}>
           <InputGroup>
             <Label htmlFor="name">Full Name</Label>
@@ -302,9 +455,10 @@ const SignupPage = () => {
               onChange={handleChange}
               placeholder="Enter your full name"
               required
+              autoComplete="name"
             />
           </InputGroup>
-          
+
           <InputGroup>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -315,9 +469,66 @@ const SignupPage = () => {
               onChange={handleChange}
               placeholder="Enter your email"
               required
+              autoComplete="email"
             />
           </InputGroup>
-          
+
+          <InputGroup>
+            <Label htmlFor="phone">Phone number</Label>
+            <Input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="e.g. +1 555 123 4567"
+              required
+              autoComplete="tel"
+            />
+          </InputGroup>
+
+          <InputGroup>
+            <Label htmlFor="address">Address</Label>
+            <Textarea
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Street, city, region / state, postal code"
+              required
+              autoComplete="street-address"
+            />
+          </InputGroup>
+
+          <InputGroup>
+            <PlanSectionLabel>Choose your plan</PlanSectionLabel>
+            <PlanSectionHelp>
+              Select the tier you are signing up for. Payment will be connected later; for now your
+              choice is saved with your account.{' '}
+              <PricingLink to="/pricing">Compare plans</PricingLink>
+            </PlanSectionHelp>
+            <PlanGrid>
+              {PLANS.map((plan) => (
+                <PlanCard key={plan.id} $selected={selectedPlan === plan.id}>
+                  <PlanCardInner>
+                    <PlanRadio
+                      type="radio"
+                      name="signup_plan"
+                      value={plan.id}
+                      checked={selectedPlan === plan.id}
+                      onChange={() => setSelectedPlan(plan.id)}
+                    />
+                    <div>
+                      <PlanTitle>{plan.title}</PlanTitle>
+                      <PlanSub>{plan.subtitle}</PlanSub>
+                      <PlanPrice>{plan.hint}</PlanPrice>
+                    </div>
+                  </PlanCardInner>
+                </PlanCard>
+              ))}
+            </PlanGrid>
+          </InputGroup>
+
           <InputGroup>
             <Label htmlFor="password">Password</Label>
             <Input
@@ -354,12 +565,12 @@ const SignupPage = () => {
               autoComplete="new-password"
             />
           </InputGroup>
-          
-          <Button type="submit" disabled={isLoading}>
+
+          <Button type="submit" disabled={isLoading || !canSubmit}>
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>
         </Form>
-        
+
         <LinkText>
           Already have an account? <StyledLink to="/login">Sign in</StyledLink>
         </LinkText>

@@ -28,7 +28,7 @@ const Page = styled.div`
 `;
 
 const Wrap = styled.div`
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 60px 20px 72px;
   position: relative;
@@ -68,10 +68,15 @@ const Lead = styled.p`
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
   align-items: stretch;
-  
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -84,11 +89,12 @@ const Tier = styled.div`
   flex-direction: column;
   background: #000000;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 24px;
-  padding: 2.5rem;
+  border-radius: 20px;
+  padding: 1.65rem 1.35rem 1.75rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   height: 100%;
+  min-width: 0;
   ${p => p.isPopular && `
     border: 2px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
@@ -108,33 +114,34 @@ const Tier = styled.div`
     right: 0;
     height: 4px;
     background: linear-gradient(90deg, ${p => p.theme?.colors?.primary || '#00C896'}, ${p => p.theme?.colors?.accent || '#DAA520'});
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
     opacity: ${p => p.isPopular ? '1' : '0.5'};
   }
 `;
 
 const PopularBadge = styled.div`
   position: absolute;
-  top: -12px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%);
   background: linear-gradient(135deg, #FFD700, #FFA500);
   color: #000;
-  padding: 6px 20px;
+  padding: 5px 14px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
   z-index: 2;
+  white-space: nowrap;
 `;
 
 const Badge = styled.span`
   display: block;
-  padding: 6px 16px;
-  font-size: 1rem;
+  padding: 5px 12px;
+  font-size: 0.8125rem;
   font-weight: 600;
   border-radius: 20px;
   letter-spacing: 0.5px;
@@ -142,34 +149,34 @@ const Badge = styled.span`
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  margin: 0 auto 1rem auto;
+  margin: 0 auto 0.75rem auto;
   text-align: center;
   width: fit-content;
 `;
 
 const PlanName = styled.h3`
-  margin: 0 0 8px;
-  font-size: 1.75rem;
+  margin: 0 0 6px;
+  font-size: clamp(1.05rem, 1.1vw + 0.85rem, 1.35rem);
   font-weight: 700;
   color: white;
   font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
-  line-height: 1.2;
+  line-height: 1.25;
   text-align: center;
 `;
 
 const Tag = styled.p`
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.1rem;
   color: rgba(255, 255, 255, 0.85);
-  font-size: 0.9375rem;
-  line-height: 1.5;
+  font-size: 0.8125rem;
+  line-height: 1.45;
   text-align: center;
 `;
 
 const PriceWrap = styled.div`
   display: flex;
   flex-direction: column;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
+  margin-bottom: 1.35rem;
+  padding-bottom: 1.35rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   align-items: center;
 `;
@@ -183,13 +190,13 @@ const PriceRow = styled.div`
 `;
 
 const Price = styled.span`
-  font-size: 2.5rem;
+  font-size: clamp(1.65rem, 2vw + 1rem, 2.1rem);
   font-weight: 700;
   color: white;
   font-family: ${p => p.theme?.fonts?.title || 'Poppins, sans-serif'};
   line-height: 1.2;
   text-align: center;
-  
+
   @media (max-width: 768px) {
     font-size: 2rem;
   }
@@ -214,37 +221,38 @@ const PriceSubNote = styled.span`
 
 const List = styled.ul`
   list-style: none;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1.35rem 0;
   padding: 0;
   display: grid;
-  gap: 12px;
+  gap: 1rem;
   flex: 1;
   min-height: 0;
 `;
 
 const Item = styled.li`
   position: relative;
-  padding-left: 28px;
+  padding: 0.15rem 0 0.15rem 2rem;
   color: rgba(255, 255, 255, 0.95);
   font-size: 0.9375rem;
-  line-height: 1.6;
-  
+  line-height: 1.65;
+
   &::before {
     content: '✓';
     position: absolute;
     left: 0;
-    top: 0;
-    width: 20px;
-    height: 20px;
+    top: 0.2em;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     color: white;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     border: 1px solid rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
   }
 `;
 
@@ -254,9 +262,9 @@ const Button = styled(Link)`
   color: #008B8B;
   border: none;
   border-radius: 12px;
-  padding: 16px 24px;
+  padding: 12px 16px;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
@@ -277,9 +285,9 @@ const PopularButton = styled(Link)`
   color: #000;
   border: none;
   border-radius: 12px;
-  padding: 16px 24px;
+  padding: 12px 16px;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
@@ -418,31 +426,6 @@ export default function PricingPage() {
               <Item>24/7 Premium AI Assistant</Item>
             </List>
             <Button to="/signup">Choose ScaleX</Button>
-          </Tier>
-
-          <Tier>
-            <Badge>Enterprise</Badge>
-            <PlanName>Enterprise Plan · "X Global"</PlanName>
-            <Tag>For governments, corporations, and large-scale brokers</Tag>
-            <PriceWrap>
-              <PriceRow>
-                <Price>Custom</Price>
-                <PriceNote>Enterprise Quote</PriceNote>
-                <PriceSubNote>Annual Contract</PriceSubNote>
-              </PriceRow>
-            </PriceWrap>
-            <List>
-              <Item>Everything in ScaleX</Item>
-              <Item>Custom AI & Blockchain modules</Item>
-              <Item>Enterprise-grade Smart CRM (multi-region, multi-brand)</Item>
-              <Item>White-label branding & sub-accounts</Item>
-              <Item>Dedicated cloud infrastructure (AWS/Azure/GCP)</Item>
-              <Item>AI Fintech Orchestration with cross-border compliance</Item>
-              <Item>Partner revenue sharing dashboard</Item>
-              <Item>Advanced analytics, fraud detection, and audit tools</Item>
-              <Item>Dedicated success manager + enterprise SLA</Item>
-            </List>
-            <Button as="a" href="mailto:contact@KimuX.com">Contact Sales</Button>
           </Tier>
         </Grid>
 

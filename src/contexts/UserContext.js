@@ -42,7 +42,6 @@ export const UserProvider = ({ children }) => {
     const bootstrap = async () => {
       const savedUser = localStorage.getItem('kimuntu_user');
       const savedToken = localStorage.getItem('kimuntu_token');
-      const savedTenantId = localStorage.getItem('kimuntu_tenant_id');
 
       if (savedUser) {
         try {
@@ -78,7 +77,9 @@ export const UserProvider = ({ children }) => {
             localStorage.removeItem('kimuntu_tenant_id');
             setToken(null);
             setUser(null);
+            window.dispatchEvent(new CustomEvent('kimuntu-tenant-updated', { detail: null }));
           }
+          setIsLoading(false);
           return;
         }
         if (r.ok) {
@@ -87,7 +88,11 @@ export const UserProvider = ({ children }) => {
             const merged = {
               id: profile.id,
               name: profile.full_name,
+              full_name: profile.full_name,
               email: profile.email,
+              phone: profile.phone ?? null,
+              address: profile.address ?? null,
+              signup_plan: profile.signup_plan ?? null,
               isActive: profile.is_active ?? profile.isActive,
               isAdmin: !!(profile.is_admin ?? profile.isAdmin),
               joinDate: profile.created_at,
@@ -100,21 +105,28 @@ export const UserProvider = ({ children }) => {
         // keep cached user when network hiccups
       }
 
-      // If token exists but tenant not yet bootstrapped, fetch from backend.
-      if (!savedTenantId) {
-        try {
-          const resp = await fetch(`${API_BASE}/auth/me/tenant`, {
-            headers: { Authorization: `Bearer ${requestToken}` },
-          });
-          if (resp.ok) {
-            const tenant = await resp.json();
+      // Always load the tenant for this session from the API so the CRM badge matches
+      // the logged-in user (avoids stale localStorage from another account).
+      try {
+        const resp = await fetch(`${API_BASE}/auth/me/tenant`, {
+          headers: { Authorization: `Bearer ${requestToken}` },
+        });
+        if (resp.ok) {
+          const tenant = await resp.json();
+          if (localStorage.getItem('kimuntu_token') === requestToken) {
             localStorage.setItem('kimuntu_tenant', JSON.stringify(tenant));
             localStorage.setItem('kimuntu_tenant_id', tenant.id);
             window.dispatchEvent(new CustomEvent('kimuntu-tenant-updated', { detail: tenant }));
           }
-        } catch {
-          // Network error — continue without tenant; CRM can prompt later
+        } else if (resp.status === 404) {
+          if (localStorage.getItem('kimuntu_token') === requestToken) {
+            localStorage.removeItem('kimuntu_tenant');
+            localStorage.removeItem('kimuntu_tenant_id');
+            window.dispatchEvent(new CustomEvent('kimuntu-tenant-updated', { detail: null }));
+          }
         }
+      } catch {
+        // Network error — keep existing tenant in localStorage
       }
 
       setIsLoading(false);
@@ -134,9 +146,16 @@ export const UserProvider = ({ children }) => {
       setToken(accessToken);
       localStorage.setItem('kimuntu_token', accessToken);
     }
-    if (tenantData) {
-      localStorage.setItem('kimuntu_tenant', JSON.stringify(tenantData));
-      localStorage.setItem('kimuntu_tenant_id', tenantData.id);
+    if (tenantData !== undefined) {
+      if (tenantData) {
+        localStorage.setItem('kimuntu_tenant', JSON.stringify(tenantData));
+        localStorage.setItem('kimuntu_tenant_id', tenantData.id);
+        window.dispatchEvent(new CustomEvent('kimuntu-tenant-updated', { detail: tenantData }));
+      } else {
+        localStorage.removeItem('kimuntu_tenant');
+        localStorage.removeItem('kimuntu_tenant_id');
+        window.dispatchEvent(new CustomEvent('kimuntu-tenant-updated', { detail: null }));
+      }
     }
   };
 

@@ -11,6 +11,9 @@ class AdminUserItem(BaseModel):
     email: EmailStr
     username: str
     password_note: str
+    phone: str | None = None
+    address: str | None = None
+    signup_plan: str | None = None
     is_active: bool
     is_admin: bool
     created_at: datetime

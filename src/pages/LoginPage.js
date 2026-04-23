@@ -232,20 +232,27 @@ const LoginPage = () => {
 
       const data = await parseJsonOrApiError(response);
 
-      const admin =
-        !!(data.user?.is_admin ?? data.user?.isAdmin);
+      const admin = !!(data.user?.is_admin ?? data.user?.isAdmin);
 
       const userData = {
         id: data.user.id,
         name: data.user.full_name,
+        full_name: data.user.full_name,
         email: data.user.email,
+        phone: data.user.phone ?? null,
+        address: data.user.address ?? null,
+        signup_plan: data.user.signup_plan ?? null,
         isActive: data.user.is_active ?? data.user.isActive,
         isAdmin: admin,
-        joinDate: data.user.created_at
+        joinDate: data.user.created_at,
       };
 
-      login(userData, data.access_token, data.tenant || null);
-      navigate(admin ? '/admin' : '/dashboard');
+      login(
+        userData,
+        data.access_token,
+        data.tenant === undefined ? undefined : data.tenant
+      );
+      navigate('/crm/dashboard');
     } catch (err) {
       setError(err.message || 'Unable to sign in. Please try again.');
     } finally {

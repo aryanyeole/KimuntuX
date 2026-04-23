@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+SignupPlan = Literal["starter", "growth", "scalex"]
 
 
 class UserSignup(BaseModel):
     full_name: str = Field(min_length=1, max_length=255)
     email: EmailStr
     password: str = Field(min_length=6, max_length=128)
+    phone: str = Field(min_length=5, max_length=64, description="Contact phone at signup")
+    address: str = Field(min_length=5, max_length=512, description="Street / city / region at signup")
+    signup_plan: SignupPlan = Field(description="Selected pricing tier (payment integration later)")
 
 
 class UserLogin(BaseModel):
@@ -31,6 +37,9 @@ class UserResponse(BaseModel):
     id: str
     full_name: str
     email: EmailStr
+    phone: str | None = None
+    address: str | None = None
+    signup_plan: str | None = None
     is_active: bool
     is_admin: bool
     default_tenant_id: str | None = None

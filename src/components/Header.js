@@ -230,7 +230,6 @@ const Header = () => {
     { path: '/products', label: 'Products' },
     { path: '/faq', label: 'FAQ' },
     { path: '/blog', label: 'Blog' },
-    ...(isAdminUser ? [{ path: '/admin', label: 'Admin' }] : [])
   ];
 
   const handleLogout = () => {
@@ -291,7 +290,7 @@ const Header = () => {
                 <StyledUserIcon />
                 Logout
               </SignInButton>
-              <StartTrialButton to="/dashboard">Dashboard</StartTrialButton>
+              <StartTrialButton to="/crm/dashboard">CRM</StartTrialButton>
             </>
           ) : (
             <>
