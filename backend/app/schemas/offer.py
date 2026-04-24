@@ -21,6 +21,36 @@ class OfferCreate(BaseModel):
     external_url: str | None = None
 
 
+class UserAddedOfferCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    niche: str = Field(min_length=1, max_length=100)
+    network: str = Field(min_length=1, max_length=100)
+    aov: float = Field(default=0.0, ge=0)
+    gravity: float | None = None
+    commission_rate: float = Field(default=0.0, ge=0, le=1)
+    conversion_rate: float | None = None
+    trend_direction: TrendDirection = TrendDirection.stable
+    trend_value: float | None = None
+    status: OfferStatus = OfferStatus.active
+    external_url: str | None = None
+    notes: str | None = None
+
+
+class OfferUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=255)
+    niche: str | None = Field(default=None, min_length=1, max_length=100)
+    network: str | None = Field(default=None, min_length=1, max_length=100)
+    aov: float | None = Field(default=None, ge=0)
+    gravity: float | None = None
+    commission_rate: float | None = Field(default=None, ge=0, le=1)
+    conversion_rate: float | None = None
+    trend_direction: TrendDirection | None = None
+    trend_value: float | None = None
+    status: OfferStatus | None = None
+    external_url: str | None = None
+    notes: str | None = None
+
+
 class OfferResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
@@ -39,6 +69,8 @@ class OfferResponse(BaseModel):
     trend_value: float | None
     status: str
     external_url: str | None
+    notes: str | None = None
+    ai_tags: list | None = None
     last_synced_at: datetime | None = None
     created_at: datetime
 
@@ -60,11 +92,6 @@ class MarketplaceSyncResponse(BaseModel):
     created: int
     updated: int
     last_synced_at: str
-
-
-class MarketplaceStatusResponse(BaseModel):
-    last_synced_at: str | None
-    offer_count: int
 
 
 class AccountStatusResponse(BaseModel):

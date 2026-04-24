@@ -447,3 +447,108 @@ def score_all_unscored(db: Session, tenant_id: str, *, force: bool = False) -> d
             errors += 1
 
     return {"scored": scored, "skipped": 0, "errors": errors, "total_processed": scored + errors}
+
+
+# ---------------------------------------------------------------------------
+# Offer classification — AI tags for curated catalog
+# ---------------------------------------------------------------------------
+
+_NICHE_TIKTOK = {"weight loss", "fitness", "make money online", "keto / diet", "self help"}
+_NICHE_HIGHTICKET_THRESHOLD = 200.0
+_GRAVITY_ESTABLISHED = 50.0
+
+
+def classify_offer(offer) -> list[dict]:
+    """Return AI tag list for an offer.
+
+    Tries Gemini first; falls back to rule-based tags. Never raises.
+    Tags schema: [{"category": "traffic_fit"|"audience", "label": str, "confidence": float}]
+    """
+    try:
+        tags = _gemini_classify_offer(offer)
+        if tags:
+            return tags
+    except Exception as exc:
+        log.warning("Gemini offer classification failed for %s: %s", getattr(offer, "name", "?"), exc)
+    return _rule_based_classify(offer)
+
+
+def _gemini_classify_offer(offer) -> list[dict]:
+    """Use Gemini to produce traffic_fit + audience tags. Returns [] on failure."""
+    client = _get_gemini()
+    if not client:
+        return []
+
+    from google.genai import types  # type: ignore
+
+    prompt = f"""You are a digital marketing analyst. Classify this affiliate offer with tags.
+
+Offer:
+- Name: {offer.name}
+- Niche: {offer.niche}
+- Network: {offer.network}
+- AOV: ${offer.aov:.2f}
+- Gravity: {offer.gravity or 0:.1f}
+- Commission rate: {(offer.commission_rate or 0)*100:.0f}%
+
+Return a JSON array of tag objects. Each object must have:
+  "category": "traffic_fit" | "audience"
+  "label": short descriptive tag (e.g. "TikTok-friendly", "High-ticket", "Email list", "Female 35-55")
+  "confidence": 0.0 to 1.0
+
+Include 2-4 traffic_fit tags and 1-2 audience tags. Return ONLY the JSON array, no explanation."""
+
+    try:
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.2,
+            ),
+        )
+        text = resp.text.strip()
+        # Strip markdown code fences if present
+        if text.startswith("```"):
+            text = re.sub(r"^```[a-z]*\n?", "", text)
+            text = re.sub(r"\n?```$", "", text)
+        tags = json.loads(text)
+        if isinstance(tags, list):
+            return [t for t in tags if isinstance(t, dict) and "label" in t]
+    except Exception as exc:
+        log.warning("Gemini classify_offer parse error: %s", exc)
+    return []
+
+
+def _rule_based_classify(offer) -> list[dict]:
+    """Deterministic fallback classification."""
+    tags: list[dict] = []
+    aov = offer.aov or 0
+    gravity = offer.gravity or 0
+    niche = (offer.niche or "").lower()
+
+    # Traffic fit tags
+    if aov < 47:
+        tags.append({"category": "traffic_fit", "label": "Beginner-friendly", "confidence": 0.85})
+    if aov > _NICHE_HIGHTICKET_THRESHOLD:
+        tags.append({"category": "traffic_fit", "label": "High-ticket", "confidence": 0.90})
+    if gravity >= _GRAVITY_ESTABLISHED:
+        tags.append({"category": "traffic_fit", "label": "Established niche", "confidence": 0.80})
+    if niche in _NICHE_TIKTOK or any(k in niche for k in ("weight", "fitness", "diet", "keto")):
+        tags.append({"category": "traffic_fit", "label": "TikTok-friendly", "confidence": 0.75})
+    if (offer.commission_rate or 0) >= 0.70:
+        tags.append({"category": "traffic_fit", "label": "High-commission", "confidence": 0.88})
+    if "email" in niche or gravity < 30:
+        tags.append({"category": "traffic_fit", "label": "Email list", "confidence": 0.70})
+
+    # Audience tags
+    if any(k in niche for k in ("relationship", "female", "wedding", "beauty", "yoga")):
+        tags.append({"category": "audience", "label": "Female 25-45", "confidence": 0.80})
+    elif any(k in niche for k in ("survival", "military", "male", "prostate", "testosterone")):
+        tags.append({"category": "audience", "label": "Male 45+", "confidence": 0.80})
+    elif any(k in niche for k in ("make money", "wealth", "investment", "trading")):
+        tags.append({"category": "audience", "label": "Entrepreneurial", "confidence": 0.78})
+    else:
+        tags.append({"category": "audience", "label": "General adult", "confidence": 0.60})
+
+    return tags

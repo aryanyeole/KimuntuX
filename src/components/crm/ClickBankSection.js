@@ -132,21 +132,9 @@ const ErrMsg = styled.p`
   margin: 0;
 `;
 
-const Divider = styled.hr`
-  border: none;
-  border-top: 1px solid ${p => p.theme.border || '#2a3045'};
-  margin: 20px 0;
-`;
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 function ClickBankSection({
-  // marketplace props
-  marketplaceStatus,
-  marketplaceLoading,
-  onSyncMarketplace,
-  onFetchMarketplaceStatus,
-  // account props
   clickbankAccount,
   clickbankAccountLoading,
   onConnectAccount,
@@ -159,7 +147,6 @@ function ClickBankSection({
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
-    if (onFetchMarketplaceStatus) onFetchMarketplaceStatus();
     if (onFetchAccountStatus) onFetchAccountStatus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -188,35 +175,17 @@ function ClickBankSection({
 
   return (
     <Section>
-      <SectionTitle>ClickBank</SectionTitle>
+      <SectionTitle>ClickBank Account</SectionTitle>
       <SubTitle>
-        Sync affiliate offers from the ClickBank marketplace and optionally connect your vendor account.
+        Connect your ClickBank vendor account to sync your own products into the Offers page.
       </SubTitle>
 
-      {/* Marketplace tier */}
-      <SectionTitle style={{ fontSize: 13, marginBottom: 8 }}>Marketplace (Platform)</SectionTitle>
-      <StatusRow>
-        <StatRow>
-          <Stat>Offers synced: <span>{marketplaceStatus?.offer_count ?? '—'}</span></Stat>
-          <Stat>Last sync: <span>{fmtDate(marketplaceStatus?.last_synced_at)}</span></Stat>
-        </StatRow>
-        <Btn
-          $primary
-          onClick={onSyncMarketplace}
-          disabled={marketplaceLoading}
-        >
-          {marketplaceLoading ? 'Syncing…' : 'Sync Marketplace'}
-        </Btn>
-      </StatusRow>
-
-      <Divider />
-
-      {/* Account tier */}
-      <SectionTitle style={{ fontSize: 13, marginBottom: 8 }}>Your Account (Optional)</SectionTitle>
       <StatusRow>
         <StatusBadge $connected={isConnected}>
           <Dot />
-          {isConnected ? `Connected${clickbankAccount.account_nickname ? ` · ${clickbankAccount.account_nickname}` : ''}` : 'Not connected'}
+          {isConnected
+            ? `Connected${clickbankAccount.account_nickname ? ` · ${clickbankAccount.account_nickname}` : ''}`
+            : 'Not connected'}
         </StatusBadge>
         {isConnected && (
           <StatRow>
@@ -237,11 +206,7 @@ function ClickBankSection({
             <Btn onClick={onSyncAccount} disabled={clickbankAccountLoading}>
               {clickbankAccountLoading ? 'Syncing…' : 'Sync Account Offers'}
             </Btn>
-            <Btn
-              $danger
-              onClick={onDisconnectAccount}
-              disabled={clickbankAccountLoading}
-            >
+            <Btn $danger onClick={onDisconnectAccount} disabled={clickbankAccountLoading}>
               Disconnect
             </Btn>
           </>

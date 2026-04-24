@@ -14,16 +14,35 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:3000"]
     gemini_api_key: str | None = None
+    testing: bool = False
 
-    # ── Phase 2: Encryption + ClickBank ──────────────────────────────────────
+    # ── Encryption ────────────────────────────────────────────────────────────
     # Required for encrypting tenant credentials. Generate with:
     #   cd backend && python -m app.scripts.generate_fernet_key
     kimux_fernet_key: str | None = None
 
-    # Platform-level ClickBank credential (single developer key, post-Aug 2023 auth model).
-    # Used for marketplace data — visible to all tenants.
-    # Obtain from https://accounts.clickbank.com/developer/index.htm
-    clickbank_developer_key: str | None = None
+    # ── SendGrid ──────────────────────────────────────────────────────────────
+    # Platform-owned SendGrid account. Per-tenant keys deferred to Phase 5.
+    sendgrid_api_key: str | None = None
+
+    # ECDSA public key from SendGrid Mail Settings → Event Webhook → Signature.
+    # Required at startup if SENDGRID_API_KEY is set.
+    sendgrid_event_webhook_public_key: str | None = None
+
+    # Toggle signature verification on the Inbound Parse webhook.
+    # Default false in dev (no MX record pointed at localhost).
+    sendgrid_inbound_verify: bool = False
+    sendgrid_inbound_public_key: str | None = None
+
+    # ── Reply address tokens ──────────────────────────────────────────────────
+    # HMAC secret for reply-to address tokens. Required at startup.
+    # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    kimux_reply_token_secret: str | None = None
+    reply_domain: str = "reply.kimux.io"
+
+    # ── Outbound email sender ─────────────────────────────────────────────────
+    default_sender_email: str | None = None
+    default_sender_name: str = "KimuX"
 
     model_config = SettingsConfigDict(
         env_file=".env",

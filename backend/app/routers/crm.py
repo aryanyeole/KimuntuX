@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -12,9 +12,14 @@ from app.models.lead import LeadClassification, LeadSource, LeadStage
 from app.models.tenant import Tenant
 from app.models.user import User
 from app.schemas.campaign import CampaignCreate, CampaignListResponse, CampaignResponse, CampaignUpdate
-from app.schemas.communication import CommunicationCreate, CommunicationListResponse, CommunicationResponse
+from app.schemas.communication import CommunicationCreate, CommunicationListResponse, CommunicationResponse, SendEmailRequest
 from app.schemas.dashboard import DashboardSummaryResponse
-from app.schemas.integration import IntegrationListResponse, IntegrationResponse
+from app.schemas.integration import (
+    IntegrationListResponse,
+    IntegrationResponse,
+    SendGridConnectRequest,
+    SendGridStatusResponse,
+)
 from app.schemas.lead import (
     ActivityCreate,
     ActivityResponse,
@@ -30,11 +35,12 @@ from app.schemas.lead import (
 from app.schemas.offer import (
     AccountStatusResponse,
     ClickBankConnectRequest,
-    MarketplaceStatusResponse,
     MarketplaceSyncResponse,
     OfferCreate,
     OfferListResponse,
     OfferResponse,
+    OfferUpdate,
+    UserAddedOfferCreate,
 )
 from app.schemas.strategy import StrategyListResponse, StrategyResponse, StrategyWizardInput
 from app.services import (
@@ -47,6 +53,7 @@ from app.services import (
     offer_service,
     strategy_service,
 )
+from app.services.exceptions import SendGridSendError, TenantIsolationError
 
 router = APIRouter(prefix="/crm", tags=["crm"])
 
@@ -278,6 +285,7 @@ def list_offers(
     niche: str | None = Query(default=None),
     network: str | None = Query(default=None),
     source: str | None = Query(default=None),
+    tag: str | None = Query(default=None),
     sort_by: str = Query(default="gravity"),
     sort_dir: str = Query(default="desc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
@@ -285,36 +293,39 @@ def list_offers(
 ) -> OfferListResponse:
     return offer_service.get_offers(
         db, tenant.id, niche=niche, network=network, source=source,
-        sort_by=sort_by, sort_dir=sort_dir,
+        sort_by=sort_by, sort_dir=sort_dir, tag=tag,
     )
 
 
 @router.post("/offers", response_model=OfferResponse, status_code=status.HTTP_201_CREATED)
-def create_offer(
-    payload: OfferCreate,
+def create_user_added_offer(
+    payload: UserAddedOfferCreate,
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> OfferResponse:
-    offer = offer_service.create_offer(db, payload, tenant.id)
+    offer = offer_service.create_user_added_offer(db, payload, tenant.id)
     return OfferResponse.model_validate(offer)
 
 
-@router.post("/offers/marketplace/sync", response_model=MarketplaceSyncResponse)
-def sync_marketplace(
+@router.patch("/offers/{offer_id}", response_model=OfferResponse)
+def update_user_added_offer(
+    offer_id: str,
+    payload: OfferUpdate,
     db: Session = Depends(get_db),
-    _tenant: Tenant = Depends(get_current_tenant),
-) -> MarketplaceSyncResponse:
-    """Sync public ClickBank marketplace offers into the system tenant (platform creds)."""
-    return offer_service.sync_marketplace_offers(db)
+    tenant: Tenant = Depends(get_current_tenant),
+) -> OfferResponse:
+    offer = offer_service.update_user_added_offer(db, offer_id, payload, tenant.id)
+    return OfferResponse.model_validate(offer)
 
 
-@router.get("/offers/marketplace/status", response_model=MarketplaceStatusResponse)
-def marketplace_status(
+@router.delete("/offers/{offer_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+def delete_user_added_offer(
+    offer_id: str,
     db: Session = Depends(get_db),
-    _tenant: Tenant = Depends(get_current_tenant),
-) -> MarketplaceStatusResponse:
-    """Return marketplace offer count and last sync timestamp."""
-    return offer_service.get_marketplace_status(db)
+    tenant: Tenant = Depends(get_current_tenant),
+) -> Response:
+    offer_service.delete_user_added_offer(db, offer_id, tenant.id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------------------------------------------------------------------
@@ -340,6 +351,29 @@ def create_communication(
     return CommunicationResponse.model_validate(comm)
 
 
+@router.post(
+    "/leads/{lead_id}/communications/send-email",
+    response_model=CommunicationResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def send_email_to_lead(
+    lead_id: str,
+    payload: SendEmailRequest,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+    current_user: User = Depends(get_current_user),
+) -> CommunicationResponse:
+    try:
+        comm = communication_service.send_outreach_email(
+            db, tenant.id, lead_id, current_user, payload.subject, payload.body
+        )
+        return CommunicationResponse.model_validate(comm)
+    except TenantIsolationError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
+    except SendGridSendError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
+
+
 # ---------------------------------------------------------------------------
 # Integrations
 # ---------------------------------------------------------------------------
@@ -350,6 +384,42 @@ def list_integrations(
     tenant: Tenant = Depends(get_current_tenant),
 ) -> IntegrationListResponse:
     return integration_service.get_integrations(db, tenant.id)
+
+
+# ── SendGrid email-sender config (must be defined BEFORE generic {platform_name} routes) ──
+
+@router.get("/integrations/sendgrid/status", response_model=SendGridStatusResponse)
+def sendgrid_status(
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> SendGridStatusResponse:
+    return integration_service.get_sendgrid_config(db, tenant.id)
+
+
+@router.post("/integrations/sendgrid/connect", response_model=SendGridStatusResponse)
+def sendgrid_connect(
+    payload: SendGridConnectRequest,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> SendGridStatusResponse:
+    return integration_service.connect_sendgrid(db, tenant.id, str(payload.sender_email), payload.sender_name)
+
+
+@router.delete("/integrations/sendgrid/disconnect", response_model=SendGridStatusResponse)
+def sendgrid_disconnect(
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> SendGridStatusResponse:
+    return integration_service.disconnect_sendgrid(db, tenant.id)
+
+
+@router.post("/integrations/sendgrid/test-send")
+def sendgrid_test_send(
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    return integration_service.send_sendgrid_test_email(db, tenant.id, current_user.email)
 
 
 @router.post("/integrations/{platform_name}/connect", response_model=IntegrationResponse)

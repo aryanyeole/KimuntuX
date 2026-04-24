@@ -23,6 +23,8 @@ class ActivityType(str, enum.Enum):
     note_added = "note_added"
     stage_changed = "stage_changed"
     score_updated = "score_updated"
+    email_delivered = "email_delivered"
+    email_bounced = "email_bounced"
 
 
 class Activity(Base):

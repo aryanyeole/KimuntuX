@@ -92,6 +92,50 @@ const DisconnectLink = styled.button`
   &:hover{color:${C.danger};}
 `;
 
+// ── SendGrid email-sender card ────────────────────────────────────────────────
+const EmailCard = styled.div`
+  background:${C.card};border:1px solid ${C.border};border-radius:12px;
+  padding:20px;margin-bottom:28px;
+`;
+const EmailCardTitle = styled.h3`
+  font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:${C.muted};margin:0 0 4px 0;
+`;
+const EmailCardSub = styled.p`font-size:12px;color:${C.muted};margin:0 0 16px 0;`;
+const EmailRow = styled.div`display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;`;
+const EmailField = styled.div`display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px;`;
+const EmailLabel = styled.label`font-size:11px;font-weight:600;color:${C.muted};`;
+const EmailInput = styled.input`
+  background:${C.surface};border:1px solid ${C.border};border-radius:8px;
+  color:${C.text};font-size:13px;padding:8px 12px;outline:none;
+  &:focus{border-color:${C.accent};}
+  &::placeholder{color:${C.textDim};}
+`;
+const SaveBtn = styled.button`
+  background:${C.accent};color:#fff;border:none;border-radius:8px;
+  padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
+  &:hover:not(:disabled){background:${C.accentHover};}
+  &:disabled{background:${C.border};cursor:default;}
+`;
+const ConnectedRow = styled.div`
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+`;
+const ConnectedInfo = styled.div`flex:1;min-width:0;`;
+const ConnectedEmail = styled.div`font-size:13px;font-weight:700;color:${C.text};`;
+const ConnectedName = styled.div`font-size:12px;color:${C.muted};margin-top:2px;`;
+const TestBtn = styled.button`
+  background:none;border:1px solid ${C.accent};color:${C.accent};
+  border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;
+  &:hover{background:${C.accent};color:#fff;}
+  &:disabled{opacity:.4;cursor:default;}
+`;
+const TestResult = styled.div`
+  margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12px;
+  background:${({ $ok }) => $ok ? C.successBg : C.dangerBg};
+  border:1px solid ${({ $ok }) => $ok ? C.success : C.danger};
+  color:${({ $ok }) => $ok ? C.success : C.danger};
+`;
+
 // ── Two-col grid ──────────────────────────────────────────────────────────────
 const TwoCol = styled.div`
   display:grid;grid-template-columns:1fr 1fr;gap:16px;
@@ -171,10 +215,11 @@ export default function CRMSettings() {
     loading,
     connect,
     disconnect,
-    marketplaceStatus,
-    marketplaceLoading,
-    fetchMarketplaceStatus,
-    syncMarketplace,
+    isSendGridConnected,
+    sendgridIntegration,
+    connectSendGrid,
+    disconnectSendGrid,
+    sendSendGridTestEmail,
     clickbankAccount,
     clickbankAccountLoading,
     fetchClickbankAccountStatus,
@@ -183,6 +228,13 @@ export default function CRMSettings() {
     syncClickbankAccount,
   } = useIntegrations();
   const [connecting, setConnecting] = useState({});
+
+  // SendGrid form state
+  const [sgEmail, setSgEmail] = useState('');
+  const [sgName, setSgName] = useState('');
+  const [sgSaving, setSgSaving] = useState(false);
+  const [sgTesting, setSgTesting] = useState(false);
+  const [sgTestResult, setSgTestResult] = useState(null); // {ok, message}
 
   // AI toggle state
   const initialToggles = Object.fromEntries(AI_TOGGLES.map(t => [t.key, t.default]));
@@ -201,6 +253,36 @@ export default function CRMSettings() {
     try { await disconnect(name); } catch (err) { console.error(err.message); }
   }
 
+  async function handleSgSave() {
+    setSgSaving(true);
+    setSgTestResult(null);
+    try {
+      await connectSendGrid({ senderEmail: sgEmail, senderName: sgName });
+    } catch (err) {
+      console.error('SendGrid connect failed:', err.message);
+    } finally {
+      setSgSaving(false);
+    }
+  }
+
+  async function handleSgDisconnect() {
+    setSgTestResult(null);
+    try { await disconnectSendGrid(); } catch (err) { console.error(err.message); }
+  }
+
+  async function handleSgTestSend() {
+    setSgTesting(true);
+    setSgTestResult(null);
+    try {
+      const res = await sendSendGridTestEmail();
+      setSgTestResult({ ok: true, message: `Test email sent! Message ID: ${res.message_id}` });
+    } catch (err) {
+      setSgTestResult({ ok: false, message: err.message || 'Test send failed.' });
+    } finally {
+      setSgTesting(false);
+    }
+  }
+
   function handleCopy(url, key) {
     navigator.clipboard.writeText(url).catch(() => {});
     setCopied(prev => ({ ...prev, [key]: true }));
@@ -215,10 +297,6 @@ export default function CRMSettings() {
 
       {/* ── ClickBank deep integration ── */}
       <ClickBankSection
-        marketplaceStatus={marketplaceStatus}
-        marketplaceLoading={marketplaceLoading}
-        onSyncMarketplace={syncMarketplace}
-        onFetchMarketplaceStatus={fetchMarketplaceStatus}
         clickbankAccount={clickbankAccount}
         clickbankAccountLoading={clickbankAccountLoading}
         onConnectAccount={connectClickbankAccount}
@@ -226,6 +304,61 @@ export default function CRMSettings() {
         onSyncAccount={syncClickbankAccount}
         onFetchAccountStatus={fetchClickbankAccountStatus}
       />
+
+      {/* ── Email Sender (SendGrid) ── */}
+      <EmailCard>
+        <EmailCardTitle>Email Sender</EmailCardTitle>
+        <EmailCardSub>
+          Configure the From address for outreach emails. KimuX uses a shared SendGrid account — you only need to set your sender identity.
+        </EmailCardSub>
+
+        {isSendGridConnected ? (
+          <>
+            <ConnectedRow>
+              <StatusBadge $status="connected">Connected</StatusBadge>
+              <ConnectedInfo>
+                <ConnectedEmail>{sendgridIntegration?.config?.sender_email}</ConnectedEmail>
+                <ConnectedName>{sendgridIntegration?.config?.sender_name}</ConnectedName>
+              </ConnectedInfo>
+              <TestBtn onClick={handleSgTestSend} disabled={sgTesting}>
+                {sgTesting ? 'Sending…' : 'Send test email'}
+              </TestBtn>
+              <DisconnectLink onClick={handleSgDisconnect}>Disconnect</DisconnectLink>
+            </ConnectedRow>
+            {sgTestResult && (
+              <TestResult $ok={sgTestResult.ok}>{sgTestResult.message}</TestResult>
+            )}
+          </>
+        ) : (
+          <EmailRow>
+            <EmailField>
+              <EmailLabel htmlFor="sg-email">Sender email</EmailLabel>
+              <EmailInput
+                id="sg-email"
+                type="email"
+                placeholder="hello@yourdomain.com"
+                value={sgEmail}
+                onChange={e => setSgEmail(e.target.value)}
+              />
+            </EmailField>
+            <EmailField>
+              <EmailLabel htmlFor="sg-name">Sender name</EmailLabel>
+              <EmailInput
+                id="sg-name"
+                placeholder="Your Name or Company"
+                value={sgName}
+                onChange={e => setSgName(e.target.value)}
+              />
+            </EmailField>
+            <SaveBtn
+              onClick={handleSgSave}
+              disabled={sgSaving || !sgEmail.trim() || !sgName.trim()}
+            >
+              {sgSaving ? 'Saving…' : 'Save'}
+            </SaveBtn>
+          </EmailRow>
+        )}
+      </EmailCard>
 
       <IntegrationsGrid>
         {loading && <div style={{ color: C.muted, fontSize: 13 }}>Loading integrations…</div>}

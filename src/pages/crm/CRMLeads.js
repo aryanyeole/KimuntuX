@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import useLeads from '../../hooks/useLeads';
 import useLead from '../../hooks/useLead';
+import useCommunications from '../../hooks/useCommunications';
+import useIntegrations from '../../hooks/useIntegrations';
 import api from '../../services/api';
 import { crm as C } from '../../styles/crmTheme';
 import PlatformLogo from '../../components/crm/PlatformLogo';
@@ -261,16 +263,89 @@ const SmBtn = styled.button`
   color:${({ $primary }) => $primary ? '#fff' : C.muted};
   border-radius:6px;font-size:12px;padding:6px 14px;cursor:pointer;
   &:hover{border-color:${C.accent};color:${C.text};}
+  &:disabled{opacity:.4;cursor:default;}
 `;
 
+// Send email editor (inside OutreachCard)
+const EditLabel = styled.div`font-size:11px;color:${C.muted};margin-bottom:4px;font-weight:600;`;
+const EditSubjectInput = styled.input`
+  width:100%;background:${C.surface};border:1px solid ${C.border};border-radius:6px;
+  color:${C.text};font-size:13px;padding:8px 10px;outline:none;box-sizing:border-box;
+  margin-bottom:10px;
+  &:focus{border-color:${C.accent};}
+`;
+const EditBodyTextarea = styled.textarea`
+  width:100%;background:${C.surface};border:1px solid ${C.border};border-radius:6px;
+  color:${C.text};font-size:12px;padding:8px 10px;outline:none;box-sizing:border-box;
+  resize:vertical;min-height:100px;font-family:inherit;line-height:1.5;margin-bottom:10px;
+  &:focus{border-color:${C.accent};}
+`;
+const SendBtn = styled.button`
+  background:${C.accent};color:#fff;border:none;border-radius:6px;
+  padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;
+  &:hover:not(:disabled){background:${C.accentHover};}
+  &:disabled{background:${C.border};cursor:default;}
+`;
+const SendSuccess = styled.div`
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  background:${C.successBg};border:1px solid ${C.success};border-radius:8px;
+  color:${C.success};font-size:13px;font-weight:600;margin-top:8px;
+`;
+const SendError = styled.div`
+  padding:10px 12px;background:${C.dangerBg};border:1px solid ${C.danger};
+  border-radius:8px;color:${C.danger};font-size:12px;margin-top:8px;
+`;
+
+// Status pill for outbound communications
+const STATUS_COLOR = {
+  queued:    '#6b7280',   // gray — nothing happened yet
+  sent:      '#60a5fa',   // light blue — left the server
+  delivered: '#3b82f6',   // blue — reached the inbox
+  opened:    C.warning,   // amber — they looked
+  clicked:   '#22c55e',   // green — they engaged (distinct from teal accent)
+  bounced:   C.danger,    // red
+  failed:    C.danger,    // red
+};
+const StatusPill = styled.span`
+  display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;padding:2px 7px;border-radius:999px;
+  background:${({ $status }) => (STATUS_COLOR[$status] || '#6b7280') + '22'};
+  color:${({ $status }) => STATUS_COLOR[$status] || '#6b7280'};
+  border:1px solid ${({ $status }) => STATUS_COLOR[$status] || '#6b7280'};
+`;
+
+// Communications tab
+const CommList = styled.div`display:flex;flex-direction:column;gap:0;`;
+const CommItem = styled.div`
+  padding:10px 0;border-bottom:1px solid ${C.border};
+  &:last-child{border-bottom:none;}
+`;
+const CommHeader = styled.div`display:flex;align-items:center;gap:8px;margin-bottom:4px;`;
+const CommDir = styled.span`
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:${({ $out }) => $out ? C.accent : C.muted};
+`;
+const CommSubject = styled.div`font-size:13px;color:${C.text};font-weight:600;margin-bottom:2px;`;
+const CommPreview = styled.div`font-size:12px;color:${C.muted};line-height:1.4;`;
+const CommTime = styled.div`font-size:11px;color:${C.textDim};margin-top:4px;`;
+const EmptyComms = styled.div`text-align:center;color:${C.muted};font-size:13px;padding:32px 0;`;
+
 // ── Lead Drawer ───────────────────────────────────────────────────────────────
-function LeadDetailDrawer({ leadId, onClose, onStageUpdated }) {
+function LeadDetailDrawer({ leadId, onClose, onStageUpdated, isSendGridConnected }) {
   const { lead, activities, loading } = useLead(leadId);
+  const commsHook = useCommunications(leadId);
   const [activeTab, setActiveTab] = useState('overview');
   const [tone, setTone] = useState('professional');
   const [outreach, setOutreach] = useState(null);
   const [generating, setGenerating] = useState(false);
   const [stageSaving, setStageSaving] = useState(false);
+
+  // Send-email editor state
+  const [editSubject, setEditSubject] = useState('');
+  const [editBody, setEditBody] = useState('');
+  const [sendState, setSendState] = useState('idle'); // 'idle' | 'sending' | 'success' | 'error'
+  const [sendError, setSendError] = useState('');
+  const [sentAt, setSentAt] = useState(null);
 
   // Derive computed AI metrics from lead data
   const convProb = lead
@@ -304,11 +379,29 @@ function LeadDetailDrawer({ leadId, onClose, onStageUpdated }) {
   async function handleGenerate() {
     setGenerating(true);
     setOutreach(null);
+    setSendState('idle');
+    setSendError('');
     try {
       const res = await api.post(`/api/v1/crm/leads/${leadId}/ai/outreach`, { tone });
       setOutreach(res);
+      setEditSubject(res.subject || '');
+      setEditBody(res.body || '');
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function handleSend() {
+    setSendState('sending');
+    setSendError('');
+    try {
+      await commsHook.sendEmail({ subject: editSubject, body: editBody });
+      setSendState('success');
+      setSentAt(new Date());
+      commsHook.refetch();
+    } catch (err) {
+      setSendState('error');
+      setSendError(err.message || 'Failed to send email. Check that SendGrid is configured.');
     }
   }
 
@@ -364,9 +457,9 @@ function LeadDetailDrawer({ leadId, onClose, onStageUpdated }) {
 
         {/* Tabs */}
         <Tabs>
-          {['overview', 'activity', 'ai'].map(t => (
+          {['overview', 'activity', 'comms', 'ai'].map(t => (
             <Tab key={t} $active={activeTab === t} onClick={() => setActiveTab(t)}>
-              {t === 'ai' ? 'AI Assist' : t.charAt(0).toUpperCase() + t.slice(1)}
+              {t === 'ai' ? 'AI Assist' : t === 'comms' ? 'Comms' : t.charAt(0).toUpperCase() + t.slice(1)}
             </Tab>
           ))}
         </Tabs>
@@ -445,6 +538,32 @@ function LeadDetailDrawer({ leadId, onClose, onStageUpdated }) {
             </ActivityList>
           )}
 
+          {/* Comms */}
+          {activeTab === 'comms' && (
+            <CommList>
+              {commsHook.loading && <EmptyComms>Loading…</EmptyComms>}
+              {!commsHook.loading && commsHook.messages.length === 0 && (
+                <EmptyComms>No messages yet. Use AI Assist to send one.</EmptyComms>
+              )}
+              {!commsHook.loading && commsHook.messages.map(m => {
+                const isOut = m.direction === 'outbound';
+                return (
+                  <CommItem key={m.id}>
+                    <CommHeader>
+                      <CommDir $out={isOut}>{isOut ? '↑ Sent' : '↓ Reply'}</CommDir>
+                      {isOut && m.status && (
+                        <StatusPill $status={m.status}>{m.status}</StatusPill>
+                      )}
+                      <CommTime style={{ marginLeft: 'auto' }}>{timeAgo(m.timestamp)}</CommTime>
+                    </CommHeader>
+                    {m.subject && <CommSubject>{m.subject}</CommSubject>}
+                    <CommPreview>{m.preview || m.body}</CommPreview>
+                  </CommItem>
+                );
+              })}
+            </CommList>
+          )}
+
           {/* AI Assist */}
           {activeTab === 'ai' && (
             <>
@@ -485,17 +604,51 @@ function LeadDetailDrawer({ leadId, onClose, onStageUpdated }) {
                   {generating ? 'Generating…' : 'Generate AI Outreach'}
                 </GenBtn>
 
-                {outreach && (
+                {outreach && sendState !== 'success' && (
                   <OutreachCard>
-                    <OutreachSubject>Subject: {outreach.subject}</OutreachSubject>
-                    <OutreachBody>{outreach.body}</OutreachBody>
-                    <OutreachActions>
-                      <SmBtn $primary onClick={() => navigator.clipboard?.writeText(outreach.body)}>
+                    <EditLabel>Subject</EditLabel>
+                    <EditSubjectInput
+                      value={editSubject}
+                      onChange={e => setEditSubject(e.target.value)}
+                      placeholder="Email subject…"
+                    />
+                    <EditLabel>Body</EditLabel>
+                    <EditBodyTextarea
+                      value={editBody}
+                      onChange={e => setEditBody(e.target.value)}
+                      placeholder="Email body…"
+                    />
+                    {sendState === 'error' && (
+                      <SendError>{sendError}</SendError>
+                    )}
+                    <OutreachActions style={{ marginTop: 4 }}>
+                      <SendBtn
+                        onClick={handleSend}
+                        disabled={!isSendGridConnected || sendState === 'sending' || !editSubject.trim() || !editBody.trim()}
+                        title={!isSendGridConnected ? 'Configure a sender email in Settings → Email Sender first' : undefined}
+                      >
+                        {sendState === 'sending' ? 'Sending…' : 'Send Email'}
+                      </SendBtn>
+                      <SmBtn onClick={() => navigator.clipboard?.writeText(editBody)}>
                         Copy
                       </SmBtn>
-                      <SmBtn onClick={handleGenerate}>Regenerate</SmBtn>
+                      <SmBtn onClick={handleGenerate} disabled={generating}>
+                        Regenerate
+                      </SmBtn>
                     </OutreachActions>
                   </OutreachCard>
+                )}
+
+                {outreach && sendState === 'success' && (
+                  <>
+                    <SendSuccess>
+                      ✓ Sent{sentAt ? ` at ${sentAt.toLocaleTimeString()}` : ''}
+                    </SendSuccess>
+                    <OutreachActions style={{ marginTop: 10 }}>
+                      <SmBtn onClick={handleGenerate}>Generate Another</SmBtn>
+                      <SmBtn onClick={() => setActiveTab('comms')}>View in Comms</SmBtn>
+                    </OutreachActions>
+                  </>
                 )}
               </AICard>
             </>
@@ -529,6 +682,7 @@ export default function CRMLeads() {
   }, [search]);
 
   const { leads, total, totalPages, loading, refetch, updateStage } = useLeads();
+  const { isSendGridConnected } = useIntegrations();
 
   // Re-fetch whenever any filter/sort/page changes
   useEffect(() => {
@@ -680,6 +834,7 @@ export default function CRMLeads() {
           leadId={selectedId}
           onClose={() => setSelectedId(null)}
           onStageUpdated={handleStageUpdated}
+          isSendGridConnected={isSendGridConnected}
         />
       )}
     </Page>

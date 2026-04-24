@@ -10,6 +10,7 @@ from app.models.integration_credential import IntegrationCredential
 from app.models.lead import Lead
 from app.models.offer import Offer
 from app.models.strategy import Strategy
+from app.models.webhook_event import WebhookEvent
 
 __all__ = [
     "Activity",
@@ -24,4 +25,5 @@ __all__ = [
     "Tenant",
     "TenantMembership",
     "User",
+    "WebhookEvent",
 ]

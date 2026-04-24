@@ -4,7 +4,7 @@ import enum
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import DateTime, Enum, Float, ForeignKey, Index, String
+from sqlalchemy import DateTime, Enum, Float, ForeignKey, Index, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
@@ -22,14 +22,15 @@ class OfferStatus(str, enum.Enum):
 
 
 # Offer source taxonomy (soft enum — validated in service layer, not DB):
-#   "seed"                  — original seeded mock data
-#   "clickbank_marketplace" — platform credentials, visible to ALL tenants
-#   "clickbank_account"     — tenant credentials, visible only to that tenant
-#   "manual"                — future user-created offers
+#   "seed"               — original seeded mock data
+#   "curated"            — KimuX-curated catalog, visible to ALL tenants (stored under SYSTEM_TENANT_ID)
+#   "clickbank_account"  — tenant credentials, visible only to that tenant
+#   "user_added"         — user-created tracked offers, tenant-scoped
 OFFER_SOURCE_SEED = "seed"
-OFFER_SOURCE_CB_MARKETPLACE = "clickbank_marketplace"
+OFFER_SOURCE_CB_MARKETPLACE = "curated"   # kept for backward compat; use OFFER_SOURCE_CURATED going forward
+OFFER_SOURCE_CURATED = "curated"
 OFFER_SOURCE_CB_ACCOUNT = "clickbank_account"
-OFFER_SOURCE_MANUAL = "manual"
+OFFER_SOURCE_USER_ADDED = "user_added"
 
 
 class Offer(Base):
@@ -78,6 +79,8 @@ class Offer(Base):
         default=OfferStatus.active,
     )
     external_url: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_tags: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
 
     last_synced_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True

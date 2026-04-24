@@ -48,6 +48,7 @@ import CRMStrategy from './pages/crm/CRMStrategy';
 import CRMFintech from './pages/crm/CRMFintech';
 import CRMAcademy from './pages/crm/CRMAcademy';
 import CRMContentScheduler from './pages/crm/CRMContentScheduler';
+import AdminOffers from './pages/admin/AdminOffers';
 
 // Inner component — needs to be inside <Router> so it can call useLocation
 function AppInner() {
@@ -65,6 +66,7 @@ function AppInner() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin/offers" element={<AdminOffers />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/solutions" element={<SolutionsPage />} />
         <Route path="/benefits" element={<BenefitsBySectorPage />} />

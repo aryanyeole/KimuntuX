@@ -55,6 +55,17 @@ class Communication(Base):
     body: Mapped[str] = mapped_column(Text, nullable=False)
     preview: Mapped[str | None] = mapped_column(String(100), nullable=True)
     read: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    # SendGrid / email provider fields
+    # sg_message_id from X-Message-ID header; used for event webhook routing
+    provider_message_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    # null for inbound; "queued"|"sent"|"delivered"|"opened"|"clicked"|"bounced"|"failed" for outbound
+    status: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    from_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    to_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Message-ID of the email this is replying to (for threading)
+    in_reply_to_message_id: Mapped[str | None] = mapped_column(String(512), nullable=True)
+
     # "metadata" is reserved by DeclarativeBase; map Python attr "meta" → DB col "metadata"
     meta: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(

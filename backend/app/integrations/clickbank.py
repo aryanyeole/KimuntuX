@@ -1,11 +1,9 @@
 """ClickBank REST API v1.3 client.
 
-Authentication:
-    All requests send: Authorization: {DEVELOPER_KEY}:{CLERK_KEY}
+Authentication (post-Aug 2023):
+    Single developer key: Authorization: <developer_key>
 
-Two credential tiers:
-  - Platform credentials (env vars) → marketplace data, public offers
-  - Tenant credentials (encrypted DB) → account products, sales data
+Tenant credentials (Fernet-encrypted DB) are used for per-tenant account data.
 
 Reference: https://api.clickbank.com/rest/1.3/
 """
@@ -14,8 +12,6 @@ from __future__ import annotations
 from uuid import uuid4
 
 import httpx
-
-from app.core.config import settings
 
 CLICKBANK_API_BASE = "https://api.clickbank.com/rest/1.3"
 _TIMEOUT = 10  # seconds
@@ -152,17 +148,6 @@ class ClickBankClient:
 
 
 # ── Factory helpers ───────────────────────────────────────────────────────────
-
-def get_platform_client() -> ClickBankClient:
-    """Build a ClickBankClient from the env-var platform credential."""
-    dev_key = settings.clickbank_developer_key
-    if not dev_key:
-        raise ValueError(
-            "Platform ClickBank credential not configured. "
-            "Set CLICKBANK_DEVELOPER_KEY in .env"
-        )
-    return ClickBankClient(dev_key)
-
 
 def get_tenant_client(db, tenant_id: str) -> ClickBankClient:
     """Build a ClickBankClient from a tenant's encrypted DB credential.
