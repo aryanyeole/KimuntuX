@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { useTheme } from '../contexts/ThemeContext';
 
 const FooterContainer = styled.footer`
   background: #000000;
@@ -127,38 +126,30 @@ const FooterBottom = styled.div`
 `;
 
 const Footer = () => {
-  const theme = useTheme();
-
   return (
     <FooterContainer>
       <FooterContent>
         <FooterSection>
           <h3>Platform</h3>
           <ul>
-            <li><Link to="/solutions">Features</Link></li>
-            <li><Link to="/pricing">Pricing</Link></li>
-            <li><Link to="/developer">API Documentation</Link></li>
-            <li><Link to="/solutions">Integrations</Link></li>
+            <li><Link to="/crm">CRM</Link></li>
+            <li><Link to="/products">Products</Link></li>
           </ul>
         </FooterSection>
 
         <FooterSection>
           <h3>Solutions</h3>
           <ul>
-            <li><Link to="/crm">CRM</Link></li>
-            <li><Link to="/b2b-brokerage">B2B Brokerage</Link></li>
-            <li><Link to="/b2c-marketplace">B2C Marketplace</Link></li>
-            <li><Link to="/ai-dashboard">AI Dashboard</Link></li>
+            <li><Link to="/solutions">Solutions</Link></li>
+            <li><Link to="/benefits">Benefits</Link></li>
           </ul>
         </FooterSection>
 
         <FooterSection>
           <h3>Resources</h3>
           <ul>
-            <li><Link to="/developer">Documentation</Link></li>
-            <li><a href="mailto:support@KimuX.com">Support</a></li>
             <li><Link to="/blog">Blog</Link></li>
-            <li><Link to="/faq">FAQ</Link></li>
+            <li><Link to="/faq">Help center</Link></li>
           </ul>
         </FooterSection>
 
@@ -166,9 +157,7 @@ const Footer = () => {
           <h3>Company</h3>
           <ul>
             <li><Link to="/about">About</Link></li>
-            <li><a href="mailto:contact@KimuX.com">Contact</a></li>
-            <li><Link to="/benefits">Benefits</Link></li>
-            <li><Link to="/faq">Help Center</Link></li>
+            <li><Link to="/pricing">Pricing</Link></li>
           </ul>
         </FooterSection>
       </FooterContent>

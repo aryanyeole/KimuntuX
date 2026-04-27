@@ -126,8 +126,8 @@ const Empty = styled.p`
 
 const PLAN_LABEL = {
   starter: 'Starter',
-  growth: 'Growth',
-  scalex: 'ScaleX',
+  growth: 'Pro',
+  scalex: 'Enterprise',
 };
 
 function planLabel(id) {

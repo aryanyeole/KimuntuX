@@ -22,6 +22,21 @@ class UserLogin(BaseModel):
     password: str = Field(min_length=6, max_length=128)
 
 
+class UserProfileUpdate(BaseModel):
+    full_name: str | None = Field(None, min_length=1, max_length=255)
+    phone: str | None = Field(None, max_length=64)
+    address: str | None = Field(None, max_length=512)
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=6, max_length=128)
+
+
+class AccountDeleteRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=128)
+
+
 class TenantResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

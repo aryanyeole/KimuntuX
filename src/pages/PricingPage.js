@@ -183,9 +183,11 @@ const PriceWrap = styled.div`
 
 const PriceRow = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: baseline;
+  justify-content: center;
   text-align: center;
 `;
 
@@ -203,11 +205,12 @@ const Price = styled.span`
 `;
 
 const PriceNote = styled.span`
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 400;
-  line-height: 1.4;
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 500;
+  line-height: 1.2;
   text-align: center;
+  white-space: nowrap;
 `;
 
 const PriceSubNote = styled.span`
@@ -350,92 +353,87 @@ export default function PricingPage() {
     <Page>
       <Wrap>
         <Hero>
-          <H1>Pricing Plans</H1>
-          <Lead>Smart, Scalable, and Designed for Every Visionary Entrepreneur</Lead>
+          <H1>Start Free. No Risk. Cancel Anytime.</H1>
+          <Lead>
+            Every plan includes a 14-day free trial with full access. No credit card required to start.
+            Upgrade, downgrade, or cancel from your dashboard in one click.
+          </Lead>
         </Hero>
 
         <Grid>
           <Tier>
             <Badge>Starter</Badge>
-            <PlanName>Starting Plan · "Starter"</PlanName>
-            <Tag>For beginners exploring digital entrepreneurship</Tag>
+            <PlanName>Starter</PlanName>
+            <Tag>For early-stage teams and solo founders</Tag>
             <PriceWrap>
               <PriceRow>
-                <Price>$19–$29</Price>
-                <PriceNote>per month</PriceNote>
-                <PriceSubNote>region-adjusted pricing</PriceSubNote>
+                <Price>$199</Price>
+                <PriceNote>/month</PriceNote>
               </PriceRow>
             </PriceWrap>
             <List>
-              <Item>1 AI-generated boutique/store</Item>
-              <Item>Basic CRM & lead tracking</Item>
-              <Item>Limited AI content generator (text only)</Item>
-              <Item>Single-channel social ad integration (Facebook or Instagram)</Item>
-              <Item>Basic analytics dashboard</Item>
-              <Item>Community support</Item>
+              <Item>Up to 500 leads / month</Item>
+              <Item>Live pipeline board</Item>
+              <Item>5 integrations</Item>
+              <Item>Basic AI lead scoring</Item>
+              <Item>7-day email support</Item>
             </List>
-            <Button to="/signup">Get Started</Button>
+            <Button to="/signup">Start Free →</Button>
           </Tier>
 
           <Tier isPopular={true}>
             <PopularBadge>Most Popular</PopularBadge>
-            <Badge>Professional</Badge>
-            <PlanName>Pro Plan · "Growth"</PlanName>
-            <Tag>For small & medium businesses scaling operations</Tag>
+            <Badge>Pro</Badge>
+            <PlanName>Pro</PlanName>
+            <Tag>For growing businesses with active sales teams</Tag>
             <PriceWrap>
               <PriceRow>
-                <Price>$49–$99</Price>
-                <PriceNote>per month</PriceNote>
-                <PriceSubNote>region-adjusted pricing</PriceSubNote>
+                <Price>$799</Price>
+                <PriceNote>/month</PriceNote>
               </PriceRow>
             </PriceWrap>
             <List>
-              <Item>Everything in Starter</Item>
-              <Item>Up to 5 boutiques or service funnels</Item>
-              <Item>Full AI Content Creator (Text + Image + Voice Multilanguage)</Item>
-              <Item>Smart CRM with automation workflows</Item>
-              <Item>B2C Marketplace Integration (eCommerce + Payments)</Item>
-              <Item>AI Campaign Optimization (Facebook, Instagram, TikTok, Google)</Item>
-              <Item>Fintech Hub access (Digital Wallet, Payments, Escrow, BNPL)</Item>
-              <Item>AI Translation + Rewrite compliance tool</Item>
-              <Item>Priority chat & email support</Item>
+              <Item>Unlimited leads</Item>
+              <Item>Full Kanban pipeline board</Item>
+              <Item>All 15+ integrations</Item>
+              <Item>Advanced AI lead scoring</Item>
+              <Item>AI Strategy Engine + Coach</Item>
+              <Item>Custom reports & exports</Item>
+              <Item>Priority support (4-hr SLA)</Item>
+              <Item>Team seats (up to 5 users)</Item>
             </List>
-            <PopularButton to="/signup">Start Growth</PopularButton>
+            <PopularButton to="/signup">Start Pro Trial — Free 14 Days →</PopularButton>
           </Tier>
 
           <Tier>
-            <Badge>Advanced</Badge>
-            <PlanName>Business Plan · "ScaleX"</PlanName>
-            <Tag>For agencies, resellers, and digital entrepreneurs</Tag>
+            <Badge>Enterprise</Badge>
+            <PlanName>Enterprise</PlanName>
+            <Tag>For organizations needing scale and dedicated support</Tag>
             <PriceWrap>
               <PriceRow>
-                <Price>$199–$299</Price>
-                <PriceNote>per month</PriceNote>
+                <Price>$2,999</Price>
+                <PriceNote>/month</PriceNote>
               </PriceRow>
             </PriceWrap>
             <List>
-              <Item>Everything in Growth</Item>
-              <Item>Unlimited stores or campaigns</Item>
-              <Item>B2B + Affiliate Program Hub</Item>
-              <Item>Smart Fintech Hub (Crypto + Stock Market Trading + AI Prediction)</Item>
-              <Item>Blockchain Smart Contract Builder</Item>
-              <Item>AI-powered Sales Forecasting & ROI Intelligence</Item>
-              <Item>Multi-Platform Integration (Shopify, WooCommerce, Amazon, TikTok Shop)</Item>
-              <Item>Team collaboration dashboard</Item>
-              <Item>API & SDK access for custom development</Item>
-              <Item>24/7 Premium AI Assistant</Item>
+              <Item>Everything in Pro</Item>
+              <Item>Unlimited team seats</Item>
+              <Item>Dedicated AI agent</Item>
+              <Item>White-label options</Item>
+              <Item>Custom integrations</Item>
+              <Item>Dedicated account manager</Item>
+              <Item>99.9% uptime SLA</Item>
             </List>
-            <Button to="/signup">Choose ScaleX</Button>
+            <Button to="/signup">Talk to Sales →</Button>
           </Tier>
         </Grid>
 
         <Footer>
-          <FooterTitle>Add-Ons (Optional Upgrades)</FooterTitle>
+          <FooterTitle>Included in Every Plan</FooterTitle>
           <Addons>
-            <Addon>AI Copywriter Pro (ad scripts, long-form content)</Addon>
-            <Addon>Auto Funnel Builder (drag-and-drop AI funnels)</Addon>
-            <Addon>KimuX Academy (training & certification portal)</Addon>
-            <Addon>Affiliate Program Management Suite</Addon>
+            <Addon>14-day free trial on all plans</Addon>
+            <Addon>No credit card required</Addon>
+            <Addon>Cancel from your dashboard in one click</Addon>
           </Addons>
         </Footer>
       </Wrap>

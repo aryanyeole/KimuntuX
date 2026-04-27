@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 import transparentLogo from '../assets/dark_new_logo.jpeg';
+import { searchSite } from '../siteSearchIndex';
 
 const HeaderContainer = styled.header`
   background: #000000;
@@ -184,6 +186,86 @@ const ImpersonationBtn = styled.button`
   }
 `;
 
+const SearchBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 5000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 96px 16px 24px;
+  @media (max-width: 1024px) {
+    padding: 72px 12px 16px;
+  }
+`;
+
+const SearchPanel = styled.div`
+  width: 100%;
+  max-width: 520px;
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 18px;
+  font-size: 1.125rem;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0a0a0a;
+  color: #ffffff;
+  outline: none;
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+`;
+
+const SearchResults = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  max-height: min(52vh, 400px);
+  overflow-y: auto;
+`;
+
+const SearchResultBtn = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  &:hover {
+    background: rgba(0, 200, 150, 0.12);
+  }
+`;
+
+const ResultPath = styled.span`
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: ui-monospace, Menlo, monospace;
+`;
+
+const SearchFooter = styled.p`
+  margin: 0;
+  padding: 10px 18px 14px;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.42);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+`;
+
 const Header = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { user, logout, stopImpersonating } = useUser();
@@ -191,6 +273,41 @@ const Header = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef(null);
+
+  const searchResults = useMemo(() => searchSite(searchQuery, { limit: 20 }), [searchQuery]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onEsc = (e) => {
+      if (e.key === 'Escape') setSearchOpen(false);
+    };
+    window.addEventListener('keydown', onEsc);
+    const t = window.setTimeout(() => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
+    }, 10);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onEsc);
+      window.clearTimeout(t);
+    };
+  }, [searchOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -242,7 +359,81 @@ const Header = () => {
     }
   };
 
+  const openSiteSearch = () => {
+    setSearchQuery('');
+    setSearchOpen(true);
+  };
+
+  const closeSiteSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery('');
+  };
+
+  const goToSearchResult = (path) => {
+    navigate(path);
+    closeSiteSearch();
+  };
+
+  const searchModal =
+    searchOpen &&
+    typeof document !== 'undefined' &&
+    createPortal(
+      <SearchBackdrop
+        role="presentation"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) closeSiteSearch();
+        }}
+      >
+        <SearchPanel
+          id="site-search-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search KimuX"
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <SearchInput
+            ref={searchInputRef}
+            type="search"
+            placeholder="Search pages (e.g. pricing, CRM, FAQ)…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && searchResults[0]) {
+                e.preventDefault();
+                goToSearchResult(searchResults[0].path);
+              }
+            }}
+            autoComplete="off"
+            spellCheck={false}
+          />
+          <SearchResults>
+            {searchResults.length === 0 ? (
+              <li style={{ padding: '14px 16px', color: 'rgba(255,255,255,0.5)', fontSize: '0.95rem' }}>
+                No pages match that search. Try a shorter word or browse the menu.
+              </li>
+            ) : (
+              searchResults.map((item) => (
+                <li key={item.path}>
+                  <SearchResultBtn type="button" onClick={() => goToSearchResult(item.path)}>
+                    <span>{item.title}</span>
+                    <ResultPath>{item.path}</ResultPath>
+                  </SearchResultBtn>
+                </li>
+              ))
+            )}
+          </SearchResults>
+          <SearchFooter>
+            {searchQuery.trim()
+              ? 'Press Enter on a result row or click to go. Esc to close.'
+              : 'Popular destinations — type to filter. Keyboard: Ctrl+K / ⌘K to open.'}
+          </SearchFooter>
+        </SearchPanel>
+      </SearchBackdrop>,
+      document.body
+    );
+
   return (
+    <>
     <HeaderContainer isVisible={isVisible}>
       {canReturnToAdmin && (
         <ImpersonationBar>
@@ -280,7 +471,13 @@ const Header = () => {
           </MainNav>
         </LeftSection>
         <RightSection>
-          <SearchButton>
+          <SearchButton
+            type="button"
+            onClick={openSiteSearch}
+            aria-haspopup="dialog"
+            aria-expanded={searchOpen}
+            aria-controls="site-search-dialog"
+          >
             <StyledSearchIcon />
             Search
           </SearchButton>
@@ -304,6 +501,8 @@ const Header = () => {
         </RightSection>
       </NavContainer>
     </HeaderContainer>
+    {searchModal}
+    </>
   );
 };
 

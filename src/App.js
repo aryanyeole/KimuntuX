@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UserProvider, useUser } from './contexts/UserContext';
@@ -14,6 +14,7 @@ import AboutPage from './pages/AboutPage';
 import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import LegalNoticePage from './pages/LegalNoticePage';
 import FAQPage from './pages/FAQPage';
 import SolutionsPage from './pages/SolutionsPage';
 import BenefitsBySectorPage from './pages/BenefitsBySectorPage';
@@ -56,8 +57,14 @@ function AppInner() {
   const location = useLocation();
   const { isAuthenticated, isLoading } = useUser();
   const isCrmPath = location.pathname.startsWith('/crm');
-  /** Full-screen CRM shell (sidebar) only when logged in; public CRM landing uses global header/footer. */
-  const hideGlobalChrome = isCrmPath && (isLoading || isAuthenticated);
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  /** Hide global chrome for CRM app shell when logged in, and for standalone auth pages. */
+  const hideGlobalChrome =
+    isAuthPage || (isCrmPath && (isLoading || isAuthenticated));
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.search]);
 
   return (
     <div className="App">
@@ -68,6 +75,8 @@ function AppInner() {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/terms" element={<LegalNoticePage />} />
+        <Route path="/privacy" element={<LegalNoticePage />} />
         <Route path="/dashboard" element={<Navigate to="/crm/dashboard" replace />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/solutions" element={<SolutionsPage />} />

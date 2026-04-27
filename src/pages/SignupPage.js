@@ -3,26 +3,26 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { parseJsonOrApiError } from '../utils/parseFetchJson';
-import transparentLogo from '../assets/dark_new_logo.jpeg';
+import transparentLogo from '../assets/transperant_new_log.png';
 
 const PLANS = [
   {
     id: 'starter',
     title: 'Starter',
-    subtitle: 'Starting Plan',
-    hint: '$19–$29/mo · region-adjusted (billing later)',
+    subtitle: 'For early-stage teams and solo founders',
+    hint: '$199/month · billing later',
   },
   {
     id: 'growth',
-    title: 'Growth',
-    subtitle: 'Pro Plan',
-    hint: '$49–$99/mo · region-adjusted (billing later)',
+    title: 'Pro',
+    subtitle: 'For growing businesses with active sales teams',
+    hint: '$799/month · billing later',
   },
   {
     id: 'scalex',
-    title: 'ScaleX',
-    subtitle: 'Business Plan',
-    hint: '$199–$299/mo (billing later)',
+    title: 'Enterprise',
+    subtitle: 'For organizations needing scale and dedicated support',
+    hint: '$2,999/month · billing later',
   },
 ];
 
@@ -39,7 +39,7 @@ const SignupCard = styled.div`
   background: #111111;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 2.5rem 2rem;
+  padding: 1.5rem 2rem 2.25rem;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
   width: 100%;
   max-width: 520px;
@@ -59,11 +59,12 @@ const SignupCard = styled.div`
 
 const Logo = styled.div`
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin: 0 0 0.75rem;
 
   img {
-    height: 72px;
+    height: 180px;
     width: auto;
+    max-width: 100%;
     display: inline-block;
     background: transparent;
   }
@@ -234,11 +235,27 @@ const ShowPasswordRow = styled.label`
   margin-top: -0.25rem;
 `;
 
+const LegalAgreementRow = styled.label`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+  user-select: none;
+`;
+
 const ShowPasswordCheckbox = styled.input`
   accent-color: #00c896;
   width: 1rem;
   height: 1rem;
   cursor: pointer;
+`;
+
+const LegalCheckbox = styled(ShowPasswordCheckbox)`
+  flex-shrink: 0;
+  margin-top: 0.15rem;
 `;
 
 const Button = styled.button`
@@ -285,6 +302,26 @@ const LinkText = styled.p`
   text-align: center;
   margin-top: 1.5rem;
   color: rgba(255, 255, 255, 0.65);
+`;
+
+const HomeLink = styled(Link)`
+  display: block;
+  text-align: center;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    border-color: rgba(0, 200, 150, 0.55);
+    background: rgba(0, 200, 150, 0.1);
+    color: #00c896;
+  }
 `;
 
 const StyledLink = styled(Link)`
@@ -334,6 +371,7 @@ const SignupPage = () => {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [agreedToLegal, setAgreedToLegal] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -343,6 +381,7 @@ const SignupPage = () => {
   };
 
   const canSubmit =
+    agreedToLegal &&
     selectedPlan &&
     formData.name.trim() &&
     formData.email.trim() &&
@@ -359,6 +398,12 @@ const SignupPage = () => {
 
     if (!selectedPlan) {
       setError('Please choose a plan to continue.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!agreedToLegal) {
+      setError('Please agree to the Terms and Conditions and Privacy Policy.');
       setIsLoading(false);
       return;
     }
@@ -566,6 +611,26 @@ const SignupPage = () => {
             />
           </InputGroup>
 
+          <LegalAgreementRow htmlFor="signup-agree-legal">
+            <LegalCheckbox
+              type="checkbox"
+              id="signup-agree-legal"
+              checked={agreedToLegal}
+              onChange={(e) => setAgreedToLegal(e.target.checked)}
+            />
+            <span>
+              I agree to the{' '}
+              <StyledLink to="/terms" onClick={(e) => e.stopPropagation()}>
+                Terms and Conditions
+              </StyledLink>{' '}
+              and{' '}
+              <StyledLink to="/privacy" onClick={(e) => e.stopPropagation()}>
+                Privacy Policy
+              </StyledLink>
+              .
+            </span>
+          </LegalAgreementRow>
+
           <Button type="submit" disabled={isLoading || !canSubmit}>
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>
@@ -574,6 +639,7 @@ const SignupPage = () => {
         <LinkText>
           Already have an account? <StyledLink to="/login">Sign in</StyledLink>
         </LinkText>
+        <HomeLink to="/">Go back to Homepage</HomeLink>
       </SignupCard>
     </SignupContainer>
   );

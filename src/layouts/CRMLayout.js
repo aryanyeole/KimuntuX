@@ -5,8 +5,13 @@ import { useUser } from '../contexts/UserContext';
 import { useTenant } from '../contexts/TenantContext';
 import useStrategy from '../hooks/useStrategy';
 import { crm as C } from '../styles/crmTheme';
-import darkNewLogo from '../assets/dark_new_logo.jpeg';
+import crmSidebarLogo from '../assets/transperant_new_log.png';
 import CRMProfilePanel from '../components/crm/CRMProfilePanel';
+
+const CRM_PAGE_TITLE_PX = 16;
+const CRM_PAGE_TITLE_LINE_HEIGHT = 1.25;
+const CRM_LOGO_CROP_LH = CRM_PAGE_TITLE_LINE_HEIGHT * 1.1;
+const CRM_TOPBAR_HEIGHT_PX = 64;
 
 // ── Root shell ────────────────────────────────────────────────────────────────
 const Shell = styled.div`
@@ -20,8 +25,8 @@ const Shell = styled.div`
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 const Sidebar = styled.aside`
-  width: ${({ $collapsed }) => ($collapsed ? '64px' : '215px')};
-  min-width: ${({ $collapsed }) => ($collapsed ? '64px' : '215px')};
+  width: ${({ $collapsed }) => ($collapsed ? '64px' : '228px')};
+  min-width: ${({ $collapsed }) => ($collapsed ? '64px' : '228px')};
   background: ${C.surface};
   border-right: 1px solid ${C.border};
   display: flex;
@@ -35,19 +40,25 @@ const LogoRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'space-between')};
-  padding: ${({ $collapsed }) => ($collapsed ? '18px 0' : '18px 16px')};
+  box-sizing: border-box;
+  min-height: ${CRM_TOPBAR_HEIGHT_PX}px;
+  padding: ${({ $collapsed }) => ($collapsed ? '0' : '0 10px')};
   border-bottom: 1px solid ${C.border};
-  min-height: 64px;
 `;
 
 const LogoMark = styled(Link)`
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
   border-radius: 8px;
   outline-offset: 2px;
+  width: ${({ $collapsed }) => ($collapsed ? '40px' : '152px')};
+  height: ${({ $collapsed }) =>
+    $collapsed ? '28px' : `calc(${CRM_PAGE_TITLE_PX}px * ${CRM_LOGO_CROP_LH})`};
   &:focus-visible {
     outline: 2px solid ${C.accent};
   }
@@ -58,10 +69,9 @@ const LogoMark = styled(Link)`
 
 const LogoImage = styled.img`
   display: block;
-  object-fit: contain;
   flex-shrink: 0;
-  max-width: ${({ $collapsed }) => ($collapsed ? '36px' : '128px')};
-  height: ${({ $collapsed }) => ($collapsed ? '36px' : '40px')};
+  width: ${({ $collapsed }) => ($collapsed ? '40px' : '152px')};
+  height: auto;
 `;
 
 const HiddenTextForA11y = styled.span`
@@ -350,6 +360,25 @@ const UserRole = styled.div`
   color: ${C.muted};
 `;
 
+const SidebarHomeLink = styled(Link)`
+  display: block;
+  margin-top: 6px;
+  padding: ${({ $collapsed }) => ($collapsed ? '6px 0' : '8px 10px')};
+  text-align: ${({ $collapsed }) => ($collapsed ? 'center' : 'left')};
+  font-size: 12px;
+  font-weight: 600;
+  color: ${C.muted};
+  text-decoration: none;
+  border-radius: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  &:hover {
+    color: ${C.accent};
+    background: ${C.card};
+  }
+`;
+
 // ── Right side: topbar + content ─────────────────────────────────────────────
 const RightPane = styled.div`
   flex: 1;
@@ -359,8 +388,8 @@ const RightPane = styled.div`
 `;
 
 const TopBar = styled.header`
-  height: 64px;
-  min-height: 64px;
+  height: ${CRM_TOPBAR_HEIGHT_PX}px;
+  min-height: ${CRM_TOPBAR_HEIGHT_PX}px;
   background: ${C.surface};
   border-bottom: 1px solid ${C.border};
   display: flex;
@@ -370,8 +399,9 @@ const TopBar = styled.header`
 `;
 
 const PageTitle = styled.h1`
-  font-size: 16px;
+  font-size: ${CRM_PAGE_TITLE_PX}px;
   font-weight: 700;
+  line-height: ${CRM_PAGE_TITLE_LINE_HEIGHT};
   color: ${C.text};
   margin: 0;
   white-space: nowrap;
@@ -724,8 +754,8 @@ useEffect(() => {
       {/* ── Sidebar ── */}
       <Sidebar $collapsed={collapsed}>
         <LogoRow $collapsed={collapsed}>
-          <LogoMark to="/" title="KimuX home">
-            <LogoImage src={darkNewLogo} alt="KimuX" $collapsed={collapsed} />
+          <LogoMark to="/" title="KimuX home" $collapsed={collapsed}>
+            <LogoImage src={crmSidebarLogo} alt="KimuX" $collapsed={collapsed} />
             <HiddenTextForA11y>KimuX home</HiddenTextForA11y>
           </LogoMark>
           {!collapsed && (
@@ -878,6 +908,9 @@ useEffect(() => {
               <UserRole>{user?.email || ''}</UserRole>
             </UserInfo>
           </ProfileTrigger>
+          <SidebarHomeLink $collapsed={collapsed} to="/" title="Go to Homepage">
+            {collapsed ? 'Home' : 'Go to Homepage'}
+          </SidebarHomeLink>
         </SidebarBottom>
       </Sidebar>
 

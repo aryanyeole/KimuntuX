@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { parseJsonOrApiError } from '../utils/parseFetchJson';
-import transparentLogo from '../assets/dark_new_logo.jpeg';
+import transparentLogo from '../assets/transperant_new_log.png';
 
 const LoginContainer = styled.div`
   min-height: 100vh;
@@ -18,7 +18,7 @@ const LoginCard = styled.div`
   background: #111111;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 3rem;
+  padding: 1.5rem 2.5rem 2.5rem;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
   width: 100%;
   max-width: 400px;
@@ -38,11 +38,12 @@ const LoginCard = styled.div`
 
 const Logo = styled.div`
   text-align: center;
-  margin-bottom: 2rem;
+  margin: 0 0 0.75rem;
 
   img {
-    height: 72px;
+    height: 180px;
     width: auto;
+    max-width: 100%;
     display: inline-block;
     background: transparent;
   }
@@ -115,6 +116,11 @@ const ShowPasswordRow = styled.label`
   margin-top: -0.25rem;
 `;
 
+const ForgotPasswordRow = styled.div`
+  margin-top: 0.35rem;
+  text-align: right;
+`;
+
 const ShowPasswordCheckbox = styled.input`
   accent-color: #00c896;
   width: 1rem;
@@ -168,11 +174,40 @@ const LinkText = styled.p`
   color: rgba(255, 255, 255, 0.65);
 `;
 
+const HomeLink = styled(Link)`
+  display: block;
+  text-align: center;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    border-color: rgba(0, 200, 150, 0.55);
+    background: rgba(0, 200, 150, 0.1);
+    color: #00c896;
+  }
+`;
+
 const StyledLink = styled(Link)`
   color: #00c896;
   text-decoration: none;
   font-weight: 600;
 
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const MailLink = styled.a`
+  color: #00c896;
+  font-weight: 600;
+  text-decoration: none;
   &:hover {
     text-decoration: underline;
   }
@@ -188,9 +223,23 @@ const ErrorMessage = styled.div`
   text-align: center;
 `;
 
+const InfoBanner = styled.div`
+  background: rgba(0, 200, 150, 0.12);
+  color: rgba(255, 255, 255, 0.88);
+  padding: 0.9rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 200, 150, 0.35);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  text-align: center;
+`;
+
 const LoginPage = () => {
   const { login } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
+  const forgotFlow = new URLSearchParams(location.search).get('forgot') === '1';
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
   const [formData, setFormData] = useState({
     email: '',
@@ -268,6 +317,16 @@ const LoginPage = () => {
         </Logo>
         <Title>Welcome Back</Title>
         <Subtitle>Sign in to your KimuX account</Subtitle>
+
+        {forgotFlow && (
+          <InfoBanner>
+            Password reset is not automated yet. Email{' '}
+            <MailLink href="mailto:hello@kimux.io">hello@kimux.io</MailLink>
+            {' '}or use{' '}
+            <StyledLink to="/faq">Help center</StyledLink>
+            {' '}for assistance.
+          </InfoBanner>
+        )}
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
         
@@ -306,6 +365,9 @@ const LoginPage = () => {
               />
               Show password
             </ShowPasswordRow>
+            <ForgotPasswordRow>
+              <StyledLink to="/login?forgot=1">Forgot password?</StyledLink>
+            </ForgotPasswordRow>
           </InputGroup>
 
           <Button type="submit" disabled={isLoading}>
@@ -316,6 +378,7 @@ const LoginPage = () => {
         <LinkText>
           Don't have an account? <StyledLink to="/signup">Sign up</StyledLink>
         </LinkText>
+        <HomeLink to="/">Go back to Homepage</HomeLink>
       </LoginCard>
     </LoginContainer>
   );
