@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     bootstrap_admin_password: str = "Capstone@123"
     bootstrap_admin_full_name: str = "Yannick"
     gemini_api_key: str | None = None
+    campaign_test_mode: bool = False
+
+    # ── Phase 2: Encryption + ClickBank ──────────────────────────────────────
+    # Required for encrypting tenant credentials. Generate with:
+    #   cd backend && python -m app.scripts.generate_fernet_key
     kimux_fernet_key: str | None = None
     clickbank_developer_key: str | None = None
     sepolia_rpc_url: str = "http://127.0.0.1:8545"

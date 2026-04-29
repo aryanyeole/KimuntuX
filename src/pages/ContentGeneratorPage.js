@@ -498,6 +498,7 @@ export default function ContentGeneratorPage() {
   const [saveMessage, setSaveMessage] = useState('');
   const [saveErrors, setSaveErrors] = useState([]);
   const [previewSelections, setPreviewSelections] = useState({});
+  const [hasUnsavedPreviewChanges, setHasUnsavedPreviewChanges] = useState(false);
   const [showRawJson, setShowRawJson] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [numVariants, setNumVariants] = useState(3);
@@ -604,6 +605,7 @@ export default function ContentGeneratorPage() {
       });
 
       setCampaign(nextCampaign);
+      setHasUnsavedPreviewChanges(false);
       setStatusMessage('Campaign generation complete. Review and send to scheduler.');
     } catch (error) {
       setStatusMessage(error?.message || 'Campaign generation failed. Please try again.');
@@ -613,7 +615,7 @@ export default function ContentGeneratorPage() {
   };
 
   const sendToScheduler = async () => {
-    if (!campaign || isGenerating) return;
+    if (!campaign || isGenerating || hasUnsavedPreviewChanges) return;
 
     try {
       const payload = !Object.keys(previewSelections).length
@@ -622,65 +624,37 @@ export default function ContentGeneratorPage() {
           ...campaign,
           content_pieces: campaign.content_pieces.map((piece, index) => {
             const platformKey = piece?.platform || `Platform ${index + 1}`;
-            const platformSelections = previewSelections?.[platformKey];
-
-            if (!platformSelections) {
-              return piece;
-            }
-
-            const clampIndex = (value) => {
-              const safeValue = Number.isInteger(value) ? value : 0;
-              return Math.max(0, Math.min(2, safeValue));
-            };
-
-            const pickVariant = (value, indexValue) => {
-              const variants = [value, value, value];
-              return variants[clampIndex(indexValue)];
-            };
-
-            const selectedHeadline = pickVariant(piece?.copy?.headline, platformSelections.headline);
-            const selectedBody = pickVariant(piece?.copy?.body ?? piece?.copy?.caption, platformSelections.body);
-            const selectedCta = pickVariant(piece?.copy?.cta_text ?? piece?.cta_text, platformSelections.cta);
-            const selectedHashtags = pickVariant(
-              Array.isArray(piece?.hashtags) ? piece.hashtags : undefined,
-              platformSelections.hashtags,
-            );
-            const selectedImagePrompt = pickVariant(piece?.media?.image_prompt, platformSelections.imagePrompt);
-
-            const nextCopy = {
-              ...(piece?.copy || {}),
-            };
-
-            if (selectedHeadline !== undefined) {
-              nextCopy.headline = selectedHeadline;
-            }
-
-            if (selectedBody !== undefined) {
-              nextCopy.body = selectedBody;
-              nextCopy.caption = selectedBody;
-            }
-
-            const nextPiece = {
+            const platformSelections = previewSelections[platformKey] || {};
+            return {
               ...piece,
-              copy: nextCopy,
+              copy: {
+                ...piece.copy,
+                headline: Array.isArray(piece.copy?.headline)
+                  ? (platformSelections.headline ?? piece.copy.headline[0])
+                  : piece.copy?.headline,
+                body: Array.isArray(piece.copy?.body)
+                  ? (platformSelections.body ?? piece.copy.body[0])
+                  : piece.copy?.body,
+                caption: Array.isArray(piece.copy?.caption)
+                  ? (platformSelections.body ?? piece.copy.caption[0])
+                  : piece.copy?.caption,
+                subject_line: Array.isArray(piece.copy?.subject_line)
+                  ? (platformSelections.headline ?? piece.copy.subject_line[0])
+                  : piece.copy?.subject_line,
+              },
+              cta_text: Array.isArray(piece.cta_text)
+                ? (platformSelections.cta ?? piece.cta_text[0])
+                : piece.cta_text,
+              hashtags: platformSelections.hashtags ??
+                (Array.isArray(piece.hashtags?.[0]) ? piece.hashtags[0] : piece.hashtags),
+              media: {
+                ...piece.media,
+                image_prompt: Array.isArray(piece.media?.image_prompt)
+                  ? (platformSelections.imagePrompt ?? piece.media.image_prompt[0])
+                  : piece.media?.image_prompt,
+                image_url: platformSelections.imageUrl ?? piece.media?.image_url ?? null,
+              },
             };
-
-            if (selectedCta !== undefined) {
-              nextPiece.cta_text = selectedCta;
-            }
-
-            if (selectedHashtags !== undefined) {
-              nextPiece.hashtags = Array.isArray(selectedHashtags) ? [...selectedHashtags] : selectedHashtags;
-            }
-
-            if (selectedImagePrompt !== undefined) {
-              nextPiece.media = {
-                ...(piece?.media || {}),
-                image_prompt: selectedImagePrompt,
-              };
-            }
-
-            return nextPiece;
           }),
         };
 
@@ -743,7 +717,7 @@ export default function ContentGeneratorPage() {
         <HeaderButton type="button" onClick={runGeneration} disabled={isGenerating}>
           {isGenerating ? 'Generating...' : 'Generate'}
         </HeaderButton>
-        <HeaderButton type="button" $ghost onClick={sendToScheduler} disabled={!campaign || isGenerating}>
+        <HeaderButton type="button" $ghost onClick={sendToScheduler} disabled={!campaign || isGenerating || hasUnsavedPreviewChanges}>
           Send to Scheduler
         </HeaderButton>
         </StickyButtonGroup>
@@ -911,6 +885,7 @@ export default function ContentGeneratorPage() {
                   contentPieces={campaign.content_pieces}
                   selections={previewSelections}
                   onSelectionsChange={handleSelectionsChange}
+                  onDirtyChange={setHasUnsavedPreviewChanges}
                 />
               </PlatformPreviews>
             ) : isGenerating ? (
