@@ -1,6 +1,6 @@
 """
-blockchain/contracts/wallet.py
-──────────────────────────────
+app/blockchain/contracts/wallet.py
+────────────────────────────────────
 High-level Python wrapper around the deployed KimuXWallet contract.
 """
 
@@ -11,8 +11,8 @@ from dataclasses import dataclass, field
 
 from web3 import Web3
 
-from blockchain.exceptions import ContractCallError, InsufficientFundsError
-from blockchain.web3_client import Web3Client
+from app.blockchain.exceptions import ContractCallError, InsufficientFundsError
+from app.blockchain.web3_client import Web3Client
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,6 @@ class WalletContract:
                 required_wei=value_wei,
                 available_wei=balance,
             )
-
         tx_params = self._client.build_tx_params(value_wei=value_wei)
         fn = getattr(self._contract.functions, fn_name)
         tx = fn(*args).build_transaction(tx_params)
@@ -91,16 +90,12 @@ class WalletContract:
             Web3.to_checksum_address(addr): bal
             for addr, bal in zip(token_addresses, raw_token_balances)
         }
-        return WalletBalances(
-            eth_balance=self._wei_to_eth(eth_wei),
-            token_balances=token_map,
-        )
+        return WalletBalances(eth_balance=self._wei_to_eth(eth_wei), token_balances=token_map)
 
     def get_wallet_details(self, owner: str) -> WalletDetails:
         address = Web3.to_checksum_address(owner)
         owner_addr, eth_wei, created_at, deposits_wei, withdrawals_wei = self._call(
-            "getWalletDetails",
-            address,
+            "getWalletDetails", address
         )
         return WalletDetails(
             owner=Web3.to_checksum_address(owner_addr),
@@ -147,13 +142,13 @@ class WalletContract:
         address = Web3.to_checksum_address(user)
         amount_wei = self._eth_to_wei(amount_eth)
         tx_hash = self._send("creditETH", address, amount_wei, value_wei=amount_wei)
-        logger.info("creditETH tx sent: user=%s, %.6f ETH -> %s", address, amount_eth, tx_hash)
+        logger.info("creditETH tx sent: user=%s %.6f ETH -> %s", address, amount_eth, tx_hash)
         return tx_hash
 
     def deposit_token(self, token: str, amount: int) -> str:
         token_addr = Web3.to_checksum_address(token)
         tx_hash = self._send("depositToken", token_addr, amount)
-        logger.info("depositToken tx sent: token=%s, amount=%d -> %s", token_addr, amount, tx_hash)
+        logger.info("depositToken tx sent: token=%s amount=%d -> %s", token_addr, amount, tx_hash)
         return tx_hash
 
     def credit_token(self, user: str, token: str, amount: int) -> str:
@@ -161,11 +156,8 @@ class WalletContract:
         token_addr = Web3.to_checksum_address(token)
         tx_hash = self._send("creditToken", user_addr, token_addr, amount)
         logger.info(
-            "creditToken tx sent: user=%s, token=%s, amount=%d -> %s",
-            user_addr,
-            token_addr,
-            amount,
-            tx_hash,
+            "creditToken tx sent: user=%s token=%s amount=%d -> %s",
+            user_addr, token_addr, amount, tx_hash,
         )
         return tx_hash
 
@@ -183,14 +175,14 @@ class WalletContract:
     def withdraw_token(self, token: str, amount: int) -> str:
         token_addr = Web3.to_checksum_address(token)
         tx_hash = self._send("withdrawToken", token_addr, amount)
-        logger.info("withdrawToken tx sent: token=%s, amount=%d -> %s", token_addr, amount, tx_hash)
+        logger.info("withdrawToken tx sent: token=%s amount=%d -> %s", token_addr, amount, tx_hash)
         return tx_hash
 
     def transfer_eth(self, recipient: str, amount_eth: float) -> str:
         rec_addr = Web3.to_checksum_address(recipient)
         amount_wei = self._eth_to_wei(amount_eth)
         tx_hash = self._send("transferETH", rec_addr, amount_wei)
-        logger.info("transferETH tx sent: to=%s, %.6f ETH -> %s", rec_addr, amount_eth, tx_hash)
+        logger.info("transferETH tx sent: to=%s %.6f ETH -> %s", rec_addr, amount_eth, tx_hash)
         return tx_hash
 
     def transfer_token(self, recipient: str, token: str, amount: int) -> str:
@@ -198,11 +190,8 @@ class WalletContract:
         token_addr = Web3.to_checksum_address(token)
         tx_hash = self._send("transferToken", rec_addr, token_addr, amount)
         logger.info(
-            "transferToken tx sent: to=%s, token=%s, amount=%d -> %s",
-            rec_addr,
-            token_addr,
-            amount,
-            tx_hash,
+            "transferToken tx sent: to=%s token=%s amount=%d -> %s",
+            rec_addr, token_addr, amount, tx_hash,
         )
         return tx_hash
 

@@ -1,11 +1,21 @@
+"""
+app/routers/blockchain/network.py
+───────────────────────────────────
+FastAPI router for network-level blockchain queries.
+
+Endpoints
+---------
+GET /network/transactions/{tx_hash}
+"""
+
 from __future__ import annotations
 
 from web3.exceptions import TransactionNotFound
 
 from fastapi import APIRouter, HTTPException
 
-from api.models import TransactionStatusResponse
-from blockchain.web3_client import get_client
+from app.schemas.blockchain import TransactionStatusResponse
+from app.blockchain.web3_client import get_client
 
 router = APIRouter(prefix="/network", tags=["Network"])
 

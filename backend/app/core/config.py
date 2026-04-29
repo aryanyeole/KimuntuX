@@ -5,6 +5,7 @@ import json
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     app_name: str = "KimuX Backend"
     app_env: str = "development"
@@ -14,19 +15,12 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:3000"]
+    bootstrap_admin_email: str = "yannick@example.com"
+    bootstrap_admin_password: str = "Capstone@123"
+    bootstrap_admin_full_name: str = "Yannick"
     gemini_api_key: str | None = None
-
-    # ── Phase 2: Encryption + ClickBank ──────────────────────────────────────
-    # Required for encrypting tenant credentials. Generate with:
-    #   cd backend && python -m app.scripts.generate_fernet_key
     kimux_fernet_key: str | None = None
-
-    # Platform-level ClickBank credential (single developer key, post-Aug 2023 auth model).
-    # Used for marketplace data — visible to all tenants.
-    # Obtain from https://accounts.clickbank.com/developer/index.htm
     clickbank_developer_key: str | None = None
-
-    # ── Blockchain Configuration ─────────────────────────────────────────────
     sepolia_rpc_url: str = "http://127.0.0.1:8545"
     sepolia_rpc_fallback: str | None = None
     platform_private_key: str | None = None

@@ -1,19 +1,40 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+
+SignupPlan = Literal["starter", "growth", "scalex"]
 
 
 class UserSignup(BaseModel):
     full_name: str = Field(min_length=1, max_length=255)
     email: EmailStr
     password: str = Field(min_length=6, max_length=128)
+    phone: str | None = Field(default=None, min_length=5, max_length=64)
+    address: str | None = Field(default=None, min_length=5, max_length=512)
+    signup_plan: SignupPlan | None = None
 
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6, max_length=128)
+
+
+class UserProfileUpdate(BaseModel):
+    full_name: str | None = Field(None, min_length=1, max_length=255)
+    phone: str | None = Field(None, max_length=64)
+    address: str | None = Field(None, max_length=512)
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(min_length=1, max_length=128)
+    new_password: str = Field(min_length=6, max_length=128)
+
+
+class AccountDeleteRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=128)
 
 
 class TenantResponse(BaseModel):
@@ -31,9 +52,25 @@ class UserResponse(BaseModel):
     id: str
     full_name: str
     email: EmailStr
+    phone: str | None = None
+    address: str | None = None
+    signup_plan: str | None = None
     is_active: bool
+    is_admin: bool
     default_tenant_id: str | None = None
     created_at: datetime
+
+    @field_validator("is_active", "is_admin", mode="before")
+    @classmethod
+    def bool_none_to_false(cls, value: object) -> bool:
+        return False if value is None else bool(value)
+
+    @field_validator("full_name", mode="before")
+    @classmethod
+    def empty_name_to_unknown(cls, value: object) -> str:
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return "User"
+        return str(value)
 
 
 class TokenResponse(BaseModel):
