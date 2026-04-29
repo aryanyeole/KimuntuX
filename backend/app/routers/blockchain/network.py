@@ -1,28 +1,19 @@
-"""
-app/routers/blockchain/network.py
-───────────────────────────────────
-FastAPI router for network-level blockchain queries.
-
-Endpoints
----------
-GET /network/transactions/{tx_hash}
-"""
+"""Network-level blockchain routes."""
 
 from __future__ import annotations
 
+from fastapi import APIRouter, HTTPException
 from web3.exceptions import TransactionNotFound
 
-from fastapi import APIRouter, HTTPException
-
-from app.schemas.blockchain import TransactionStatusResponse
 from app.blockchain.web3_client import get_client
+from app.schemas.blockchain import TransactionStatusResponse
 
 router = APIRouter(prefix="/network", tags=["Network"])
 
 
 @router.get("/transactions/{tx_hash}", response_model=TransactionStatusResponse)
 def get_transaction_status(tx_hash: str):
-    """Return the current lifecycle status for a submitted blockchain transaction."""
+    """Return the lifecycle status for a submitted blockchain transaction."""
     try:
         client = get_client()
         receipt = client.w3.eth.get_transaction_receipt(tx_hash)

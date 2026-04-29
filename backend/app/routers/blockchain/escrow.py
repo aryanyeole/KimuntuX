@@ -1,8 +1,4 @@
-"""
-app/routers/blockchain/escrow.py
-──────────────────────────────────
-FastAPI router for PaymentEscrow interactions.
-"""
+"""Escrow contract routes."""
 
 from __future__ import annotations
 
@@ -10,6 +6,10 @@ import logging
 
 from fastapi import APIRouter, HTTPException, status
 
+from app.blockchain.contracts.escrow import EscrowContract, EscrowStatus
+from app.blockchain.exceptions import BlockchainError
+from app.blockchain.web3_client import get_client
+from app.routers.blockchain.deps import map_blockchain_error
 from app.schemas.blockchain import (
     CreateEscrowRequest,
     EscrowConfigResponse,
@@ -22,10 +22,6 @@ from app.schemas.blockchain import (
     SetEscrowFeeRateRequest,
     TxResponse,
 )
-from app.blockchain.contracts.escrow import EscrowContract, EscrowStatus
-from app.blockchain.exceptions import BlockchainError
-from app.blockchain.web3_client import get_client
-from app.routers.blockchain.deps import map_blockchain_error
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/escrows", tags=["Escrow"])
@@ -56,16 +52,16 @@ def _serialize_escrow(record) -> EscrowResponse:
 
 @router.get("/stats", response_model=EscrowStatsResponse)
 def get_escrow_stats():
-    """Return escrow statistics and a recent escrow feed."""
+    """Return escrow totals and a small recent-activity feed."""
     try:
         contract = _escrow_contract()
         stats = contract.get_contract_stats()
         recent = contract.get_recent_escrows(limit=5)
-        active_count = sum(1 for e in recent if e.status == EscrowStatus.ACTIVE)
+        active_count = sum(1 for escrow in recent if escrow.status == EscrowStatus.ACTIVE)
         return EscrowStatsResponse(
             active_escrows=active_count,
             total_locked_value=stats.total_locked_value_eth,
-            recent_escrows=[_serialize_escrow(r) for r in recent],
+            recent_escrows=[_serialize_escrow(record) for record in recent],
             total_escrows=stats.total_created,
             completed_escrows=stats.total_completed,
             escrow_fee_rate_bps=stats.fee_rate_bps,
@@ -76,7 +72,7 @@ def get_escrow_stats():
 
 @router.get("/config", response_model=EscrowConfigResponse)
 def get_escrow_config():
-    """Return the global escrow fee and timeout configuration."""
+    """Return the escrow fee rate, timeout, and pause status."""
     try:
         contract = _escrow_contract()
         stats = contract.get_contract_stats()
@@ -91,18 +87,18 @@ def get_escrow_config():
 
 @router.get("/{escrow_id}", response_model=EscrowResponse)
 def get_escrow(escrow_id: int):
-    """Get escrow details by ID."""
+    """Return escrow details by numeric escrow ID."""
     try:
         return _serialize_escrow(_escrow_contract().get_escrow(escrow_id))
     except BlockchainError as exc:
         raise map_blockchain_error(exc)
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.post("/create", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
 def create_escrow(body: CreateEscrowRequest):
-    """Create a new escrow on-chain."""
+    """Create a new on-chain escrow record."""
     try:
         tx_hash = _escrow_contract().create_escrow(
             seller=body.seller,
@@ -115,7 +111,7 @@ def create_escrow(body: CreateEscrowRequest):
     except BlockchainError as exc:
         raise map_blockchain_error(exc)
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.post("/{escrow_id}/release", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
@@ -153,7 +149,9 @@ def dispute_escrow(escrow_id: int, body: EscrowDisputeRequest):
 @router.post("/{escrow_id}/resolve", response_model=TxResponse, status_code=status.HTTP_202_ACCEPTED)
 def resolve_escrow_dispute(escrow_id: int, body: ResolveDisputeRequest):
     try:
-        return TxResponse(tx_hash=_escrow_contract().resolve_dispute(escrow_id, body.release_to_seller))
+        return TxResponse(
+            tx_hash=_escrow_contract().resolve_dispute(escrow_id, body.release_to_seller)
+        )
     except BlockchainError as exc:
         raise map_blockchain_error(exc)
 
