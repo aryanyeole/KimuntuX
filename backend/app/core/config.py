@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:3000"]
     gemini_api_key: str | None = None
+    campaign_test_mode: bool = False
 
     # ── Phase 2: Encryption + ClickBank ──────────────────────────────────────
     # Required for encrypting tenant credentials. Generate with:
