@@ -246,7 +246,7 @@ def _list_offers_for_tenant(
 
 def _maybe_cold_start_sync(db: Session) -> None:
     """Trigger a marketplace sync if < threshold offers exist and creds are set."""
-    if not settings.clickbank_developer_key or not settings.clickbank_clerk_key:
+    if not settings.clickbank_developer_key:
         return
     count = db.scalar(
         select(func.count(Offer.id)).where(

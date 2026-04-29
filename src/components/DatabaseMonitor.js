@@ -1,144 +1,184 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import blockchainService from '../services/blockchainService';
+import { crm as C } from '../styles/crmTheme';
 
 const Container = styled.div`
-  background: #121e34;
-  border: 1px solid #1a2d4d;
-  border-radius: 12px;
+  background: ${C.surface};
+  border: 1px solid ${C.border};
+  border-radius: ${C.radiusLg};
   padding: 1.5rem;
 `;
 
-const Title = styled.h3`
-  color: #2d7aff;
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
+const Header = styled.div`
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
+const TitleWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+`;
+
+const Title = styled.h3`
+  color: ${C.text};
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+`;
+
+const Copy = styled.p`
+  margin: 0;
+  color: ${C.textMuted};
+  font-size: 0.85rem;
+  line-height: 1.55;
 `;
 
 const RefreshButton = styled.button`
-  background: #0c1527;
-  border: 1px solid #1a2d4d;
-  border-radius: 6px;
-  color: #6b7fa3;
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
+  background: ${C.surfaceAlt};
+  border: 1px solid ${C.border};
+  border-radius: ${C.radius};
+  color: ${C.text};
+  padding: 0.65rem 1rem;
+  font-size: 0.84rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    color: #2d7aff;
-    border-color: #2d7aff;
-  }
-  
+
   &:disabled {
-    cursor: not-allowed;
     opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1.25rem;
 `;
 
 const StatCard = styled.div`
-  background: #0c1527;
-  border: 1px solid #1a2d4d;
-  border-radius: 8px;
+  background: ${C.card};
+  border: 1px solid ${C.border};
+  border-radius: ${C.radius};
   padding: 1rem;
-  text-align: center;
 `;
 
 const StatValue = styled.div`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #2d7aff;
-  margin-bottom: 0.25rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: ${C.text};
+  margin-bottom: 0.2rem;
 `;
 
 const StatLabel = styled.div`
-  font-size: 0.85rem;
-  color: #6b7fa3;
+  font-size: 0.8rem;
+  color: ${C.textMuted};
+  line-height: 1.4;
+`;
+
+const SplitGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 980px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const Section = styled.div`
-  margin-bottom: 1.5rem;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
+  background: ${C.card};
+  border: 1px solid ${C.border};
+  border-radius: ${C.radius};
+  padding: 1rem;
 `;
 
 const SectionTitle = styled.h4`
-  color: #e4eaf4;
+  color: ${C.text};
   font-size: 0.95rem;
-  font-weight: 600;
-  margin: 0 0 0.75rem 0;
+  font-weight: 700;
+  margin: 0 0 0.8rem;
 `;
 
-const Table = styled.div`
-  background: #0c1527;
-  border: 1px solid #1a2d4d;
-  border-radius: 8px;
-  overflow: hidden;
+const RowList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
 `;
 
-const TableRow = styled.div`
+const ActivityRow = styled.div`
   display: grid;
-  grid-template-columns: ${props => props.columns || '1fr 1fr 1fr'};
-  gap: 1rem;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #1a2d4d;
-  
-  &:last-child {
-    border-bottom: none;
-  }
-  
-  &:first-child {
-    background: #060d1b;
-    font-weight: 600;
-    color: #6b7fa3;
-    font-size: 0.85rem;
-  }
+  grid-template-columns: minmax(0, 1.5fr) minmax(110px, 0.8fr) minmax(90px, 0.8fr);
+  gap: 0.8rem;
+  align-items: center;
+  padding: 0.8rem 0.9rem;
+  background: ${C.surfaceAlt};
+  border: 1px solid ${C.border};
+  border-radius: ${C.radius};
 `;
 
-const TableCell = styled.div`
-  color: #e4eaf4;
-  font-size: 0.85rem;
+const MainCell = styled.div`
+  min-width: 0;
+`;
+
+const Primary = styled.div`
+  color: ${C.text};
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 `;
 
-const EmptyState = styled.div`
-  padding: 2rem;
-  text-align: center;
-  color: #6b7fa3;
-  font-size: 0.9rem;
+const Secondary = styled.div`
+  color: ${C.textMuted};
+  font-size: 0.78rem;
+  margin-top: 0.18rem;
+`;
+
+const ValueCell = styled.div`
+  color: ${C.text};
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-align: right;
+`;
+
+const StatusCell = styled.div`
+  color: ${({ $positive }) => ($positive ? C.success : C.textMuted)};
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: right;
 `;
 
 const ErrorMessage = styled.div`
-  background: #ef444420;
-  border: 1px solid #ef4444;
-  border-radius: 8px;
-  padding: 0.75rem;
-  color: #ef4444;
+  background: ${C.dangerBg};
+  border: 1px solid ${C.danger};
+  border-radius: ${C.radius};
+  padding: 0.8rem 0.9rem;
+  color: ${C.danger};
   font-size: 0.85rem;
   margin-bottom: 1rem;
 `;
 
-const LoadingSpinner = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #6b7fa3;
-  font-size: 0.9rem;
+const EmptyState = styled.div`
+  padding: 1rem 0.25rem;
+  color: ${C.textMuted};
+  font-size: 0.88rem;
+  line-height: 1.6;
 `;
+
+const LoadingState = styled.div`
+  padding: 1rem 0.25rem;
+  color: ${C.textMuted};
+  font-size: 0.88rem;
+`;
+
+const formatEth = (value) => Number(value || 0).toFixed(4);
 
 const DatabaseMonitor = ({ connectedAddress, autoRefresh = true }) => {
   const [loading, setLoading] = useState(false);
@@ -149,30 +189,28 @@ const DatabaseMonitor = ({ connectedAddress, autoRefresh = true }) => {
 
   const fetchData = useCallback(async () => {
     if (!connectedAddress) return;
-    
+
     setLoading(true);
     setError('');
 
     try {
-      // Fetch commission stats and history
       const [commissionStats, commissionHistory, escrowStats] = await Promise.all([
         blockchainService.getContractStats(),
         blockchainService.getCommissionHistory(connectedAddress),
-        blockchainService.getEscrowStats()
+        blockchainService.getEscrowStats(),
       ]);
 
       setStats({
         totalCommissions: commissionHistory.commissions?.length || 0,
         commissionPool: commissionStats.contract_balance_eth || 0,
         activeEscrows: escrowStats.active_escrows || 0,
-        lockedValue: escrowStats.total_locked_value || 0
+        lockedValue: escrowStats.total_locked_value || 0,
       });
 
       setCommissions(commissionHistory.commissions || []);
       setEscrows(escrowStats.recent_escrows || []);
-
     } catch (err) {
-      setError(err.message || 'Failed to fetch database data');
+      setError(err.message || 'Failed to fetch blockchain activity.');
       console.error('Database monitor error:', err);
     } finally {
       setLoading(false);
@@ -187,107 +225,107 @@ const DatabaseMonitor = ({ connectedAddress, autoRefresh = true }) => {
 
   useEffect(() => {
     if (autoRefresh && connectedAddress) {
-      const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
+      const interval = setInterval(fetchData, 30000);
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [autoRefresh, connectedAddress, fetchData]);
 
   if (!connectedAddress) {
     return (
       <Container>
-        <Title>Database Synchronization</Title>
-        <EmptyState>
-          Connect a wallet to monitor database synchronization
-        </EmptyState>
+        <Title>Settlement Activity</Title>
+        <EmptyState>Connect a wallet to review commission history and escrow activity.</EmptyState>
       </Container>
     );
   }
 
   return (
     <Container>
-      <Title>
-        Database Synchronization
+      <Header>
+        <TitleWrap>
+          <Title>Settlement Activity</Title>
+          <Copy>
+            A concise operating feed for the connected wallet, including recent commissions and escrow activity.
+          </Copy>
+        </TitleWrap>
         <RefreshButton onClick={fetchData} disabled={loading}>
-          {loading ? 'Refreshing...' : '↻ Refresh'}
+          {loading ? 'Refreshing...' : 'Refresh'}
         </RefreshButton>
-      </Title>
+      </Header>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
       {loading && !stats ? (
-        <LoadingSpinner>Loading database records...</LoadingSpinner>
+        <LoadingState>Loading wallet activity...</LoadingState>
       ) : (
         <>
           {stats && (
             <StatsGrid>
               <StatCard>
                 <StatValue>{stats.totalCommissions}</StatValue>
-                <StatLabel>Total Commissions</StatLabel>
+                <StatLabel>Commission records</StatLabel>
               </StatCard>
               <StatCard>
-                <StatValue>{stats.commissionPool.toFixed(4)}</StatValue>
-                <StatLabel>Pool Balance (ETH)</StatLabel>
+                <StatValue>{formatEth(stats.commissionPool)}</StatValue>
+                <StatLabel>Commission pool (ETH)</StatLabel>
               </StatCard>
               <StatCard>
                 <StatValue>{stats.activeEscrows}</StatValue>
-                <StatLabel>Active Escrows</StatLabel>
+                <StatLabel>Active escrows</StatLabel>
               </StatCard>
               <StatCard>
-                <StatValue>{stats.lockedValue.toFixed(4)}</StatValue>
-                <StatLabel>Locked Value (ETH)</StatLabel>
+                <StatValue>{formatEth(stats.lockedValue)}</StatValue>
+                <StatLabel>Locked value (ETH)</StatLabel>
               </StatCard>
             </StatsGrid>
           )}
 
-          <Section>
-            <SectionTitle>Recent Commissions (RDS)</SectionTitle>
-            {commissions.length > 0 ? (
-              <Table>
-                <TableRow columns="2fr 1fr 1fr 1fr">
-                  <TableCell>Transaction ID</TableCell>
-                  <TableCell>Amount (ETH)</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Date</TableCell>
-                </TableRow>
-                {commissions.slice(0, 5).map((commission, index) => (
-                  <TableRow key={index} columns="2fr 1fr 1fr 1fr">
-                    <TableCell title={commission.tx_id}>{commission.tx_id}</TableCell>
-                    <TableCell>{Number(commission.amount_eth || 0).toFixed(4)}</TableCell>
-                    <TableCell>{commission.status}</TableCell>
-                    <TableCell>
-                      {new Date(commission.created_at * 1000).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </Table>
-            ) : (
-              <EmptyState>No commission records found</EmptyState>
-            )}
-          </Section>
+          <SplitGrid>
+            <Section>
+              <SectionTitle>Recent Commissions</SectionTitle>
+              {commissions.length ? (
+                <RowList>
+                  {commissions.slice(0, 5).map((commission, index) => (
+                    <ActivityRow key={`${commission.tx_id}-${index}`}>
+                      <MainCell>
+                        <Primary title={commission.tx_id}>{commission.tx_id}</Primary>
+                        <Secondary>{new Date(commission.created_at * 1000).toLocaleDateString()}</Secondary>
+                      </MainCell>
+                      <ValueCell>{formatEth(commission.amount_eth)}</ValueCell>
+                      <StatusCell $positive={String(commission.status).toLowerCase() === 'approved'}>
+                        {commission.status}
+                      </StatusCell>
+                    </ActivityRow>
+                  ))}
+                </RowList>
+              ) : (
+                <EmptyState>No commission history has been recorded for this wallet yet.</EmptyState>
+              )}
+            </Section>
 
-          <Section>
-            <SectionTitle>Recent Escrows (RDS)</SectionTitle>
-            {escrows.length > 0 ? (
-              <Table>
-                <TableRow columns="1fr 2fr 1fr 1fr">
-                  <TableCell>Escrow ID</TableCell>
-                  <TableCell>Product ID</TableCell>
-                  <TableCell>Amount (ETH)</TableCell>
-                  <TableCell>Status</TableCell>
-                </TableRow>
-                {escrows.slice(0, 5).map((escrow, index) => (
-                  <TableRow key={index} columns="1fr 2fr 1fr 1fr">
-                    <TableCell>{escrow.escrow_id}</TableCell>
-                    <TableCell title={escrow.product_id}>{escrow.product_id}</TableCell>
-                    <TableCell>{Number(escrow.amount_eth || 0).toFixed(4)}</TableCell>
-                    <TableCell>{escrow.status}</TableCell>
-                  </TableRow>
-                ))}
-              </Table>
-            ) : (
-              <EmptyState>No escrow records found</EmptyState>
-            )}
-          </Section>
+            <Section>
+              <SectionTitle>Recent Escrows</SectionTitle>
+              {escrows.length ? (
+                <RowList>
+                  {escrows.slice(0, 5).map((escrow, index) => (
+                    <ActivityRow key={`${escrow.escrow_id}-${index}`}>
+                      <MainCell>
+                        <Primary title={escrow.product_id}>Escrow #{escrow.escrow_id}</Primary>
+                        <Secondary>{escrow.product_id}</Secondary>
+                      </MainCell>
+                      <ValueCell>{formatEth(escrow.amount_eth)}</ValueCell>
+                      <StatusCell $positive={String(escrow.status).toLowerCase() === 'released'}>
+                        {escrow.status}
+                      </StatusCell>
+                    </ActivityRow>
+                  ))}
+                </RowList>
+              ) : (
+                <EmptyState>No escrow records are available yet.</EmptyState>
+              )}
+            </Section>
+          </SplitGrid>
         </>
       )}
     </Container>

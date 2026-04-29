@@ -5,12 +5,14 @@
  * Follows the chatService.js pattern with named exports.
  */
 
-import { BrowserProvider, Contract, parseEther } from 'ethers';
+import { BrowserProvider, Contract, formatEther, parseEther } from 'ethers';
 
 const API_URL = process.env.REACT_APP_BLOCKCHAIN_API_URL || 'http://localhost:8000';
 const NETWORK = process.env.REACT_APP_BLOCKCHAIN_NETWORK || 'localhost';
 const DEFAULT_COMMISSION_RATE_BPS = Number(process.env.REACT_APP_DEFAULT_COMMISSION_RATE_BPS || 10000);
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const MARKET_API_URL = 'https://api.coingecko.com/api/v3';
+const METAMASK_ONBOARDING_URL = 'https://metamask.io/download/';
 const HARDHAT_CHAIN_ID = '0x7A69';
 const HARDHAT_CHAIN_DECIMAL = 31337;
 const HARDHAT_NETWORK_CONFIG = {
@@ -51,7 +53,17 @@ const getEthereumProvider = () => {
   if (typeof window === 'undefined') {
     return null;
   }
-  return window.ethereum || null;
+
+  const injected = window.ethereum || null;
+  if (!injected) {
+    return null;
+  }
+
+  if (Array.isArray(injected.providers) && injected.providers.length) {
+    return injected.providers.find((provider) => provider?.isMetaMask) || injected.providers[0] || null;
+  }
+
+  return injected;
 };
 
 export const validateAddress = (address) => {
@@ -84,6 +96,15 @@ export const apiFetch = async (endpoint, options = {}) => {
 
 export const hasMetaMask = () => Boolean(getEthereumProvider());
 
+export const openMetaMaskOnboarding = () => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  window.open(METAMASK_ONBOARDING_URL, '_blank', 'noopener,noreferrer');
+  return true;
+};
+
 export const getConnectedMetaMaskAddress = async () => {
   const provider = getEthereumProvider();
   if (!provider) {
@@ -92,6 +113,15 @@ export const getConnectedMetaMaskAddress = async () => {
 
   const accounts = await provider.request({ method: 'eth_accounts' });
   return accounts?.[0] || null;
+};
+
+export const getMetaMaskChainId = async () => {
+  const provider = getEthereumProvider();
+  if (!provider) {
+    throw new Error('MetaMask is not installed.');
+  }
+
+  return provider.request({ method: 'eth_chainId' });
 };
 
 const requireMetaMaskProvider = async () => {
@@ -168,11 +198,23 @@ export const ensureMetaMaskNetwork = async () => {
 export const connectMetaMask = async () => {
   const provider = getEthereumProvider();
   if (!provider) {
+    openMetaMaskOnboarding();
     throw new Error('MetaMask is not installed.');
   }
 
-  await ensureMetaMaskNetwork();
+  try {
+    await provider.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }],
+    });
+  } catch (error) {
+    if (error?.code !== 4001 && error?.code !== -32601) {
+      throw error;
+    }
+  }
+
   const accounts = await provider.request({ method: 'eth_requestAccounts' });
+  await ensureMetaMaskNetwork();
   const address = accounts?.[0];
 
   if (!validateAddress(address)) {
@@ -180,6 +222,67 @@ export const connectMetaMask = async () => {
   }
 
   return address;
+};
+
+export const connectMetaMaskSession = async () => {
+  const provider = getEthereumProvider();
+  if (!provider) {
+    openMetaMaskOnboarding();
+    throw new Error('MetaMask is not installed.');
+  }
+
+  try {
+    await provider.request({
+      method: 'wallet_requestPermissions',
+      params: [{ eth_accounts: {} }],
+    });
+  } catch (error) {
+    if (error?.code !== 4001 && error?.code !== -32601) {
+      throw error;
+    }
+  }
+
+  const accounts = await provider.request({ method: 'eth_requestAccounts' });
+  const address = accounts?.[0];
+
+  if (!validateAddress(address)) {
+    throw new Error('MetaMask returned an invalid wallet address.');
+  }
+
+  const currentChainId = await provider.request({ method: 'eth_chainId' });
+  const currentProvider = new BrowserProvider(provider);
+  const walletBalanceEth = Number(formatEther(await currentProvider.getBalance(address)));
+
+  const targetChainId = await ensureMetaMaskNetwork();
+  const kimuxProvider = new BrowserProvider(provider);
+  const kimuxBalanceEth = Number(formatEther(await kimuxProvider.getBalance(address)));
+
+  return {
+    address,
+    currentChainId,
+    targetChainId,
+    walletBalanceEth,
+    kimuxBalanceEth,
+    switchedNetworks: currentChainId !== targetChainId,
+  };
+};
+
+export const getMetaMaskNativeBalance = async (address = null) => {
+  const provider = getEthereumProvider();
+  if (!provider) {
+    throw new Error('MetaMask is not installed.');
+  }
+
+  await ensureMetaMaskNetwork();
+  const browserProvider = new BrowserProvider(provider);
+  const targetAddress = address || await getConnectedMetaMaskAddress();
+
+  if (!validateAddress(targetAddress)) {
+    throw new Error('No valid MetaMask account is connected yet.');
+  }
+
+  const balance = await browserProvider.getBalance(targetAddress);
+  return Number(formatEther(balance));
 };
 
 export const watchMetaMaskAccount = (handler) => {
@@ -202,12 +305,13 @@ export const watchMetaMaskAccount = (handler) => {
 
 export const getHealth = async () => {
   const data = await apiFetch('/health');
+  const normalizedStatus = data.status === 'ok' ? 'healthy' : data.status;
   return {
-    status: data.status,
-    chain_id: data.chain_id,
-    latest_block: data.latest_block,
-    gas_price_gwei: Number(data.gas_price_gwei || 0),
-    platform_balance_eth: Number(data.platform_balance_eth || 0),
+    status: normalizedStatus,
+    chain_id: data.chain_id ?? null,
+    latest_block: data.latest_block ?? null,
+    gas_price_gwei: data.gas_price_gwei !== undefined ? Number(data.gas_price_gwei || 0) : null,
+    platform_balance_eth: data.platform_balance_eth !== undefined ? Number(data.platform_balance_eth || 0) : null,
     contracts: data.contracts || {},
     error: data.error || null,
   };
@@ -365,6 +469,111 @@ export const getTransactionStatus = async (txHash) => {
     block_number: data.block_number ?? null,
     gas_used: data.gas_used ?? null,
     confirmations: data.confirmations ?? null,
+  };
+};
+
+const wait = (ms) => new Promise((resolve) => {
+  window.setTimeout(resolve, ms);
+});
+
+export const waitForTransactionSuccess = async (txHash, options = {}) => {
+  const timeoutMs = options.timeoutMs || 45000;
+  const pollMs = options.pollMs || 1500;
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const status = await getTransactionStatus(txHash);
+    if (status.status === 'success') {
+      return status;
+    }
+    if (status.status === 'failed' || status.status === 'reverted') {
+      throw new Error(`Transaction failed with status: ${status.status}`);
+    }
+    await wait(pollMs);
+  }
+
+  throw new Error('Transaction confirmation timed out. Please refresh wallet status.');
+};
+
+export const waitForWalletStatus = async (address, options = {}) => {
+  const timeoutMs = options.timeoutMs || 45000;
+  const pollMs = options.pollMs || 1500;
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const status = await getWalletStatus(address);
+    if (status.exists) {
+      return status;
+    }
+    await wait(pollMs);
+  }
+
+  throw new Error('Wallet provisioning is taking longer than expected. Please refresh and try again.');
+};
+
+export const getCryptoMarketSnapshot = async () => {
+  const query = new URLSearchParams({
+    vs_currency: 'usd',
+    ids: 'bitcoin,ethereum,solana,chainlink,usd-coin',
+    order: 'market_cap_desc',
+    per_page: '5',
+    page: '1',
+    sparkline: 'false',
+    price_change_percentage: '24h',
+  });
+
+  const response = await fetch(`${MARKET_API_URL}/coins/markets?${query.toString()}`);
+  if (!response.ok) {
+    throw new Error('Unable to load crypto market data right now.');
+  }
+
+  const rows = await response.json();
+  return rows.map((coin) => ({
+    id: coin.id,
+    symbol: String(coin.symbol || '').toUpperCase(),
+    name: coin.name,
+    image: coin.image,
+    current_price: Number(coin.current_price || 0),
+    price_change_percentage_24h: Number(coin.price_change_percentage_24h || 0),
+    market_cap_rank: Number(coin.market_cap_rank || 0),
+    market_cap: Number(coin.market_cap || 0),
+  }));
+};
+
+export const getCryptoPriceMap = async () => {
+  const query = new URLSearchParams({
+    ids: 'bitcoin,ethereum,solana,chainlink,usd-coin',
+    vs_currencies: 'usd',
+    include_24hr_change: 'true',
+  });
+
+  const response = await fetch(`${MARKET_API_URL}/simple/price?${query.toString()}`);
+  if (!response.ok) {
+    throw new Error('Unable to load crypto prices right now.');
+  }
+
+  const data = await response.json();
+  return {
+    bitcoin: {
+      usd: Number(data.bitcoin?.usd || 0),
+      change_24h: Number(data.bitcoin?.usd_24h_change || 0),
+    },
+    ethereum: {
+      usd: Number(data.ethereum?.usd || 0),
+      change_24h: Number(data.ethereum?.usd_24h_change || 0),
+    },
+    solana: {
+      usd: Number(data.solana?.usd || 0),
+      change_24h: Number(data.solana?.usd_24h_change || 0),
+    },
+    chainlink: {
+      usd: Number(data.chainlink?.usd || 0),
+      change_24h: Number(data.chainlink?.usd_24h_change || 0),
+    },
+    'usd-coin': {
+      usd: Number(data['usd-coin']?.usd || 0),
+      change_24h: Number(data['usd-coin']?.usd_24h_change || 0),
+    },
   };
 };
 
@@ -687,9 +896,13 @@ const blockchainService = {
   validateAddress,
   apiFetch,
   hasMetaMask,
+  openMetaMaskOnboarding,
   getConnectedMetaMaskAddress,
+  getMetaMaskChainId,
   ensureMetaMaskNetwork,
   connectMetaMask,
+  connectMetaMaskSession,
+  getMetaMaskNativeBalance,
   watchMetaMaskAccount,
   getHealth,
   getContractStats,
@@ -707,6 +920,10 @@ const blockchainService = {
   getEscrowConfig,
   getEscrow,
   getTransactionStatus,
+  waitForTransactionSuccess,
+  waitForWalletStatus,
+  getCryptoMarketSnapshot,
+  getCryptoPriceMap,
   createWalletFor,
   createWalletWithMetaMask,
   depositEth,

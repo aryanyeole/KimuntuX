@@ -1,6 +1,6 @@
 """
-blockchain/contracts/escrow.py
-──────────────────────────────
+app/blockchain/contracts/escrow.py
+────────────────────────────────────
 High-level wrapper around the deployed PaymentEscrow contract.
 """
 
@@ -12,8 +12,8 @@ from enum import IntEnum
 
 from web3 import Web3
 
-from blockchain.exceptions import ContractCallError, InsufficientFundsError
-from blockchain.web3_client import Web3Client
+from app.blockchain.exceptions import ContractCallError, InsufficientFundsError
+from app.blockchain.web3_client import Web3Client
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class EscrowStats:
 class EscrowContract:
     def __init__(self, client: Web3Client) -> None:
         if client.escrow is None:
-            raise ValueError("Escrow contract is not configured.")
+            raise ValueError("Escrow contract is not configured. Set ESCROW_CONTRACT_ADDRESS.")
         self._client = client
         self._contract = client.escrow
         self._w3 = client.w3
@@ -82,7 +82,6 @@ class EscrowContract:
                 required_wei=value_wei,
                 available_wei=balance,
             )
-
         tx_params = self._client.build_tx_params(value_wei=value_wei)
         fn = getattr(self._contract.functions, fn_name)
         tx = fn(*args).build_transaction(tx_params)
@@ -110,26 +109,14 @@ class EscrowContract:
         )
         logger.info(
             "createEscrow tx sent: seller=%s product_id=%s amount=%.6f ETH -> %s",
-            seller_addr,
-            product_id,
-            amount_eth,
-            tx_hash,
+            seller_addr, product_id, amount_eth, tx_hash,
         )
         return tx_hash
 
     def get_escrow(self, escrow_id: int) -> EscrowRecord:
         (
-            raw_escrow_id,
-            buyer,
-            seller,
-            amount_wei,
-            fee_wei,
-            created_at,
-            release_time,
-            status_int,
-            product_id,
-            notes,
-            arbiter,
+            raw_escrow_id, buyer, seller, amount_wei, fee_wei,
+            created_at, release_time, status_int, product_id, notes, arbiter,
         ) = self._call("getEscrow", escrow_id)
         return EscrowRecord(
             escrow_id=raw_escrow_id,
@@ -187,9 +174,7 @@ class EscrowContract:
         tx_hash = self._send("resolveDispute", escrow_id, release_to_seller)
         logger.info(
             "resolveDispute tx sent: escrow_id=%d release_to_seller=%s -> %s",
-            escrow_id,
-            release_to_seller,
-            tx_hash,
+            escrow_id, release_to_seller, tx_hash,
         )
         return tx_hash
 
@@ -213,9 +198,7 @@ class EscrowContract:
         tx_hash = self._send("setArbiterAuthorization", arbiter_addr, authorized)
         logger.info(
             "setArbiterAuthorization tx sent: arbiter=%s authorized=%s -> %s",
-            arbiter_addr,
-            authorized,
-            tx_hash,
+            arbiter_addr, authorized, tx_hash,
         )
         return tx_hash
 

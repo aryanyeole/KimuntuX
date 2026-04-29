@@ -1,7 +1,7 @@
 """
-api/models.py
-─────────────
-Pydantic request and response models for all KimuX API endpoints.
+app/schemas/blockchain.py
+─────────────────────────
+Pydantic request and response models for all KimuX blockchain API endpoints.
 
 Design decisions
 ----------------
@@ -69,7 +69,7 @@ class TransactionStatusResponse(BaseModel):
 
 
 class ErrorResponse(BaseModel):
-    """Standard error envelope."""
+    """Standard error envelope for blockchain errors."""
     error: str
     detail: Optional[dict] = None
 

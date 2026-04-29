@@ -176,10 +176,50 @@ const Alert = styled.div`
   color: ${({ $tone }) => ($tone === 'error' ? C.danger : C.success)};
 `;
 
+const OnboardingGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+  margin: 1rem 0;
+`;
+
+const OnboardingCard = styled.div`
+  background: ${C.card};
+  border: 1px solid ${C.border};
+  border-radius: ${C.radius};
+  padding: 0.95rem;
+`;
+
+const StepLabel = styled.div`
+  color: ${C.accent};
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+`;
+
+const StepTitle = styled.div`
+  color: ${C.text};
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.28rem;
+`;
+
+const StepBody = styled.div`
+  color: ${C.textMuted};
+  font-size: 0.82rem;
+  line-height: 1.5;
+`;
+
 const WalletConnector = ({ onWalletConnected }) => {
   const [address, setAddress] = useState('');
   const [connected, setConnected] = useState(false);
   const [walletData, setWalletData] = useState(null);
+  const [externalBalance, setExternalBalance] = useState(null);
+  const [kimuxBalance, setKimuxBalance] = useState(null);
+  const [activeChainId, setActiveChainId] = useState(null);
+  const [walletExists, setWalletExists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -217,8 +257,23 @@ const WalletConnector = ({ onWalletConnected }) => {
     bootstrapMetaMask();
     const unsubscribe = blockchainService.watchMetaMaskAccount((nextAddress) => {
       setMetaMaskAddress(nextAddress);
-      if (!connected) {
-        setAddress(nextAddress || '');
+      setAddress(nextAddress || '');
+
+      if (connected) {
+        setConnected(false);
+        setWalletData(null);
+        setExternalBalance(null);
+        setKimuxBalance(null);
+        setActiveChainId(null);
+        setWalletExists(false);
+        setSuccess('');
+        setError(nextAddress
+          ? 'MetaMask account changed. Review the new wallet and reconnect.'
+          : 'MetaMask disconnected. Reconnect to continue.');
+
+        if (onWalletConnected) {
+          onWalletConnected(null, null, null);
+        }
       }
     });
 
@@ -226,23 +281,37 @@ const WalletConnector = ({ onWalletConnected }) => {
       active = false;
       unsubscribe();
     };
-  }, [connected]);
+  }, [connected, onWalletConnected]);
 
-  const hydrateWallet = async (walletAddress) => {
+  const hydrateWallet = async (walletAddress, nativeBalance = externalBalance, connectedKimuxBalance = kimuxBalance) => {
     const status = await blockchainService.getWalletStatus(walletAddress);
+    setWalletExists(status.exists);
 
     if (!status.exists) {
-      const createResult = await blockchainService.createWalletFor(walletAddress);
-      setSuccess(`Wallet created successfully. Transaction: ${createResult.tx_hash}`);
+      setWalletData(null);
+
+      if (onWalletConnected) {
+        onWalletConnected(walletAddress, null, {
+          externalBalance: nativeBalance,
+          kimuxBalance: connectedKimuxBalance,
+          walletExists: false,
+        });
+      }
+      return null;
     }
 
     const details = await blockchainService.getWalletDetails(walletAddress);
     setWalletData(details);
-    setConnected(true);
 
     if (onWalletConnected) {
-      onWalletConnected(walletAddress, details);
+      onWalletConnected(walletAddress, details, {
+        externalBalance: nativeBalance,
+        kimuxBalance: connectedKimuxBalance,
+        walletExists: true,
+      });
     }
+
+    return details;
   };
 
   const handleConnect = async (incomingAddress = address) => {
@@ -257,7 +326,11 @@ const WalletConnector = ({ onWalletConnected }) => {
     setLoading(true);
 
     try {
-      await hydrateWallet(incomingAddress);
+      const nativeBalance = await blockchainService.getMetaMaskNativeBalance(incomingAddress);
+      setExternalBalance(nativeBalance);
+      setKimuxBalance(nativeBalance);
+      setConnected(true);
+      await hydrateWallet(incomingAddress, nativeBalance, nativeBalance);
       setAddress(incomingAddress);
     } catch (err) {
       setError(err.message || 'Failed to connect wallet.');
@@ -273,12 +346,22 @@ const WalletConnector = ({ onWalletConnected }) => {
     setLoading(true);
 
     try {
-      const nextAddress = await blockchainService.connectMetaMask();
-      setMetaMaskAddress(nextAddress);
-      setAddress(nextAddress);
-      await handleConnect(nextAddress);
+      const session = await blockchainService.connectMetaMaskSession();
+      setMetaMaskAddress(session.address);
+      setAddress(session.address);
+      setActiveChainId(session.targetChainId);
+      setExternalBalance(session.walletBalanceEth);
+      setKimuxBalance(session.kimuxBalanceEth);
+      setConnected(true);
+      await hydrateWallet(session.address, session.walletBalanceEth, session.kimuxBalanceEth);
+      setSuccess(session.switchedNetworks
+        ? 'Wallet connected and MetaMask joined the KimuX network. The panel shows both the original wallet balance and the KimuX network balance.'
+        : 'Wallet connected on the KimuX network. The panel shows the wallet balance and the KimuX network balance.');
     } catch (err) {
-      setError(err.message || 'Failed to connect MetaMask.');
+      const fallbackMessage = blockchainService.hasMetaMask()
+        ? 'MetaMask did not complete the connection request. Unlock the extension, approve the account request, and confirm the network switch.'
+        : 'MetaMask was not detected, so the MetaMask onboarding page was opened in a new tab. Install or create the wallet there, then return here and click connect again.';
+      setError(err.message || fallbackMessage);
     } finally {
       setLoading(false);
     }
@@ -287,12 +370,44 @@ const WalletConnector = ({ onWalletConnected }) => {
   const handleDisconnect = () => {
     setConnected(false);
     setWalletData(null);
+    setExternalBalance(null);
+    setKimuxBalance(null);
+    setActiveChainId(null);
+    setWalletExists(false);
     setError('');
     setSuccess('');
     setAddress(metaMaskAddress || '');
 
     if (onWalletConnected) {
-      onWalletConnected(null, null);
+      onWalletConnected(null, null, null);
+    }
+  };
+
+  const handleCreateWallet = async () => {
+    setError('');
+    setSuccess('');
+
+    if (!metaMaskAddress) {
+      setError('Connect MetaMask first so the wallet can be created by the active account.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const createResult = await blockchainService.createWalletFor(metaMaskAddress);
+      await blockchainService.waitForTransactionSuccess(createResult.tx_hash);
+      await blockchainService.waitForWalletStatus(metaMaskAddress);
+      const nativeBalance = await blockchainService.getMetaMaskNativeBalance(metaMaskAddress);
+      setExternalBalance(nativeBalance);
+      setKimuxBalance(nativeBalance);
+      await hydrateWallet(metaMaskAddress, nativeBalance, nativeBalance);
+      setSuccess(`KimuX wallet created successfully for the connected address. Transaction: ${createResult.tx_hash}`);
+    } catch (err) {
+      setError(err.message || 'Failed to create the KimuX wallet.');
+      console.error('Wallet creation error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -302,7 +417,7 @@ const WalletConnector = ({ onWalletConnected }) => {
         <HeaderText>
           <Title>Wallet Connection</Title>
           <Subtitle>
-            Connect with MetaMask for the smoothest flow, or paste any valid wallet address to sync it with the platform.
+            Connect with MetaMask to read the live wallet balance, then let KimuX provision the internal wallet for that address without making the user pay a setup transaction.
           </Subtitle>
         </HeaderText>
         <StatusBadge $connected={connected}>
@@ -329,34 +444,64 @@ const WalletConnector = ({ onWalletConnected }) => {
                 <InfoLabel>Expected Network</InfoLabel>
                 <InfoValue>{blockchainService.networkLabel}</InfoValue>
               </InfoRow>
+              <InfoRow>
+                <InfoLabel>Active Chain</InfoLabel>
+                <InfoValue>{activeChainId || 'Prompt on connect'}</InfoValue>
+              </InfoRow>
             </WalletInfo>
 
             <WalletInfo>
               <InfoRow>
                 <InfoLabel>On connect</InfoLabel>
-                <InfoValue>Checks wallet registry</InfoValue>
+                <InfoValue>Reads account and balance</InfoValue>
               </InfoRow>
               <InfoRow>
-                <InfoLabel>If missing</InfoLabel>
-                <InfoValue>Creates platform wallet</InfoValue>
+                <InfoLabel>Wallet creation</InfoLabel>
+                <InfoValue>Provisioned by KimuX</InfoValue>
               </InfoRow>
               <InfoRow>
                 <InfoLabel>Then</InfoLabel>
-                <InfoValue>Loads balances and status</InfoValue>
+                <InfoValue>Enables internal transactions</InfoValue>
               </InfoRow>
             </WalletInfo>
           </WalletGrid>
 
+          <OnboardingGrid>
+            <OnboardingCard>
+              <StepLabel>Step 1</StepLabel>
+              <StepTitle>Detect MetaMask</StepTitle>
+              <StepBody>
+                {metaMaskAvailable
+                  ? 'MetaMask is available here and each connect click will request the wallet again.'
+                  : 'If MetaMask is not installed, the connect button opens the MetaMask onboarding page so the user can install it or create an account.'}
+              </StepBody>
+            </OnboardingCard>
+            <OnboardingCard>
+              <StepLabel>Step 2</StepLabel>
+              <StepTitle>Approve account and chain</StepTitle>
+              <StepBody>
+                The wallet flow asks MetaMask for the active account and then prompts the user to switch or add the KimuX local chain before internal actions are enabled.
+              </StepBody>
+            </OnboardingCard>
+            <OnboardingCard>
+              <StepLabel>Step 3</StepLabel>
+              <StepTitle>Choose whether to create a KimuX wallet</StepTitle>
+              <StepBody>
+                Connecting MetaMask no longer creates anything on-chain. If you want internal transfers and wallet-managed actions, KimuX can provision the internal wallet for the connected address without asking MetaMask to sign a setup transaction.
+              </StepBody>
+            </OnboardingCard>
+          </OnboardingGrid>
+
           <ButtonRow>
-            <Button onClick={handleMetaMaskConnect} disabled={loading || !metaMaskAvailable}>
-              {loading ? 'Connecting…' : 'Connect with MetaMask'}
+            <Button onClick={handleMetaMaskConnect} disabled={loading}>
+              {loading ? 'Connecting...' : 'Connect with MetaMask'}
             </Button>
             <Button
               $variant="secondary"
               onClick={() => handleConnect()}
               disabled={loading || !address}
             >
-              {loading ? 'Syncing…' : 'Use Entered Address'}
+              {loading ? 'Syncing...' : 'Use Entered Address'}
             </Button>
           </ButtonRow>
 
@@ -372,7 +517,8 @@ const WalletConnector = ({ onWalletConnected }) => {
           </InputGroup>
 
           <HelperText>
-            MetaMask connect will request the active account and switch to the local Hardhat network automatically.
+            Every click on the MetaMask button actively re-requests the wallet connection, switches to the KimuX local chain, and reads the live wallet balance.
+            Internal KimuX wallet creation is a separate action and is provisioned through the platform for the connected address, so the user is not asked to sign a fee-bearing setup transaction just to get started.
           </HelperText>
         </>
       ) : (
@@ -384,24 +530,47 @@ const WalletConnector = ({ onWalletConnected }) => {
             </InfoRow>
             <InfoRow>
               <InfoLabel>Status</InfoLabel>
-              <InfoValue>{walletData?.is_active ? 'Active' : 'Inactive'}</InfoValue>
+              <InfoValue>{walletExists ? (walletData?.is_active ? 'Active' : 'Inactive') : 'External wallet only'}</InfoValue>
             </InfoRow>
             <InfoRow>
-              <InfoLabel>ETH Balance</InfoLabel>
+              <InfoLabel>Active Chain</InfoLabel>
+              <InfoValue>{activeChainId || blockchainService.networkLabel}</InfoValue>
+            </InfoRow>
+            <InfoRow>
+              <InfoLabel>MetaMask Balance</InfoLabel>
+              <InfoValue>{externalBalance !== null ? `${externalBalance.toFixed(4)} ETH` : 'N/A'}</InfoValue>
+            </InfoRow>
+            <InfoRow>
+              <InfoLabel>KimuX Network Balance</InfoLabel>
+              <InfoValue>{kimuxBalance !== null ? `${kimuxBalance.toFixed(4)} ETH` : 'N/A'}</InfoValue>
+            </InfoRow>
+            <InfoRow>
+              <InfoLabel>KimuX Wallet Balance</InfoLabel>
               <InfoValue>{walletData?.eth_balance?.toFixed(4) || '0.0000'} ETH</InfoValue>
             </InfoRow>
             <InfoRow>
               <InfoLabel>Created</InfoLabel>
               <InfoValue>
-                {walletData?.created_at ? new Date(walletData.created_at * 1000).toLocaleDateString() : 'N/A'}
+                {walletData?.created_at ? new Date(walletData.created_at * 1000).toLocaleDateString() : (walletExists ? 'N/A' : 'Create wallet to activate')}
               </InfoValue>
             </InfoRow>
           </WalletInfo>
 
+          {!walletExists && (
+            <Alert $tone="success">
+              MetaMask is connected and the external balance is available. Create a KimuX wallet when you want to use internal transfers and settlement actions on the site, and KimuX will provision it for this connected address.
+            </Alert>
+          )}
+
           <ButtonRow>
             {metaMaskAvailable && (
               <Button $variant="secondary" onClick={handleMetaMaskConnect} disabled={loading}>
-                Refresh from MetaMask
+                Refresh MetaMask
+              </Button>
+            )}
+            {!walletExists && metaMaskAvailable && (
+              <Button onClick={handleCreateWallet} disabled={loading}>
+                {loading ? 'Creating...' : 'Create KimuX Wallet'}
               </Button>
             )}
             <Button $variant="danger" onClick={handleDisconnect} disabled={loading}>

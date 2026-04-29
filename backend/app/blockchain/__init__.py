@@ -1,10 +1,6 @@
-"""
-blockchain package
-──────────────────
-Blockchain integration layer for KimuntuX.
-"""
+"""Blockchain integration layer for KimuntuX."""
 
-from blockchain.exceptions import (
+from app.blockchain.exceptions import (
     BlockchainError,
     ConfigurationError,
     ConnectionError,
@@ -16,7 +12,7 @@ from blockchain.exceptions import (
     TransactionRevertedError,
     TransactionTimeoutError,
 )
-from blockchain.web3_client import Web3Client, get_client
+from app.blockchain.web3_client import Web3Client, get_client
 
 __all__ = [
     "BlockchainError",

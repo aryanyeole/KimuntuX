@@ -1,7 +1,9 @@
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$hardhatDir = Join-Path $repoRoot "KimuntuX_BlockchainIntegration"
+$preferredHardhatDir = Join-Path $repoRoot "KimuX_BlockchainIntegration"
+$legacyHardhatDir = Join-Path $repoRoot "KimuntuX_BlockchainIntegration"
+$hardhatDir = if (Test-Path $preferredHardhatDir) { $preferredHardhatDir } else { $legacyHardhatDir }
 $backendDir = Join-Path $repoRoot "backend"
 $frontendDir = $repoRoot
 $backendPython = Join-Path $backendDir ".venv\Scripts\python.exe"
@@ -88,8 +90,11 @@ function Start-LoggedProcess {
 
 function Stop-KimuXProcesses {
     $targets = @(
+        "*KimuX_BlockchainIntegration*hardhat*",
         "*KimuntuX_BlockchainIntegration*hardhat*",
+        "*KimuX_BlockchainIntegration*node_modules*hardhat*",
         "*KimuntuX_BlockchainIntegration*node_modules*hardhat*",
+        "*uvicorn app.main:app*",
         "*uvicorn main:app*",
         "*node_modules*react-scripts*",
         "*react-scripts start*"
@@ -134,13 +139,28 @@ function Update-EnvValue {
         $content = $content.TrimEnd() + "`r`n$replacement`r`n"
     }
 
-    Set-Content -Path $FilePath -Value $content
+    $lastError = $null
+    for ($attempt = 1; $attempt -le 5; $attempt++) {
+        try {
+            Set-Content -Path $FilePath -Value $content
+            return
+        } catch {
+            $lastError = $_
+            Start-Sleep -Milliseconds 400
+        }
+    }
+
+    throw $lastError
 }
 
 Write-Host "Starting KimuX demo stack..."
 
 if (-not (Test-Path $backendPython)) {
     throw "Backend virtualenv is missing at $backendPython"
+}
+
+if (-not (Test-Path $hardhatDir)) {
+    throw "Hardhat project directory was not found. Checked $preferredHardhatDir and $legacyHardhatDir"
 }
 
 Stop-KimuXProcesses
@@ -176,7 +196,7 @@ Update-EnvValue -FilePath $backendEnv -Key "EXPECTED_CHAIN_ID" -Value $deploymen
 Write-Host "Launching backend on 127.0.0.1:8000"
 $backendProcess = Start-LoggedProcess `
     -WorkingDirectory $backendDir `
-    -Command ".venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8000" `
+    -Command ".venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000" `
     -LogPath $backendLog
 
 if (-not (Wait-ForHttp -Url "http://127.0.0.1:8000/health" -Process $backendProcess -TimeoutSeconds 30)) {

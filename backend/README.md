@@ -1,14 +1,13 @@
 # KimuX Backend
 
-This folder contains the FastAPI backend for the KimuX project.
+This folder contains the FastAPI backend for the KimuX CRM and blockchain workflows.
 
 ## Current scope
 
 - FastAPI application scaffold
-- PostgreSQL-ready SQLAlchemy setup
-- JWT-based auth foundation
-- `users` and `contact_submissions` database models
-- Starter auth and contact-form API routes
+- PostgreSQL-ready SQLAlchemy setup with Alembic migrations
+- JWT-based auth and tenant-aware CRM APIs
+- Optional blockchain integration for wallets, commissions, escrow, and transaction status
 
 ## Setup
 
@@ -25,7 +24,7 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-4. Update `.env` with your AWS RDS connection details and JWT secret.
+4. Update `.env` with database, JWT, encryption, and any optional blockchain settings.
 
 ## Run locally
 
@@ -35,10 +34,16 @@ From the `backend` folder:
 uvicorn app.main:app --reload
 ```
 
-## Current endpoints
+## Key endpoints
 
 - `GET /health`
 - `POST /api/v1/auth/signup`
 - `POST /api/v1/auth/login`
+- `POST /api/v1/auth/token`
 - `GET /api/v1/auth/me`
 - `POST /api/v1/contact`
+- `GET /api/v1/crm/...`
+- `GET /api/v1/commissions/...`
+- `GET /api/v1/wallets/...`
+- `GET /api/v1/escrows/...`
+- `GET /api/v1/network/transactions/{tx_hash}`
