@@ -255,10 +255,10 @@ const SignupPage = () => {
     <SignupContainer>
       <SignupCard>
         <Logo>
-          <img src="/light_logo.jpg" alt="KimuntuX" />
+          <img src="/light_logo.jpg" alt="KimuX" />
         </Logo>
         <Title>Create Account</Title>
-        <Subtitle>Join the KimuntuX intelligent brokerage universe</Subtitle>
+        <Subtitle>Join the KimuX intelligent brokerage universe</Subtitle>
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && <SuccessMessage>{success}</SuccessMessage>}

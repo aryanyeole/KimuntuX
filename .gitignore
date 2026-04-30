@@ -31,6 +31,9 @@ backend/__pycache__/
 backend/app/__pycache__/
 backend/app/*/__pycache__/
 *.pyc
+*.db
+*.log
+deployment-info.local.json
 
 npm-debug.log*
 yarn-debug.log*

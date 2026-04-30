@@ -442,7 +442,7 @@ export default function PricingPage() {
               <Item>Advanced analytics, fraud detection, and audit tools</Item>
               <Item>Dedicated success manager + enterprise SLA</Item>
             </List>
-            <Button as="a" href="mailto:contact@kimuntux.com">Contact Sales</Button>
+            <Button as="a" href="mailto:contact@KimuX.com">Contact Sales</Button>
           </Tier>
         </Grid>
 
@@ -451,7 +451,7 @@ export default function PricingPage() {
           <Addons>
             <Addon>AI Copywriter Pro (ad scripts, long-form content)</Addon>
             <Addon>Auto Funnel Builder (drag-and-drop AI funnels)</Addon>
-            <Addon>KimuntuX Academy (training & certification portal)</Addon>
+            <Addon>KimuX Academy (training & certification portal)</Addon>
             <Addon>Affiliate Program Management Suite</Addon>
           </Addons>
         </Footer>

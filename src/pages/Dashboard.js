@@ -288,7 +288,7 @@ const Dashboard = () => {
       <DashboardHeader>
         <HeaderLeft>
           <Branding>
-            <h1>KimuntuX</h1>
+            <h1>KimuX</h1>
             <p>The Intelligent Brokerage & Commerce Universe, B2B, B2C and Beyond</p>
           </Branding>
         </HeaderLeft>

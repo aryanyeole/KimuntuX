@@ -3,21 +3,21 @@
     {
       "id": "kx-global-01",
       "scope": "global",
-      "q": "What is KimuntuX?",
-      "a": "KimuntuX is an AI-driven brokerage & affiliate marketing platform that connects businesses with growth opportunities through intelligent campaign management, CRM tools, and data-driven insights. We help you scale faster with automated workflows and real-time analytics.",
+      "q": "What is KimuX?",
+      "a": "KimuX is an AI-driven brokerage & affiliate marketing platform that connects businesses with growth opportunities through intelligent campaign management, CRM tools, and data-driven insights. We help you scale faster with automated workflows and real-time analytics.",
       "tags": ["about", "overview", "introduction"]
     },
     {
       "id": "kx-global-02",
       "scope": "global",
-      "q": "What features does KimuntuX offer?",
-      "a": "KimuntuX offers: 🎯 Campaign Management, 📊 AI-Powered Analytics, 💼 B2B Brokerage, 🛍️ B2C Marketplace, 💰 Affiliate Hub, 🤖 AI Dashboard, ⛓️ Blockchain Integration, 💳 Fintech Tools, 📈 Commerce Intelligence, and 👨‍💻 Developer API.",
+      "q": "What features does KimuX offer?",
+      "a": "KimuX offers: 🎯 Campaign Management, 📊 AI-Powered Analytics, 💼 B2B Brokerage, 🛍️ B2C Marketplace, 💰 Affiliate Hub, 🤖 AI Dashboard, ⛓️ Blockchain Integration, 💳 Fintech Tools, 📈 Commerce Intelligence, and 👨‍💻 Developer API.",
       "tags": ["features", "capabilities", "services"]
     },
     {
       "id": "kx-global-03",
       "scope": "global",
-      "q": "How much does KimuntuX cost?",
+      "q": "How much does KimuX cost?",
       "a": "We offer flexible pricing plans starting from $99/month for startups, $499/month for growing businesses, and custom enterprise plans. All plans include a 14-day free trial with no credit card required.",
       "tags": ["pricing", "cost", "plans", "budget"]
     },
@@ -130,7 +130,7 @@
       "id": "kx-developer-01",
       "scope": "developer",
       "q": "Do you have an API?",
-      "a": "Yes! Our REST API is fully documented at https://api.kimuntux.com/docs. Get your API key from Settings → Developer to start making requests.",
+      "a": "Yes! Our REST API is fully documented at https://api.KimuX.com/docs. Get your API key from Settings → Developer to start making requests.",
       "tags": ["developer", "api", "documentation", "integration"]
     },
     {
@@ -144,7 +144,7 @@
       "id": "kx-support-01",
       "scope": "global",
       "q": "How can I get help?",
-      "a": "You can chat with me anytime, email support@kimuntux.com, or schedule a call with our team. Enterprise customers get dedicated Slack support.",
+      "a": "You can chat with me anytime, email support@KimuX.com, or schedule a call with our team. Enterprise customers get dedicated Slack support.",
       "tags": ["support", "help", "contact", "assistance"]
     },
     {

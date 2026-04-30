@@ -4,7 +4,7 @@ import re
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -12,8 +12,17 @@ from app.core.security import create_access_token, get_current_user, hash_passwo
 from app.models.tenant import Tenant, TenantPlan
 from app.models.tenant_membership import MemberRole, TenantMembership
 from app.models.user import User
-from app.schemas.auth import OAuthTokenResponse, TenantResponse, TokenResponse, UserLogin, UserResponse, UserSignup
-
+from app.schemas.auth import (
+    AccountDeleteRequest,
+    OAuthTokenResponse,
+    PasswordChangeRequest,
+    TenantResponse,
+    TokenResponse,
+    UserLogin,
+    UserProfileUpdate,
+    UserResponse,
+    UserSignup,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -42,16 +51,17 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is already registered")
 
-    # Create user first so we have an ID
     user = User(
         full_name=payload.full_name.strip(),
         email=payload.email.lower(),
         hashed_password=hash_password(payload.password),
+        phone=(payload.phone or "").strip() or None,
+        address=(payload.address or "").strip() or None,
+        signup_plan=payload.signup_plan,
     )
     db.add(user)
     db.flush()
 
-    # Create default tenant for the new user
     base_slug = _slugify(payload.full_name.strip())
     slug = base_slug
     counter = 1
@@ -67,7 +77,6 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
     db.add(tenant)
     db.flush()
 
-    # Link user to tenant as owner
     membership = TenantMembership(
         tenant_id=tenant.id,
         user_id=user.id,
@@ -75,7 +84,6 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
     )
     db.add(membership)
 
-    # Set user's default tenant
     user.default_tenant_id = tenant.id
     db.commit()
     db.refresh(user)
@@ -87,6 +95,15 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
         user=UserResponse.model_validate(user),
         tenant=TenantResponse.model_validate(tenant),
     )
+
+
+@router.post("/token", response_model=OAuthTokenResponse)
+def token(
+    form: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+) -> OAuthTokenResponse:
+    user = authenticate_user(form.username, form.password, db)
+    return OAuthTokenResponse(access_token=create_access_token(user.id))
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -101,19 +118,79 @@ def login(payload: UserLogin, db: Session = Depends(get_db)) -> TokenResponse:
     )
 
 
-@router.post("/token", response_model=OAuthTokenResponse)
-def issue_oauth_token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
-) -> OAuthTokenResponse:
-    user = authenticate_user(form_data.username, form_data.password, db)
-    token = create_access_token(user.id)
-    return OAuthTokenResponse(access_token=token)
-
-
 @router.get("/me", response_model=UserResponse)
 def read_current_user(current_user: User = Depends(get_current_user)) -> UserResponse:
     return UserResponse.model_validate(current_user)
+
+
+@router.patch("/me", response_model=UserResponse)
+def update_current_user(
+    payload: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserResponse:
+    data = payload.model_dump(exclude_unset=True)
+    if not data:
+        return UserResponse.model_validate(current_user)
+    if "full_name" in data and data["full_name"] is not None:
+        current_user.full_name = data["full_name"].strip()
+    if "phone" in data:
+        current_user.phone = (data["phone"] or "").strip() or None
+    if "address" in data:
+        current_user.address = (data["address"] or "").strip() or None
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return UserResponse.model_validate(current_user)
+
+
+@router.post("/me/change-password", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+def change_password(
+    payload: PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    if not verify_password(payload.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
+    current_user.hashed_password = hash_password(payload.new_password)
+    db.add(current_user)
+    db.commit()
+
+
+@router.post("/me/delete", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+def delete_own_account(
+    payload: AccountDeleteRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    if current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Admin accounts cannot be deleted through this endpoint.",
+        )
+    if not verify_password(payload.password, current_user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid password")
+
+    uid = current_user.id
+    memberships = list(db.scalars(select(TenantMembership).where(TenantMembership.user_id == uid)).all())
+    tenant_ids = {m.tenant_id for m in memberships}
+    for membership in memberships:
+        db.delete(membership)
+    db.flush()
+
+    for tenant_id in tenant_ids:
+        remaining = db.scalar(
+            select(func.count()).select_from(TenantMembership).where(TenantMembership.tenant_id == tenant_id)
+        )
+        if remaining == 0:
+            tenant = db.get(Tenant, tenant_id)
+            if tenant:
+                db.delete(tenant)
+
+    user = db.get(User, uid)
+    if user:
+        db.delete(user)
+    db.commit()
 
 
 @router.get("/me/tenant", response_model=TenantResponse)

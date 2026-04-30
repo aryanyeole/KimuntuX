@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.core.tenancy import get_current_tenant
@@ -54,6 +55,8 @@ from app.services import (
     strategy_service,
 )
 from app.services.exceptions import SendGridSendError, TenantIsolationError
+from app.services.campaign_analysis_service import CampaignAnalysisService
+from app.services.test_metrics_service import TestMetricsService
 
 router = APIRouter(prefix="/crm", tags=["crm"])
 
@@ -242,7 +245,13 @@ def list_campaigns(
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> CampaignListResponse:
-    return campaign_service.get_campaigns(db, tenant.id, page=page, limit=limit)
+    return campaign_service.get_campaigns(
+        db,
+        tenant_id=tenant.id,
+        page=page,
+        limit=limit,
+        test_mode=settings.campaign_test_mode,
+    )
 
 
 @router.post("/campaigns", response_model=CampaignResponse, status_code=status.HTTP_201_CREATED)
@@ -251,7 +260,7 @@ def create_campaign(
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> CampaignResponse:
-    campaign = campaign_service.create_campaign(db, payload, tenant.id)
+    campaign = campaign_service.create_campaign(db, payload, tenant_id=tenant.id)
     return CampaignResponse.model_validate(campaign)
 
 
@@ -261,7 +270,7 @@ def get_campaign(
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> CampaignResponse:
-    campaign = campaign_service.get_campaign_by_id(db, campaign_id, tenant.id)
+    campaign = campaign_service.get_campaign_by_id(db, campaign_id, tenant_id=tenant.id)
     return CampaignResponse.model_validate(campaign)
 
 
@@ -272,8 +281,19 @@ def update_campaign(
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> CampaignResponse:
-    campaign = campaign_service.update_campaign(db, campaign_id, payload, tenant.id)
+    campaign = campaign_service.update_campaign(db, campaign_id, payload, tenant_id=tenant.id)
     return CampaignResponse.model_validate(campaign)
+
+
+@router.post("/campaigns/{campaign_id}/analyze")
+async def analyze_campaign(
+    campaign_id: str,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> dict:
+    campaign = campaign_service.get_campaign_by_id(db, campaign_id, tenant_id=tenant.id)
+    campaign_payload = TestMetricsService.inject_metrics([campaign], settings.campaign_test_mode)[0]
+    return await CampaignAnalysisService().analyze(campaign_payload)
 
 
 # ---------------------------------------------------------------------------

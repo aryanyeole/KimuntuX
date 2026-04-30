@@ -1,6 +1,3 @@
-from app.models.tenant import Tenant
-from app.models.tenant_membership import TenantMembership
-from app.models.user import User
 from app.models.activity import Activity
 from app.models.campaign import Campaign
 from app.models.communication import Communication
@@ -11,6 +8,9 @@ from app.models.lead import Lead
 from app.models.offer import Offer
 from app.models.strategy import Strategy
 from app.models.webhook_event import WebhookEvent
+from app.models.tenant import Tenant
+from app.models.tenant_membership import TenantMembership
+from app.models.user import User
 
 __all__ = [
     "Activity",

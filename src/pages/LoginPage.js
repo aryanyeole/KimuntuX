@@ -232,10 +232,10 @@ const LoginPage = () => {
     <LoginContainer>
       <LoginCard>
         <Logo>
-          <img src="/light_logo.jpg" alt="KimuntuX" />
+          <img src="/light_logo.jpg" alt="KimuX" />
         </Logo>
         <Title>Welcome Back</Title>
-        <Subtitle>Sign in to your KimuntuX account</Subtitle>
+        <Subtitle>Sign in to your KimuX account</Subtitle>
         
         {error && <ErrorMessage>{error}</ErrorMessage>}
         
