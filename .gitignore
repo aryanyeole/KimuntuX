@@ -5,6 +5,13 @@
 /.pnp
 .pnp.js
 
+# blockchain
+KimuntuX_BlockchainIntegration/node_modules/
+KimuntuX_BlockchainIntegration/artifacts/
+KimuntuX_BlockchainIntegration/cache/
+node_modules/
+*.log
+
 # testing
 /coverage
 
