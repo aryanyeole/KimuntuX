@@ -183,96 +183,80 @@ def _build_activities(lead_id: str, lead_created: datetime, count: int) -> list[
 
 
 # ── Campaign fixture ──────────────────────────────────────────────────────────
+# Fields match the updated Campaign model (platforms list, affiliate_product,
+# audience, tracking, scheduling, budget dicts — all required by the new schema).
 
 _CAMPAIGNS = [
     dict(
         name="Mitolyn Weight Loss — FB Cold",
-        platform="facebook_ads",
-        status=CampaignStatus.active,
-        objective="lead_generation",
-        budget_daily=150.0,
-        budget_total=4500.0,
-        offer_name="Mitolyn",
-        offer_network="ClickBank",
-        targeting={"age": "25-54", "interests": ["weight loss", "healthy living"], "geo": "US"},
+        platforms=["facebook_ads"],
+        status=CampaignStatus.testing,
+        affiliate_product={"name": "Mitolyn", "network": "ClickBank", "offer_id": None},
+        audience={"age": "25-54", "interests": ["weight loss", "healthy living"], "geo": "US"},
+        tracking={"utm_source": "facebook", "utm_medium": "cpc", "utm_campaign": "mitolyn-cold"},
+        scheduling={"start_date": _ago(days=45).isoformat(), "end_date": None},
+        budget={"daily_limit": 150.0, "total_limit": 4500.0, "per_variant_limit": 10, "spent_to_date": 3120.0, "currency": "USD"},
         metrics={"impressions": 182000, "clicks": 5460, "leads": 312, "conversions": 28,
                  "spend": 3120.0, "revenue": 8960.0, "ctr": 3.0, "cpl": 10.0, "cpa": 111.4, "roas": 2.87},
-        start_date=_ago(days=45),
-        end_date=None,
     ),
     dict(
         name="CitrusBurn — Google Search",
-        platform="google_ads",
-        status=CampaignStatus.active,
-        objective="conversions",
-        budget_daily=200.0,
-        budget_total=6000.0,
-        offer_name="CitrusBurn",
-        offer_network="BuyGoods",
-        targeting={"keywords": ["citrus burn supplement", "weight loss pills"], "geo": "US, CA"},
+        platforms=["google_ads"],
+        status=CampaignStatus.testing,
+        affiliate_product={"name": "CitrusBurn", "network": "BuyGoods", "offer_id": None},
+        audience={"keywords": ["citrus burn supplement", "weight loss pills"], "geo": "US, CA"},
+        tracking={"utm_source": "google", "utm_medium": "cpc", "utm_campaign": "citrusburn-search"},
+        scheduling={"start_date": _ago(days=30).isoformat(), "end_date": None},
+        budget={"daily_limit": 200.0, "total_limit": 6000.0, "per_variant_limit": 10, "spent_to_date": 4820.0, "currency": "USD"},
         metrics={"impressions": 94000, "clicks": 3760, "leads": 198, "conversions": 41,
                  "spend": 4820.0, "revenue": 16400.0, "ctr": 4.0, "cpl": 24.3, "cpa": 117.6, "roas": 3.4},
-        start_date=_ago(days=30),
-        end_date=None,
     ),
     dict(
         name="LeanBiome — TikTok UGC",
-        platform="tiktok_ads",
+        platforms=["tiktok_ads"],
         status=CampaignStatus.paused,
-        objective="traffic",
-        budget_daily=80.0,
-        budget_total=2400.0,
-        offer_name="LeanBiome",
-        offer_network="MaxWeb",
-        targeting={"age": "18-34", "interests": ["fitness", "gut health"], "geo": "US"},
+        affiliate_product={"name": "LeanBiome", "network": "MaxWeb", "offer_id": None},
+        audience={"age": "18-34", "interests": ["fitness", "gut health"], "geo": "US"},
+        tracking={"utm_source": "tiktok", "utm_medium": "cpc", "utm_campaign": "leanbiome-ugc"},
+        scheduling={"start_date": _ago(days=60).isoformat(), "end_date": _ago(days=10).isoformat()},
+        budget={"daily_limit": 80.0, "total_limit": 2400.0, "per_variant_limit": 10, "spent_to_date": 2200.0, "currency": "USD"},
         metrics={"impressions": 520000, "clicks": 12480, "leads": 430, "conversions": 15,
                  "spend": 2200.0, "revenue": 4500.0, "ctr": 2.4, "cpl": 5.1, "cpa": 146.7, "roas": 2.05},
-        start_date=_ago(days=60),
-        end_date=_ago(days=10),
     ),
     dict(
         name="Wealth DNA — Email Retargeting",
-        platform="email",
-        status=CampaignStatus.completed,
-        objective="retargeting",
-        budget_daily=None,
-        budget_total=800.0,
-        offer_name="Wealth DNA Code",
-        offer_network="ClickBank",
-        targeting={"segment": "warm_leads", "list_size": 2400},
+        platforms=["email"],
+        status=CampaignStatus.archived,
+        affiliate_product={"name": "Wealth DNA Code", "network": "ClickBank", "offer_id": None},
+        audience={"segment": "warm_leads", "list_size": 2400},
+        tracking={"utm_source": "email", "utm_medium": "newsletter", "utm_campaign": "wealth-dna-retarget"},
+        scheduling={"start_date": _ago(days=90).isoformat(), "end_date": _ago(days=75).isoformat()},
+        budget={"daily_limit": None, "total_limit": 800.0, "per_variant_limit": 10, "spent_to_date": 750.0, "currency": "USD"},
         metrics={"impressions": 2400, "clicks": 528, "leads": 89, "conversions": 22,
                  "spend": 750.0, "revenue": 6380.0, "ctr": 22.0, "cpl": 8.4, "cpa": 34.1, "roas": 8.51},
-        start_date=_ago(days=90),
-        end_date=_ago(days=75),
     ),
     dict(
         name="Exipure — Instagram Stories",
-        platform="instagram",
-        status=CampaignStatus.active,
-        objective="awareness",
-        budget_daily=120.0,
-        budget_total=3600.0,
-        offer_name="Exipure",
-        offer_network="Digistore24",
-        targeting={"age": "30-55", "gender": "female", "interests": ["weight management", "wellness"]},
+        platforms=["instagram"],
+        status=CampaignStatus.testing,
+        affiliate_product={"name": "Exipure", "network": "Digistore24", "offer_id": None},
+        audience={"age": "30-55", "gender": "female", "interests": ["weight management", "wellness"]},
+        tracking={"utm_source": "instagram", "utm_medium": "stories", "utm_campaign": "exipure-stories"},
+        scheduling={"start_date": _ago(days=20).isoformat(), "end_date": None},
+        budget={"daily_limit": 120.0, "total_limit": 3600.0, "per_variant_limit": 10, "spent_to_date": 2900.0, "currency": "USD"},
         metrics={"impressions": 310000, "clicks": 7440, "leads": 284, "conversions": 19,
                  "spend": 2900.0, "revenue": 7220.0, "ctr": 2.4, "cpl": 10.2, "cpa": 152.6, "roas": 2.49},
-        start_date=_ago(days=20),
-        end_date=None,
     ),
     dict(
         name="Java Burn — YouTube Pre-roll",
-        platform="youtube",
+        platforms=["youtube"],
         status=CampaignStatus.draft,
-        objective="conversions",
-        budget_daily=250.0,
-        budget_total=7500.0,
-        offer_name="Java Burn",
-        offer_network="ClickBank",
-        targeting={"age": "35-65", "interests": ["coffee", "weight loss", "metabolism"], "geo": "US, UK, AU"},
+        affiliate_product={"name": "Java Burn", "network": "ClickBank", "offer_id": None},
+        audience={"age": "35-65", "interests": ["coffee", "weight loss", "metabolism"], "geo": "US, UK, AU"},
+        tracking={"utm_source": "youtube", "utm_medium": "video", "utm_campaign": "java-burn-preroll"},
+        scheduling={"start_date": None, "end_date": None},
+        budget={"daily_limit": 250.0, "total_limit": 7500.0, "per_variant_limit": 10, "spent_to_date": 0, "currency": "USD"},
         metrics={},
-        start_date=None,
-        end_date=None,
     ),
 ]
 
@@ -472,9 +456,13 @@ def seed() -> None:
             for act_data in _build_activities(lead.id, lead.created_at, count):
                 db.add(Activity(**act_data, tenant_id=tenant_id))
 
-        # 3. Campaigns
-        for c in _CAMPAIGNS:
-            db.add(Campaign(**c, tenant_id=tenant_id))
+        # 3. Campaigns — user_id is required by the updated Campaign model
+        seed_user = db.scalar(select(User))
+        if seed_user:
+            for c in _CAMPAIGNS:
+                db.add(Campaign(**c, tenant_id=tenant_id, user_id=seed_user.id))
+        else:
+            print("  No users found — skipping campaign seed.")
 
         # 4. Offers
         for o in _OFFERS:
