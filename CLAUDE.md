@@ -176,7 +176,7 @@ configured (inbound only works via direct webhook POST); single platform
 SendGrid account (per-tenant subuser provisioning + sender verification in
 Phase 5).
 
-### Funnel Builder (sponsor priority — inserted ahead of Phase 4) ⬜ IN PROGRESS
+### Funnel Builder (sponsor priority — inserted ahead of Phase 4) 🔄 FB3 COMPLETE
 
 AI-generated landing-page funnels that capture leads into the existing CRM
 pipeline. Replaces the "Funnel Builder — SOON" disabled nav item in the CRM
@@ -236,11 +236,31 @@ preserved everywhere except funnel HTML generation.
   (no href, no form). Real CTA wiring happens in FB5 when public form
   submissions are added.
 
-- **FB3** ⬜ NEXT — Real Claude generation + rule-based fallback.
-  Anthropic SDK integration, port the generation prompt from the
-  reference repo's `websiteGenerator.ts`, 3 static HTML templates as
-  fallback when API key missing or call fails. `ANTHROPIC_API_KEY`
-  already in `backend/.env`.
+- **FB3** ✅ COMPLETE — Real Claude generation + rule-based fallback.
+  Anthropic SDK `0.97.0` pinned (`anthropic>=0.40.0` in requirements.txt).
+  `backend/app/integrations/anthropic_client.py` wraps the Messages API
+  with streaming (sync + `asyncio.to_thread`), HTML extraction, and typed
+  exceptions. `backend/app/services/funnel_prompt.py` builds the
+  (system_prompt, user_prompt) pair from WizardInput. Three static fallback
+  templates (minimal/modern/bold) in `backend/app/services/funnel_templates/`
+  rendered via Jinja2. `funnel_generator.py` rewritten: Anthropic path with
+  HTML validation (must contain KIMUX_LEAD_FORM marker), fallback on known
+  API errors (rate-limit/timeout/auth/server), mark_failed on unexpected
+  exceptions. Config: `ANTHROPIC_API_KEY` (soft-fail — fallback if absent),
+  `FUNNEL_FALLBACK_ONLY` (force template path). Frontend metadata panel
+  shows source badge (green=anthropic, yellow=fallback), token counts, timing.
+  165 passing tests (1 live Anthropic test skipped by default; run with
+  `RUN_LIVE_ANTHROPIC_TESTS=1`). Fallback path tested end-to-end in CI.
+  Observed p50 generation latency: ~20–35 s. Observed token counts:
+  ~5000–8000 in, ~4000–7000 out (varies by wizard content and layout).
+  Insufficient-credits handling (fixup): `AnthropicInsufficientCredits`
+  exception routes to static-template fallback with
+  `fallback_reason="insufficient_credits"`. `_classify_bad_request` helper
+  separates credits-depleted 400s (fallback-eligible) from other 400s
+  (mark-failed, so prompt/param bugs surface). Discovered during FB3
+  verification when the Anthropic account had $0 in credits. Covered by
+  `test_anthropic_client.py` (unit) and two new entries in
+  `TestFunnelFallback` (integration).
 - **FB5** — Public form submissions wire to CRM leads (new public
   endpoint, generation prompt instructs Claude to include the form,
   fallback templates include the form, leads flow into existing pipeline
@@ -264,6 +284,37 @@ custom domains are deferred.
 - Custom domains per funnel
 - AI image generation for hero sections (currently text + color only)
 - Multi-page funnels with conditional routing
+
+### Connections migration ✅ COMPLETE (CN1 + CN2)
+
+Reorganized integration UI to live at `/crm/connections` instead of buried in
+Settings. Settings is now slimmed to AI Configuration and Team & Permissions
+only — actual user account settings.
+
+Sub-phases shipped:
+- **CN1** — Built `CRMConnections` page at `/crm/connections`, sidebar nav
+  item added (COMMERCE group, above Funnel Builder), dual-mounted
+  ClickBankSection and SendGrid Email Sender card from Settings. Settings
+  unchanged in CN1.
+- **CN2** — Moved IntegrationsGrid (12+ integrations: BuyGoods, ClickBank,
+  Digistore24, Facebook Ads, Google Ads, Instagram, Klaviyo, MaxWeb, PayPal,
+  Shopify, Stripe, TikTok Ads) to Connections in commit 1; deleted
+  ClickBankSection, Email Sender card, and IntegrationsGrid from Settings in
+  commit 2. Updated Settings header to "Account Settings" with link back to
+  Connections. CRMSettings.js dropped from ~441 lines to ~170 lines.
+
+Layout decision: integrations are listed flat on Connections under one
+"All integrations" header. Categorization by platform type is a future
+polish pass.
+
+Deferred to a later sub-phase (CN3 or unplanned, not currently blocking):
+- Build `/admin` route for platform-admin config (Anthropic key status, Gemini
+  key status, Stripe platform account, S3 once it exists). The AI
+  Configuration card on Settings is the closest thing today — works fine for
+  now, will move to `/admin` when that page exists.
+- Standardize integration card UX (consistent header layout, pill placement,
+  button arrangement). Currently each card is its own shape; a polish pass
+  could normalize them.
 
 ### Phase 4 — Google OAuth (login only) ⬜ NOT STARTED
 "Sign in with Google" on login page. Establishes the OAuth pattern that
