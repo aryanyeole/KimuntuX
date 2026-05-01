@@ -47,6 +47,7 @@ import CRMPipeline from './pages/crm/CRMPipeline';
 import CRMCommunication from './pages/crm/CRMCommunication';
 import CRMAnalytics from './pages/crm/CRMAnalytics';
 import CRMSettings from './pages/crm/CRMSettings';
+import CRMConnections from './pages/crm/CRMConnections';
 import ContentSchedulerPage from './pages/ContentSchedulerPage';
 import CRMStrategy from './pages/crm/CRMStrategy';
 import CRMFintech from './pages/crm/CRMFintech';
@@ -113,6 +114,7 @@ function AppInner() {
           <Route path="funnels/:id" element={<CRMFunnelDetail />} />
           <Route path="analytics" element={<CRMAnalytics />} />
           <Route path="settings" element={<CRMSettings />} />
+          <Route path="connections" element={<CRMConnections />} />
         </Route>
       </Routes>
       {!isCRM && <ChatWidget />}
