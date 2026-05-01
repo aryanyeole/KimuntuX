@@ -202,15 +202,45 @@ on Gemini. Do NOT migrate other features to Claude — Gemini-only is
 preserved everywhere except funnel HTML generation.
 
 **Sub-phases:**
-- **FB1** — Backend skeleton + mock generation (Funnel model, migration,
-  schemas, service, router, mock 2-second async generator). Verify CRUD
-  and status state machine work end-to-end before any AI is wired.
-- **FB2** — Wizard frontend, no AI yet (`useFunnels` hook, list page,
-  6-step wizard new page, preview page with iframe + status polling,
-  activate sidebar nav item). End-to-end UI works against mock backend.
-- **FB3** — Real Claude generation + rule-based fallback (Anthropic
-  client integration, port their generation prompt, 3 static HTML
-  templates as fallback when API key missing or call fails).
+- **FB1** ✅ COMPLETE — Backend skeleton + mock generation. Funnel
+  model, FunnelStatus enum (lowercase string values: draft, generating,
+  ready, failed), Alembic migration `dec3d7fc3f77`, Pydantic v2
+  schemas, tenant-scoped service layer, mock generator (2-second sleep
+  + minimal HTML), 7 endpoints under `/api/v1/crm/funnels`. 12 tests
+  passing (10 spec + 2 added: empty key_services validation,
+  unauthenticated access). Total backend suite: 139/139.
+
+- **FB2** ✅ COMPLETE — Frontend wizard with mock backend. `useFunnels`
+  hook with polling support, list page (`/crm/funnels`), 6-step wizard
+  (`/crm/funnels/new`), preview page (`/crm/funnels/:id`) with iframe
+  sandbox, status polling that stops on ready/failed, sidebar nav item
+  activated (line 589 of `src/layouts/CRMLayout.js` — disabled flag
+  removed, `to: '/crm/funnels'` added). Inline rename, download HTML,
+  regenerate, delete all working. Verified end-to-end: complete wizard
+  → mock HTML renders → metadata panel shows mock-fb1 / 2s / tokens=0.
+
+  Two bugs fixed during FB2 verification:
+  - `contact_email` was using Pydantic `EmailStr` which rejected
+    RFC-reserved domains (.test, .example, .invalid). Relaxed to a
+    permissive regex pattern because contact_email is a display-only
+    field (rendered as a mailto link on the generated funnel page —
+    KimuX never sends to it). 2 new tests cover the relaxed
+    validation. Total backend suite: 141/141.
+  - Wizard error handler rendered Pydantic 422 error arrays as
+    `[object Object]`. Added shared helper at `src/utils/apiError.js`
+    with a `formatApiError()` function that handles string details,
+    Pydantic detail arrays, and network errors. Will be reused by
+    FB3/FB4/FB5 error paths.
+
+  Known V2-deferred behavior: the CTA button in mock HTML is inert
+  (no href, no form). Real CTA wiring happens in FB5 when public form
+  submissions are added.
+
+- **FB3** ⬜ NEXT — Real Claude generation + rule-based fallback.
+  Anthropic SDK integration, port the generation prompt from the
+  reference repo's `websiteGenerator.ts`, 3 static HTML templates as
+  fallback when API key missing or call fails. `ANTHROPIC_API_KEY`
+  already in `backend/.env`.
 - **FB5** — Public form submissions wire to CRM leads (new public
   endpoint, generation prompt instructs Claude to include the form,
   fallback templates include the form, leads flow into existing pipeline

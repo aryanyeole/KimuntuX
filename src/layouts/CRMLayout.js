@@ -586,7 +586,7 @@ const NAV_SECTIONS = [
   {
     label: 'COMMERCE',
     items: [
-      { label: 'Funnel Builder',  disabled: true,           icon: 'funnel',    badge: 'soon'  },
+      { label: 'Funnel Builder',  to: '/crm/funnels',       icon: 'funnel'                    },
       { label: 'Fintech Hub',     to: '/crm/fintech',       icon: 'fintech'    },
       {
         label: 'Affiliate Center', icon: 'affiliate', expandable: true,
@@ -617,6 +617,7 @@ const PATH_TITLES = {
   'content-gen':   'Content Generator',
   communication:       'Messages',
   offers:        'Offer Discovery',
+  funnels:       'Funnel Builder',
   fintech:       'Fintech Hub',
   analytics:     'Analytics',
   academy:       'KimuX Academy',

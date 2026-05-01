@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
@@ -43,12 +43,15 @@ from app.schemas.offer import (
     OfferUpdate,
     UserAddedOfferCreate,
 )
+from app.schemas.funnel import FunnelCreate, FunnelListResponse, FunnelResponse, FunnelUpdate
 from app.schemas.strategy import StrategyListResponse, StrategyResponse, StrategyWizardInput
 from app.services import (
     ai_service,
     campaign_service,
     communication_service,
     dashboard_service,
+    funnel_generator,
+    funnel_service,
     integration_service,
     lead_service,
     offer_service,
@@ -536,3 +539,103 @@ def get_strategy(
     """Return a single strategy. Returns 404 if it doesn't belong to the current user."""
     strategy = strategy_service.get_strategy_by_id(db, strategy_id, str(current_user.id))
     return StrategyResponse.model_validate(strategy)
+
+
+# ---------------------------------------------------------------------------
+# Funnels
+# ---------------------------------------------------------------------------
+
+@router.post("/funnels", response_model=FunnelResponse, status_code=status.HTTP_201_CREATED)
+def create_funnel(
+    payload: FunnelCreate,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+    current_user: User = Depends(get_current_user),
+) -> FunnelResponse:
+    funnel = funnel_service.create_funnel(db, tenant.id, str(current_user.id), payload)
+    return FunnelResponse.model_validate(funnel)
+
+
+@router.get("/funnels", response_model=FunnelListResponse)
+def list_funnels(
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelListResponse:
+    items, total = funnel_service.list_funnels(db, tenant.id, page=page, limit=limit)
+    from app.schemas.funnel import FunnelListItem
+    return FunnelListResponse(
+        items=[FunnelListItem.model_validate(f) for f in items],
+        total=total,
+    )
+
+
+@router.get("/funnels/{funnel_id}", response_model=FunnelResponse)
+def get_funnel(
+    funnel_id: str,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelResponse:
+    funnel = funnel_service.get_funnel(db, tenant.id, funnel_id)
+    if funnel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    return FunnelResponse.model_validate(funnel)
+
+
+@router.patch("/funnels/{funnel_id}", response_model=FunnelResponse)
+def update_funnel(
+    funnel_id: str,
+    payload: FunnelUpdate,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelResponse:
+    if payload.title is None:
+        funnel = funnel_service.get_funnel(db, tenant.id, funnel_id)
+    else:
+        funnel = funnel_service.update_funnel_title(db, tenant.id, funnel_id, payload.title)
+    if funnel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    return FunnelResponse.model_validate(funnel)
+
+
+@router.delete("/funnels/{funnel_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+def delete_funnel(
+    funnel_id: str,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> Response:
+    deleted = funnel_service.delete_funnel(db, tenant.id, funnel_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/funnels/{funnel_id}/generate", response_model=FunnelResponse)
+def generate_funnel(
+    funnel_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelResponse:
+    funnel = funnel_service.get_funnel(db, tenant.id, funnel_id)
+    if funnel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    funnel = funnel_service.mark_generating(db, tenant.id, funnel_id)
+    background_tasks.add_task(funnel_generator.generate_funnel_async, funnel_id, tenant.id)
+    return FunnelResponse.model_validate(funnel)
+
+
+@router.post("/funnels/{funnel_id}/regenerate", response_model=FunnelResponse)
+def regenerate_funnel(
+    funnel_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelResponse:
+    funnel = funnel_service.get_funnel(db, tenant.id, funnel_id)
+    if funnel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    funnel = funnel_service.reset_for_regenerate(db, tenant.id, funnel_id)
+    background_tasks.add_task(funnel_generator.generate_funnel_async, funnel_id, tenant.id)
+    return FunnelResponse.model_validate(funnel)
