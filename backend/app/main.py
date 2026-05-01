@@ -136,6 +136,15 @@ def startup() -> None:
     app.state.blockchain_ready = ready
     app.state.blockchain_health = health
 
+    # Anthropic / Funnel Builder — soft-fail: CRM works without the key
+    if settings.anthropic_api_key:
+        logger.info("Anthropic client ready for funnel generation")
+    else:
+        logger.warning(
+            "ANTHROPIC_API_KEY not set — funnel generation will use "
+            "static-template fallback"
+        )
+
 
 app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(contacts.router, prefix=settings.api_v1_prefix)

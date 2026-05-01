@@ -1,53 +1,31 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styled, { keyframes, css } from 'styled-components';
-import useIntegrations from '../../hooks/useIntegrations';
 import { crm as C } from '../../styles/crmTheme';
-import PlatformLogo from '../../components/crm/PlatformLogo';
-import ClickBankSection from '../../components/crm/ClickBankSection';
-
-const PLATFORM_DESC = {
-  ClickBank: 'Affiliate marketplace for digital products',
-  BuyGoods: 'Health & wellness affiliate network',
-  MaxWeb: 'Premium CPA affiliate network',
-  Digistore24: 'European digital product marketplace',
-  'Facebook Ads': 'Meta advertising platform',
-  'Google Ads': 'Google search & display ads',
-  'TikTok Ads': 'Short-form video ad platform',
-  Instagram: 'Instagram ads & influencer tracking',
-  YouTube: 'YouTube video ad campaigns',
-  Stripe: 'Payment processing & subscriptions',
-  PayPal: 'Online payment gateway',
-  Zapier: 'No-code workflow automation',
-  Slack: 'Team communication & alerts',
-  Mailchimp: 'Email marketing platform',
-};
-const STATUS_COLOR = { connected: C.success, pending: C.warning, disconnected: C.muted };
-const STATUS_LABEL = { connected: 'Connected', pending: 'Pending', disconnected: 'Disconnected' };
 
 const VALIDATION_URLS = [
-  { network: 'ClickBank',    code: 'CB', url: 'https://kimux.io/track/cb/{affiliate_id}' },
-  { network: 'BuyGoods',     code: 'BG', url: 'https://kimux.io/track/bg/{affiliate_id}' },
-  { network: 'MaxWeb',       code: 'MW', url: 'https://kimux.io/track/mw/{affiliate_id}' },
-  { network: 'Digistore24',  code: 'D24', url: 'https://kimux.io/track/ds/{affiliate_id}' },
+  { network: 'ClickBank',   code: 'CB',  url: 'https://kimux.io/track/cb/{affiliate_id}' },
+  { network: 'BuyGoods',    code: 'BG',  url: 'https://kimux.io/track/bg/{affiliate_id}' },
+  { network: 'MaxWeb',      code: 'MW',  url: 'https://kimux.io/track/mw/{affiliate_id}' },
+  { network: 'Digistore24', code: 'D24', url: 'https://kimux.io/track/ds/{affiliate_id}' },
 ];
 
 const TEAM = [
-  { name: 'Yann Kayilu',     email: 'yann@kimux.io',  role: 'Owner',  color: C.accent  },
-  { name: 'Marketing Team',  email: 'team@kimux.io',  role: 'Admin',  color: C.purple  },
-  { name: 'Sales Agent',     email: 'sales@kimux.io', role: 'Member', color: C.success },
+  { name: 'Yann Kayilu',    email: 'yann@kimux.io',  role: 'Owner',  color: C.accent  },
+  { name: 'Marketing Team', email: 'team@kimux.io',  role: 'Admin',  color: C.purple  },
+  { name: 'Sales Agent',    email: 'sales@kimux.io', role: 'Member', color: C.success },
 ];
 
 const AI_TOGGLES = [
-  { key: 'scoring',    label: 'Auto Lead Scoring',        desc: 'AI scores and classifies leads',                  default: true  },
-  { key: 'followup',   label: 'Smart Follow-ups',          desc: 'AI triggers follow-up sequences',                default: true  },
-  { key: 'predictive', label: 'Predictive Analytics',      desc: 'AI predicts conversion, LTV, churn',            default: true  },
-  { key: 'content',    label: 'Content Generation',        desc: 'AI generates outreach & creatives',              default: false },
-  { key: 'budget',     label: 'Auto Budget Optimization',  desc: 'AI adjusts budgets in real-time',                default: false },
+  { key: 'scoring',    label: 'Auto Lead Scoring',       desc: 'AI scores and classifies leads',             default: true  },
+  { key: 'followup',   label: 'Smart Follow-ups',         desc: 'AI triggers follow-up sequences',           default: true  },
+  { key: 'predictive', label: 'Predictive Analytics',     desc: 'AI predicts conversion, LTV, churn',        default: true  },
+  { key: 'content',    label: 'Content Generation',       desc: 'AI generates outreach & creatives',         default: false },
+  { key: 'budget',     label: 'Auto Budget Optimization', desc: 'AI adjusts budgets in real-time',           default: false },
 ];
 
 const ROLE_COLOR = { Owner: C.accent, Admin: C.purple, Member: C.success };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 const initials = name => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
 // ── Animations ────────────────────────────────────────────────────────────────
@@ -56,84 +34,12 @@ const fadeIn = keyframes`from{opacity:0;transform:translateY(5px)}to{opacity:1;t
 // ── Layout ────────────────────────────────────────────────────────────────────
 const Page = styled.div`padding:20px;animation:${fadeIn} .2s ease;`;
 
-// ── Section ───────────────────────────────────────────────────────────────────
-const SectionTitle = styled.h2`
-  font-size:15px;font-weight:700;color:${C.text};margin:0 0 4px 0;
-`;
-const SectionSub = styled.p`font-size:13px;color:${C.muted};margin:0 0 16px 0;`;
-
-// ── Integrations Grid ─────────────────────────────────────────────────────────
-const IntegrationsGrid = styled.div`
-  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;
-  @media(max-width:900px){grid-template-columns:repeat(2,1fr);}
-  @media(max-width:600px){grid-template-columns:1fr;}
-`;
-const IntCard = styled.div`
-  background:${C.card};border:1px solid ${C.border};border-radius:12px;padding:16px;
-  display:flex;flex-direction:column;gap:6px;
-`;
-const IntName = styled.div`font-size:13px;font-weight:700;color:${C.text};`;
-const IntDesc = styled.div`font-size:11px;color:${C.muted};line-height:1.4;flex:1;`;
-const IntFooter = styled.div`display:flex;align-items:center;justify-content:space-between;margin-top:4px;`;
-const StatusBadge = styled.span`
-  font-size:10px;font-weight:700;text-transform:capitalize;
-  padding:2px 8px;border-radius:999px;color:#fff;
-  background:${({ $status }) => STATUS_COLOR[$status] || C.muted};
-`;
-const ConnectBtn = styled.button`
-  font-size:11px;font-weight:700;padding:4px 12px;border-radius:6px;cursor:pointer;
-  background:none;border:1px solid ${C.accent};color:${C.accent};
-  &:hover{background:${C.accent};color:#fff;}
-  &:disabled{opacity:.5;cursor:default;}
-`;
-const DisconnectLink = styled.button`
-  font-size:11px;font-weight:600;background:none;border:none;cursor:pointer;
-  color:${C.muted};padding:0;text-decoration:underline;
-  &:hover{color:${C.danger};}
-`;
-
-// ── SendGrid email-sender card ────────────────────────────────────────────────
-const EmailCard = styled.div`
-  background:${C.card};border:1px solid ${C.border};border-radius:12px;
-  padding:20px;margin-bottom:28px;
-`;
-const EmailCardTitle = styled.h3`
-  font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
-  color:${C.muted};margin:0 0 4px 0;
-`;
-const EmailCardSub = styled.p`font-size:12px;color:${C.muted};margin:0 0 16px 0;`;
-const EmailRow = styled.div`display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;`;
-const EmailField = styled.div`display:flex;flex-direction:column;gap:4px;flex:1;min-width:160px;`;
-const EmailLabel = styled.label`font-size:11px;font-weight:600;color:${C.muted};`;
-const EmailInput = styled.input`
-  background:${C.surface};border:1px solid ${C.border};border-radius:8px;
-  color:${C.text};font-size:13px;padding:8px 12px;outline:none;
-  &:focus{border-color:${C.accent};}
-  &::placeholder{color:${C.textDim};}
-`;
-const SaveBtn = styled.button`
-  background:${C.accent};color:#fff;border:none;border-radius:8px;
-  padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
-  &:hover:not(:disabled){background:${C.accentHover};}
-  &:disabled{background:${C.border};cursor:default;}
-`;
-const ConnectedRow = styled.div`
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-`;
-const ConnectedInfo = styled.div`flex:1;min-width:0;`;
-const ConnectedEmail = styled.div`font-size:13px;font-weight:700;color:${C.text};`;
-const ConnectedName = styled.div`font-size:12px;color:${C.muted};margin-top:2px;`;
-const TestBtn = styled.button`
-  background:none;border:1px solid ${C.accent};color:${C.accent};
-  border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;
-  &:hover{background:${C.accent};color:#fff;}
-  &:disabled{opacity:.4;cursor:default;}
-`;
-const TestResult = styled.div`
-  margin-top:10px;padding:8px 12px;border-radius:8px;font-size:12px;
-  background:${({ $ok }) => $ok ? C.successBg : C.dangerBg};
-  border:1px solid ${({ $ok }) => $ok ? C.success : C.danger};
-  color:${({ $ok }) => $ok ? C.success : C.danger};
+// ── Section header ────────────────────────────────────────────────────────────
+const SectionTitle = styled.h2`font-size:15px;font-weight:700;color:${C.text};margin:0 0 4px 0;`;
+const SectionSub = styled.p`font-size:13px;color:${C.muted};margin:0 0 20px 0;`;
+const ConnLink = styled(Link)`
+  color:${C.accent};text-decoration:none;font-weight:600;
+  &:hover{text-decoration:underline;}
 `;
 
 // ── Two-col grid ──────────────────────────────────────────────────────────────
@@ -168,7 +74,7 @@ const PillCircle = styled.div`
   left:${({ $on }) => $on ? '21px' : '3px'};
 `;
 
-// ── Team ─────────────────────────────────────────────────────────────────────
+// ── Team ──────────────────────────────────────────────────────────────────────
 const TeamRow = styled.div`
   display:flex;align-items:center;gap:12px;padding:10px 0;
   border-bottom:1px solid ${C.border};&:last-child{border-bottom:none;}
@@ -193,9 +99,7 @@ const ValidTitle = styled.div`
   font-size:12px;font-weight:700;color:${C.muted};margin:16px 0 10px;
   text-transform:uppercase;letter-spacing:.07em;
 `;
-const UrlRow = styled.div`
-  display:flex;align-items:center;gap:8px;margin-bottom:8px;
-`;
+const UrlRow = styled.div`display:flex;align-items:center;gap:8px;margin-bottom:8px;`;
 const UrlNetwork = styled.span`font-size:12px;font-weight:600;color:${C.text};width:90px;flex-shrink:0;`;
 const UrlInput = styled.input`
   flex:1;background:${C.surface};border:1px solid ${C.border};border-radius:6px;
@@ -210,78 +114,9 @@ const CopyBtn = styled.button`
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function CRMSettings() {
-  const {
-    integrations,
-    loading,
-    connect,
-    disconnect,
-    isSendGridConnected,
-    sendgridIntegration,
-    connectSendGrid,
-    disconnectSendGrid,
-    sendSendGridTestEmail,
-    clickbankAccount,
-    clickbankAccountLoading,
-    fetchClickbankAccountStatus,
-    connectClickbankAccount,
-    disconnectClickbankAccount,
-    syncClickbankAccount,
-  } = useIntegrations();
-  const [connecting, setConnecting] = useState({});
-
-  // SendGrid form state
-  const [sgEmail, setSgEmail] = useState('');
-  const [sgName, setSgName] = useState('');
-  const [sgSaving, setSgSaving] = useState(false);
-  const [sgTesting, setSgTesting] = useState(false);
-  const [sgTestResult, setSgTestResult] = useState(null); // {ok, message}
-
-  // AI toggle state
   const initialToggles = Object.fromEntries(AI_TOGGLES.map(t => [t.key, t.default]));
   const [aiToggles, setAiToggles] = useState(initialToggles);
-
-  // Copy state per url row
   const [copied, setCopied] = useState({});
-
-  async function handleConnect(name) {
-    setConnecting(prev => ({ ...prev, [name]: true }));
-    try { await connect(name); } catch (err) { console.error(err.message); }
-    finally { setConnecting(prev => ({ ...prev, [name]: false })); }
-  }
-
-  async function handleDisconnect(name) {
-    try { await disconnect(name); } catch (err) { console.error(err.message); }
-  }
-
-  async function handleSgSave() {
-    setSgSaving(true);
-    setSgTestResult(null);
-    try {
-      await connectSendGrid({ senderEmail: sgEmail, senderName: sgName });
-    } catch (err) {
-      console.error('SendGrid connect failed:', err.message);
-    } finally {
-      setSgSaving(false);
-    }
-  }
-
-  async function handleSgDisconnect() {
-    setSgTestResult(null);
-    try { await disconnectSendGrid(); } catch (err) { console.error(err.message); }
-  }
-
-  async function handleSgTestSend() {
-    setSgTesting(true);
-    setSgTestResult(null);
-    try {
-      const res = await sendSendGridTestEmail();
-      setSgTestResult({ ok: true, message: `Test email sent! Message ID: ${res.message_id}` });
-    } catch (err) {
-      setSgTestResult({ ok: false, message: err.message || 'Test send failed.' });
-    } finally {
-      setSgTesting(false);
-    }
-  }
 
   function handleCopy(url, key) {
     navigator.clipboard.writeText(url).catch(() => {});
@@ -291,102 +126,12 @@ export default function CRMSettings() {
 
   return (
     <Page>
-      {/* ── Integrations ── */}
-      <SectionTitle>Platform Integrations</SectionTitle>
-      <SectionSub>Connect affiliate networks, ad platforms, payment gateways, and tools.</SectionSub>
+      <SectionTitle>Account Settings</SectionTitle>
+      <SectionSub>
+        Manage your AI preferences and team access. Looking for integrations? They moved to{' '}
+        <ConnLink to="/crm/connections">Connections →</ConnLink>
+      </SectionSub>
 
-      {/* ── ClickBank deep integration ── */}
-      <ClickBankSection
-        clickbankAccount={clickbankAccount}
-        clickbankAccountLoading={clickbankAccountLoading}
-        onConnectAccount={connectClickbankAccount}
-        onDisconnectAccount={disconnectClickbankAccount}
-        onSyncAccount={syncClickbankAccount}
-        onFetchAccountStatus={fetchClickbankAccountStatus}
-      />
-
-      {/* ── Email Sender (SendGrid) ── */}
-      <EmailCard>
-        <EmailCardTitle>Email Sender</EmailCardTitle>
-        <EmailCardSub>
-          Configure the From address for outreach emails. KimuX uses a shared SendGrid account — you only need to set your sender identity.
-        </EmailCardSub>
-
-        {isSendGridConnected ? (
-          <>
-            <ConnectedRow>
-              <StatusBadge $status="connected">Connected</StatusBadge>
-              <ConnectedInfo>
-                <ConnectedEmail>{sendgridIntegration?.config?.sender_email}</ConnectedEmail>
-                <ConnectedName>{sendgridIntegration?.config?.sender_name}</ConnectedName>
-              </ConnectedInfo>
-              <TestBtn onClick={handleSgTestSend} disabled={sgTesting}>
-                {sgTesting ? 'Sending…' : 'Send test email'}
-              </TestBtn>
-              <DisconnectLink onClick={handleSgDisconnect}>Disconnect</DisconnectLink>
-            </ConnectedRow>
-            {sgTestResult && (
-              <TestResult $ok={sgTestResult.ok}>{sgTestResult.message}</TestResult>
-            )}
-          </>
-        ) : (
-          <EmailRow>
-            <EmailField>
-              <EmailLabel htmlFor="sg-email">Sender email</EmailLabel>
-              <EmailInput
-                id="sg-email"
-                type="email"
-                placeholder="hello@yourdomain.com"
-                value={sgEmail}
-                onChange={e => setSgEmail(e.target.value)}
-              />
-            </EmailField>
-            <EmailField>
-              <EmailLabel htmlFor="sg-name">Sender name</EmailLabel>
-              <EmailInput
-                id="sg-name"
-                placeholder="Your Name or Company"
-                value={sgName}
-                onChange={e => setSgName(e.target.value)}
-              />
-            </EmailField>
-            <SaveBtn
-              onClick={handleSgSave}
-              disabled={sgSaving || !sgEmail.trim() || !sgName.trim()}
-            >
-              {sgSaving ? 'Saving…' : 'Save'}
-            </SaveBtn>
-          </EmailRow>
-        )}
-      </EmailCard>
-
-      <IntegrationsGrid>
-        {loading && <div style={{ color: C.muted, fontSize: 13 }}>Loading integrations…</div>}
-        {!loading && integrations.map(int => (
-          <IntCard key={int.id || int.platform_name}>
-            <PlatformLogo name={int.platform_name} size={40} />
-            <IntName>{int.platform_name}</IntName>
-            <IntDesc>{PLATFORM_DESC[int.platform_name] || int.platform_type}</IntDesc>
-            <IntFooter>
-              <StatusBadge $status={int.status}>{STATUS_LABEL[int.status] || int.status}</StatusBadge>
-              {int.status === 'connected' ? (
-                <DisconnectLink onClick={() => handleDisconnect(int.platform_name)}>
-                  Disconnect
-                </DisconnectLink>
-              ) : (
-                <ConnectBtn
-                  disabled={connecting[int.platform_name]}
-                  onClick={() => handleConnect(int.platform_name)}
-                >
-                  {connecting[int.platform_name] ? 'Connecting…' : 'Connect'}
-                </ConnectBtn>
-              )}
-            </IntFooter>
-          </IntCard>
-        ))}
-      </IntegrationsGrid>
-
-      {/* ── Two-col: AI Config + Team ── */}
       <TwoCol>
         {/* AI Configuration */}
         <Card>

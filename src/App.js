@@ -37,6 +37,9 @@ import MarketingReportPage from './pages/MarketingReportPage';
 // CRM layout + pages
 import CRMLayout from './layouts/CRMLayout';
 import CRMDashboard from './pages/crm/CRMDashboard';
+import CRMFunnels from './pages/crm/CRMFunnels';
+import CRMFunnelNew from './pages/crm/CRMFunnelNew';
+import CRMFunnelDetail from './pages/crm/CRMFunnelDetail';
 import CRMOffers from './pages/crm/CRMOffers';
 import CRMCampaigns from './pages/crm/CRMCampaigns';
 import CRMLeads from './pages/crm/CRMLeads';
@@ -44,6 +47,7 @@ import CRMPipeline from './pages/crm/CRMPipeline';
 import CRMCommunication from './pages/crm/CRMCommunication';
 import CRMAnalytics from './pages/crm/CRMAnalytics';
 import CRMSettings from './pages/crm/CRMSettings';
+import CRMConnections from './pages/crm/CRMConnections';
 import ContentSchedulerPage from './pages/ContentSchedulerPage';
 import CRMStrategy from './pages/crm/CRMStrategy';
 import CRMFintech from './pages/crm/CRMFintech';
@@ -105,8 +109,12 @@ function AppInner() {
           <Route path="fintech" element={<CRMFintech />} />
           <Route path="academy" element={<CRMAcademy />} />
           <Route path="content-scheduler" element={<CRMContentScheduler />} />
+          <Route path="funnels" element={<CRMFunnels />} />
+          <Route path="funnels/new" element={<CRMFunnelNew />} />
+          <Route path="funnels/:id" element={<CRMFunnelDetail />} />
           <Route path="analytics" element={<CRMAnalytics />} />
           <Route path="settings" element={<CRMSettings />} />
+          <Route path="connections" element={<CRMConnections />} />
         </Route>
       </Routes>
       {!isCRM && <ChatWidget />}

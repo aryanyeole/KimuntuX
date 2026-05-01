@@ -65,6 +65,15 @@ class Settings(BaseSettings):
     dataforseo_login: str | None = None
     dataforseo_password: str | None = None
 
+    # ── Anthropic / Funnel Builder ────────────────────────────────────────────
+    # Claude API key for funnel HTML generation. Optional — if absent, funnel
+    # generation falls back to static templates. See CLAUDE.md "AI provider
+    # exception": this is the ONE feature on the platform that uses Claude.
+    anthropic_api_key: str | None = None
+    # Set true to force static-template fallback even when the key is present.
+    # Useful for local dev when you don't want to burn API tokens.
+    funnel_fallback_only: bool = False
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

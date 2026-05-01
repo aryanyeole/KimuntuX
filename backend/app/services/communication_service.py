@@ -197,7 +197,7 @@ def send_outreach_email(
     """
     lead = _get_lead_for_tenant(db, lead_id, tenant_id)
 
-    from_email = settings.default_sender_email or "noreply@kimux.io"
+    from_email = settings.default_sender_email or "contact@kimux.io"
     from_name = settings.default_sender_name or "KimuX"
 
     preview = body[:_PREVIEW_LEN].replace("\n", " ")

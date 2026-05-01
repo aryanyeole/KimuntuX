@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ company_name }}</title>
+  <meta name="description" content="{{ short_description }}">
+  <style>
+    :root {
+      --accent: {{ accent_color }};
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.65);
+      --border: rgba(255,255,255,0.12);
+      --dark: #0a0a0a;
+      --dark2: #111111;
+      --dark3: #161616;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      --radius: 8px;
+      --max-w: 1100px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); color: var(--text); background: var(--dark); line-height: 1.6; }
+    a { color: var(--accent); text-decoration: none; }
+
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,10,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border); padding: 0 32px;
+    }
+    .nav-inner { max-width: var(--max-w); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-logo { font-weight: 900; font-size: 1.2rem; letter-spacing: -0.02em; }
+    .nav-logo span { color: var(--accent); }
+    .nav-cta {
+      background: var(--accent); color: #fff; padding: 10px 24px;
+      border-radius: var(--radius); font-size: 0.875rem; font-weight: 700;
+      border: none; cursor: pointer; text-decoration: none; letter-spacing: 0.02em;
+      transition: opacity 0.15s;
+    }
+    .nav-cta:hover { opacity: 0.88; }
+
+    /* Layout */
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 32px; }
+    section { padding: 96px 0; border-bottom: 1px solid var(--border); }
+
+    /* Hero — full-bleed dark with accent stripe */
+    .hero { padding: 0; overflow: hidden; position: relative; }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 60%, color-mix(in srgb, var(--accent) 20%, #0a0a0a) 100%);
+    }
+    .hero-stripe { position: absolute; top: 0; right: 0; width: 40%; height: 100%; background: var(--accent); clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%); opacity: 0.06; }
+    .hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; min-height: 600px; padding: 80px 32px; max-width: var(--max-w); margin: 0 auto; }
+    @media (max-width: 768px) { .hero-inner { grid-template-columns: 1fr; text-align: center; } }
+    .hero-text {}
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      padding: 6px 16px; border-radius: 999px; font-size: 0.78rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--accent); margin-bottom: 28px;
+    }
+    .hero h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 24px; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 1.1rem; color: var(--muted); margin-bottom: 40px; max-width: 480px; }
+    .btn-primary {
+      display: inline-block; background: var(--accent); color: #fff;
+      padding: 16px 40px; border-radius: var(--radius);
+      font-size: 1rem; font-weight: 800; letter-spacing: 0.03em; border: none; cursor: pointer;
+      text-decoration: none; transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .hero-visual {
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 50%, #000));
+      border-radius: 16px; aspect-ratio: 1; max-width: 400px; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 6rem; opacity: 0.9;
+      box-shadow: 0 0 60px color-mix(in srgb, var(--accent) 30%, transparent);
+    }
+
+    /* Headings */
+    .section-num { font-size: 5rem; font-weight: 900; color: rgba(255,255,255,0.04); line-height: 1; margin-bottom: -40px; }
+    .section-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 10px; }
+    .section-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -0.025em; margin-bottom: 16px; }
+    .section-body { font-size: 1.05rem; color: var(--muted); max-width: 580px; line-height: 1.7; }
+
+    /* Features */
+    #features { background: var(--dark2); }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1px; background: var(--border); margin-top: 56px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .feature-item { background: var(--dark2); padding: 32px; transition: background 0.15s; }
+    .feature-item:hover { background: var(--dark3); }
+    .feature-accent { width: 3px; height: 32px; background: var(--accent); border-radius: 2px; margin-bottom: 16px; }
+    .feature-item h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 10px; }
+    .feature-item p { font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
+
+    /* Services */
+    .services-list { display: flex; flex-direction: column; gap: 0; margin-top: 48px; }
+    .service-row {
+      display: flex; align-items: flex-start; gap: 24px; padding: 28px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .service-row:first-child { border-top: 1px solid var(--border); }
+    .service-index { font-size: 0.75rem; font-weight: 700; color: var(--accent); width: 32px; flex-shrink: 0; padding-top: 3px; }
+    .service-content h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 6px; }
+    .service-content p { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+    /* About */
+    .about-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 64px; margin-top: 56px; }
+    @media (max-width: 768px) { .about-grid { grid-template-columns: 1fr; } }
+    .about-stat-block { display: flex; flex-direction: column; gap: 32px; }
+    .about-stat { }
+    .stat-big { font-size: 3rem; font-weight: 900; color: var(--accent); line-height: 1; }
+    .stat-desc { font-size: 0.875rem; color: var(--muted); margin-top: 4px; }
+    .about-body p { font-size: 1rem; color: var(--muted); line-height: 1.8; margin-bottom: 16px; }
+
+    /* Testimonials */
+    #testimonials { background: var(--dark2); }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-top: 56px; }
+    .t-card { border: 1px solid var(--border); border-radius: 12px; padding: 28px; position: relative; overflow: hidden; }
+    .t-card::before { content: '"'; position: absolute; top: -10px; right: 20px; font-size: 8rem; font-weight: 900; color: var(--accent); opacity: 0.06; line-height: 1; }
+    .t-card blockquote { font-size: 0.95rem; color: var(--muted); line-height: 1.7; margin-bottom: 20px; position: relative; }
+    .t-name { font-weight: 800; font-size: 0.9rem; }
+    .t-role { font-size: 0.8rem; color: var(--accent); margin-top: 2px; }
+
+    /* Contact */
+    #contact { background: var(--dark3); }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 64px; margin-top: 56px; }
+    @media (max-width: 768px) { .contact-grid { grid-template-columns: 1fr; } }
+    .contact-info p { font-size: 0.9rem; color: var(--muted); margin-bottom: 16px; }
+    .contact-info strong { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 4px; }
+    .contact-info a { color: var(--muted); }
+    .lead-form { display: flex; flex-direction: column; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.5); }
+    .form-group input, .form-group textarea {
+      padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: var(--radius); color: #fff; font-family: var(--font); font-size: 0.9rem;
+      transition: border-color 0.15s;
+    }
+    .form-group input::placeholder, .form-group textarea::placeholder { color: rgba(255,255,255,0.25); }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .btn-submit {
+      background: var(--accent); color: #fff; border: none;
+      padding: 14px 32px; border-radius: var(--radius);
+      font-size: 0.95rem; font-weight: 800; cursor: pointer;
+      align-self: flex-start; letter-spacing: 0.03em; transition: opacity 0.15s;
+    }
+    .btn-submit:hover { opacity: 0.88; }
+
+    /* Footer */
+    footer { background: #000; padding: 48px 32px; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: var(--max-w); margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 24px; }
+    .footer-logo { font-weight: 900; font-size: 1.1rem; }
+    .footer-logo span { color: var(--accent); }
+    .footer-copy { font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-top: 6px; }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { color: rgba(255,255,255,0.45); font-size: 0.875rem; transition: color 0.15s; }
+    .footer-links a:hover { color: #fff; }
+
+    /* Visibility */
+    {% if not include_features %}#features { display: none; }{% endif %}
+    {% if not include_services %}#services { display: none; }{% endif %}
+    {% if not include_about %}#about { display: none; }{% endif %}
+    {% if not include_testimonials %}#testimonials { display: none; }{% endif %}
+    {% if not include_contact %}#contact { display: none; }{% endif %}
+
+    @media (max-width: 768px) {
+      .nav-cta { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">{{ company_name }}</span>
+    <a href="#contact" class="nav-cta">{{ primary_cta_text }}</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-stripe"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-tag">{{ industry }}</div>
+      <h1>{{ hero_headline }}</h1>
+      <p>{{ hero_subheadline }}</p>
+      <a href="#contact" class="btn-primary">{{ primary_cta_text }}</a>
+    </div>
+    <div class="hero-visual" aria-label="{{ company_name }}">◆</div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="container">
+    <div class="section-num">01</div>
+    <div class="section-label">Core capabilities</div>
+    <h2 class="section-title">What Sets Us Apart</h2>
+    <p class="section-body">{{ short_description }}</p>
+    <div class="features-grid">
+      {% for service in key_services_list %}
+      <div class="feature-item">
+        <div class="feature-accent"></div>
+        <h3>{{ service }}</h3>
+        <p>Industry-leading {{ service.lower() }} delivered with precision and measurable impact.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="container">
+    <div class="section-num">02</div>
+    <div class="section-label">Services</div>
+    <h2 class="section-title">What We Do</h2>
+    <div class="services-list">
+      {% for service in key_services_list %}
+      <div class="service-row">
+        <div class="service-index">0{{ loop.index }}</div>
+        <div class="service-content">
+          <h3>{{ service }}</h3>
+          <p>Expert {{ service.lower() }} solutions engineered for performance and built on proven methodologies.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="container">
+    <div class="section-num">03</div>
+    <div class="section-label">About</div>
+    <h2 class="section-title">{{ company_name }}</h2>
+    <div class="about-grid">
+      <div class="about-stat-block">
+        <div class="about-stat"><div class="stat-big">{{ key_services_list | length }}+</div><div class="stat-desc">Core services</div></div>
+        <div class="about-stat"><div class="stat-big">100%</div><div class="stat-desc">Client focused</div></div>
+        <div class="about-stat"><div class="stat-big">24/7</div><div class="stat-desc">Support</div></div>
+      </div>
+      <div class="about-body">
+        <p>{{ short_description }}</p>
+        {% if about_us %}<p>{{ about_us }}</p>{% endif %}
+        <p>Operating in the {{ industry }} industry with a relentless drive to deliver exceptional results and build lasting partnerships with our clients.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials">
+  <div class="container">
+    <div class="section-num">04</div>
+    <div class="section-label">Client results</div>
+    <h2 class="section-title">Proven Impact</h2>
+    <div class="testimonials-grid">
+      <div class="t-card">
+        <blockquote>"{{ company_name }} delivered results that exceeded every metric we set. Their approach to {{ industry.lower() }} is genuinely world-class."</blockquote>
+        <div class="t-name">Sarah Johnson</div>
+        <div class="t-role">CEO, Apex Solutions</div>
+      </div>
+      <div class="t-card">
+        <blockquote>"The team at {{ company_name }} are professionals in every sense. Decisive, knowledgeable, and laser-focused on outcomes."</blockquote>
+        <div class="t-name">Marcus Webb</div>
+        <div class="t-role">Director, Nexus Capital</div>
+      </div>
+      <div class="t-card">
+        <blockquote>"Our ROI from working with {{ company_name }} speaks for itself. Highly recommended for anyone serious about growth in {{ industry.lower() }}."</blockquote>
+        <div class="t-name">Emily Chen</div>
+        <div class="t-role">Founder, Catalyst Group</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <div class="section-num">05</div>
+    <div class="section-label">Start now</div>
+    <h2 class="section-title">Let's Work Together</h2>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <p><strong>Industry</strong>{{ industry }}</p>
+        {% if contact_email %}<p><strong>Email</strong><a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>{% endif %}
+        {% if contact_phone %}<p><strong>Phone</strong>{{ contact_phone }}</p>{% endif %}
+        {% if contact_location %}<p><strong>Location</strong>{{ contact_location }}</p>{% endif %}
+        {% if instagram_url or linkedin_url or twitter_url or facebook_url %}
+        <p><strong>Social</strong>
+          {% if instagram_url %}<a href="{{ instagram_url }}" target="_blank" rel="noopener">Instagram</a> {% endif %}
+          {% if linkedin_url %}<a href="{{ linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a> {% endif %}
+          {% if twitter_url %}<a href="{{ twitter_url }}" target="_blank" rel="noopener">Twitter</a>{% endif %}
+        </p>
+        {% endif %}
+      </div>
+      <div>
+        <!-- KIMUX_LEAD_FORM: action will be replaced by FB5 -->
+        <form action="{{ form_action }}" method="post" class="lead-form">
+          <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" name="name" required placeholder="Your full name">
+          </div>
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="4" placeholder="Tell us about your goals…"></textarea>
+          </div>
+          <button type="submit" class="btn-submit">{{ primary_cta_text }}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">{{ company_name }}</div>
+      <div class="footer-copy">&copy; {{ current_year }} {{ company_name }}. All rights reserved.</div>
+      <div class="footer-copy" style="margin-top:4px;">Generated by KimuX Funnel Builder</div>
+    </div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

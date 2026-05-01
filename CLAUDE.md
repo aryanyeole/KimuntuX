@@ -26,6 +26,13 @@ The CRM module is fully built and wired end-to-end. This is not a prototype — 
 - `SENDGRID_API_KEY` — Platform SendGrid account key. Optional in dev; required for outbound email.
 - `SENDGRID_EVENT_WEBHOOK_PUBLIC_KEY` — ECDSA public key from SendGrid Mail Settings → Event Webhook. Required if `SENDGRID_API_KEY` is set.
 - `SENDGRID_INBOUND_PUBLIC_KEY` — Same key for Inbound Parse signature (can be the same as event key). Only needed if `SENDGRID_INBOUND_VERIFY=true`.
+- `ANTHROPIC_API_KEY` — Anthropic Claude API key for funnel HTML
+  generation. Required for real generation; if absent, funnel generator
+  falls back to static template rendering. This is the only feature on
+  the platform that uses Claude — all other AI features use Gemini.
+- `FUNNEL_FALLBACK_ONLY` — Optional. Set to `true` to force the funnel
+  generator to skip Claude and always use static templates. Useful for
+  local dev when you don't want to burn API tokens.
 
 **Frontend**
 - `src/services/api.js` — centralized fetch wrapper with JWT auth headers + `X-Tenant-ID` header (reads from `localStorage.kimuntu_tenant_id`)
@@ -49,6 +56,8 @@ The CRM module is fully built and wired end-to-end. This is not a prototype — 
 
 **Phase 3 — SendGrid integration ✅ COMPLETE**
 
+- **Known bug — lead drawer send returns 502** (deferred from Phase 3 verification): Sending email via the test-send button in Settings works correctly. Sending from the lead drawer's AI Assist tab → "Send Outreach" returns 502 Bad Gateway in 1–2 seconds with no Python traceback in the backend log. The 200 OK on `/ai/outreach` immediately before confirms the Gemini draft generation succeeded. Diagnosis paused; suspected to be an unhandled exception in the `send_outreach_email` post-send code path (Communication row write, reply-to HMAC token computation, or Activity log) that is not surfacing as a normal traceback. To resume diagnosis: check browser DevTools Network tab → Response body for the failing request, and inspect `app/services/communication_service.py::send_outreach_email`, `app/integrations/sendgrid_client.py`, and the router handler in `app/routers/crm.py`. Must be fixed before Phase 5 demo.
+
 What's live:
 - Outbound email send from the lead drawer AI Assist tab (`POST /api/v1/crm/leads/{id}/communications/send-email`). Reply-to address encodes tenant/lead/comm IDs as an HMAC token.
 - SendGrid Event Webhook receiver (`POST /api/v1/webhooks/sendgrid/events`) — maps delivered/open/click/bounce events to Activity rows and upgrades Communication.status via a one-way precedence ladder (never downgrades).
@@ -67,6 +76,19 @@ What's live:
 - Multi-step campaign creation modal
 - SQLAlchemy do_orm_execute guard (service-layer filtering is enforced; DB-level guard is a future hardening step)
 - Tenant switcher UI (single tenant per user for now)
+
+
+- Background jobs / task queue (Celery, ARQ, etc.) — funnel generation
+  uses FastAPI BackgroundTasks for now; revisit if generation queues up
+- Webhook receivers for ad platforms
+- Real integration SDK wiring for non-ClickBank platforms (connections are
+  mock status toggles)
+- Multi-step campaign creation modal
+- SQLAlchemy do_orm_execute guard (service-layer filtering is enforced;
+  DB-level guard is a future hardening step)
+- Tenant switcher UI (single tenant per user for now)
+- Logo upload / file storage (deferred to Phase 5 with AWS S3)
+- Public funnel hosting (deferred to Phase 5)
 
 ---
 
@@ -153,6 +175,146 @@ card in Settings with real test-send. 123 tests pass.
 configured (inbound only works via direct webhook POST); single platform
 SendGrid account (per-tenant subuser provisioning + sender verification in
 Phase 5).
+
+### Funnel Builder (sponsor priority — inserted ahead of Phase 4) 🔄 FB3 COMPLETE
+
+AI-generated landing-page funnels that capture leads into the existing CRM
+pipeline. Replaces the "Funnel Builder — SOON" disabled nav item in the CRM
+sidebar with a working module at `/crm/funnels`. Sponsor priority because
+they will use the generated funnels for testing.
+
+**Origin:** Code reference from another team under the same sponsor at
+https://github.com/mkhamisani4/kimuntuProAI. Their stack (Next.js +
+TypeScript + Firestore + Firebase Storage + Tailwind + Claude) does not
+port directly to KimuX (React 19 + JS + Postgres + styled-components +
+Gemini). Port strategy: keep their 6-step wizard structure, field names,
+and generation prompt. Rebuild persistence, routing, and storage in
+KimuX-native patterns.
+
+**AI provider exception:** This is the *only* feature on the platform that
+uses Claude (Anthropic API) instead of Gemini. Justified because (a) the
+sponsor handed us their generator using Claude Sonnet 4.5 with a 64K
+output budget, and (b) Gemini does not have an equivalent for single-shot
+HTML generation of this size — Flash output ceiling is too low, Pro is
+slower and pricier than Claude for this workload. All other AI features
+(lead scoring, outreach, AI assist, communication reply suggestions) stay
+on Gemini. Do NOT migrate other features to Claude — Gemini-only is
+preserved everywhere except funnel HTML generation.
+
+**Sub-phases:**
+- **FB1** ✅ COMPLETE — Backend skeleton + mock generation. Funnel
+  model, FunnelStatus enum (lowercase string values: draft, generating,
+  ready, failed), Alembic migration `dec3d7fc3f77`, Pydantic v2
+  schemas, tenant-scoped service layer, mock generator (2-second sleep
+  + minimal HTML), 7 endpoints under `/api/v1/crm/funnels`. 12 tests
+  passing (10 spec + 2 added: empty key_services validation,
+  unauthenticated access). Total backend suite: 139/139.
+
+- **FB2** ✅ COMPLETE — Frontend wizard with mock backend. `useFunnels`
+  hook with polling support, list page (`/crm/funnels`), 6-step wizard
+  (`/crm/funnels/new`), preview page (`/crm/funnels/:id`) with iframe
+  sandbox, status polling that stops on ready/failed, sidebar nav item
+  activated (line 589 of `src/layouts/CRMLayout.js` — disabled flag
+  removed, `to: '/crm/funnels'` added). Inline rename, download HTML,
+  regenerate, delete all working. Verified end-to-end: complete wizard
+  → mock HTML renders → metadata panel shows mock-fb1 / 2s / tokens=0.
+
+  Two bugs fixed during FB2 verification:
+  - `contact_email` was using Pydantic `EmailStr` which rejected
+    RFC-reserved domains (.test, .example, .invalid). Relaxed to a
+    permissive regex pattern because contact_email is a display-only
+    field (rendered as a mailto link on the generated funnel page —
+    KimuX never sends to it). 2 new tests cover the relaxed
+    validation. Total backend suite: 141/141.
+  - Wizard error handler rendered Pydantic 422 error arrays as
+    `[object Object]`. Added shared helper at `src/utils/apiError.js`
+    with a `formatApiError()` function that handles string details,
+    Pydantic detail arrays, and network errors. Will be reused by
+    FB3/FB4/FB5 error paths.
+
+  Known V2-deferred behavior: the CTA button in mock HTML is inert
+  (no href, no form). Real CTA wiring happens in FB5 when public form
+  submissions are added.
+
+- **FB3** ✅ COMPLETE — Real Claude generation + rule-based fallback.
+  Anthropic SDK `0.97.0` pinned (`anthropic>=0.40.0` in requirements.txt).
+  `backend/app/integrations/anthropic_client.py` wraps the Messages API
+  with streaming (sync + `asyncio.to_thread`), HTML extraction, and typed
+  exceptions. `backend/app/services/funnel_prompt.py` builds the
+  (system_prompt, user_prompt) pair from WizardInput. Three static fallback
+  templates (minimal/modern/bold) in `backend/app/services/funnel_templates/`
+  rendered via Jinja2. `funnel_generator.py` rewritten: Anthropic path with
+  HTML validation (must contain KIMUX_LEAD_FORM marker), fallback on known
+  API errors (rate-limit/timeout/auth/server), mark_failed on unexpected
+  exceptions. Config: `ANTHROPIC_API_KEY` (soft-fail — fallback if absent),
+  `FUNNEL_FALLBACK_ONLY` (force template path). Frontend metadata panel
+  shows source badge (green=anthropic, yellow=fallback), token counts, timing.
+  165 passing tests (1 live Anthropic test skipped by default; run with
+  `RUN_LIVE_ANTHROPIC_TESTS=1`). Fallback path tested end-to-end in CI.
+  Observed p50 generation latency: ~20–35 s. Observed token counts:
+  ~5000–8000 in, ~4000–7000 out (varies by wizard content and layout).
+  Insufficient-credits handling (fixup): `AnthropicInsufficientCredits`
+  exception routes to static-template fallback with
+  `fallback_reason="insufficient_credits"`. `_classify_bad_request` helper
+  separates credits-depleted 400s (fallback-eligible) from other 400s
+  (mark-failed, so prompt/param bugs surface). Discovered during FB3
+  verification when the Anthropic account had $0 in credits. Covered by
+  `test_anthropic_client.py` (unit) and two new entries in
+  `TestFunnelFallback` (integration).
+- **FB5** — Public form submissions wire to CRM leads (new public
+  endpoint, generation prompt instructs Claude to include the form,
+  fallback templates include the form, leads flow into existing pipeline
+  with `source=funnel`). This is what makes it a real CRM feature, not
+  a standalone AI demo.
+- **FB4** — Edit-via-chat (chat UI on edit page, edit endpoint, edit
+  prompt that preserves structure, conversation history in
+  `Funnel.edit_history` JSON column).
+- **FB6** — Polish (download HTML, regenerate button, inline rename,
+  status pill consistency) + tests + final CLAUDE.md update.
+
+**V1 scope (what ships):** Single-page AI-generated funnels with a
+working lead-capture form. Multi-page funnels, A/B variants, and
+custom domains are deferred.
+
+**Deferred from V1 (to Phase 5+ when AWS is unblocked):**
+- Logo upload (S3 + signed URLs in wizard Step 1; field is hidden in V1)
+- Public hosting at `funnels.kimux.io/{funnel_id}` (CloudFront + S3
+  static hosting). V1 generated HTML is download-only or rendered in
+  the in-app preview iframe.
+- Custom domains per funnel
+- AI image generation for hero sections (currently text + color only)
+- Multi-page funnels with conditional routing
+
+### Connections migration ✅ COMPLETE (CN1 + CN2)
+
+Reorganized integration UI to live at `/crm/connections` instead of buried in
+Settings. Settings is now slimmed to AI Configuration and Team & Permissions
+only — actual user account settings.
+
+Sub-phases shipped:
+- **CN1** — Built `CRMConnections` page at `/crm/connections`, sidebar nav
+  item added (COMMERCE group, above Funnel Builder), dual-mounted
+  ClickBankSection and SendGrid Email Sender card from Settings. Settings
+  unchanged in CN1.
+- **CN2** — Moved IntegrationsGrid (12+ integrations: BuyGoods, ClickBank,
+  Digistore24, Facebook Ads, Google Ads, Instagram, Klaviyo, MaxWeb, PayPal,
+  Shopify, Stripe, TikTok Ads) to Connections in commit 1; deleted
+  ClickBankSection, Email Sender card, and IntegrationsGrid from Settings in
+  commit 2. Updated Settings header to "Account Settings" with link back to
+  Connections. CRMSettings.js dropped from ~441 lines to ~170 lines.
+
+Layout decision: integrations are listed flat on Connections under one
+"All integrations" header. Categorization by platform type is a future
+polish pass.
+
+Deferred to a later sub-phase (CN3 or unplanned, not currently blocking):
+- Build `/admin` route for platform-admin config (Anthropic key status, Gemini
+  key status, Stripe platform account, S3 once it exists). The AI
+  Configuration card on Settings is the closest thing today — works fine for
+  now, will move to `/admin` when that page exists.
+- Standardize integration card UX (consistent header layout, pill placement,
+  button arrangement). Currently each card is its own shape; a polish pass
+  could normalize them.
 
 ### Phase 4 — Google OAuth (login only) ⬜ NOT STARTED
 "Sign in with Google" on login page. Establishes the OAuth pattern that

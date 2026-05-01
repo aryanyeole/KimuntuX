@@ -2,6 +2,7 @@ from app.models.activity import Activity
 from app.models.campaign import Campaign
 from app.models.communication import Communication
 from app.models.contact_submission import ContactSubmission
+from app.models.funnel import Funnel
 from app.models.integration import Integration
 from app.models.integration_credential import IntegrationCredential
 from app.models.lead import Lead
@@ -17,6 +18,7 @@ __all__ = [
     "Campaign",
     "Communication",
     "ContactSubmission",
+    "Funnel",
     "Integration",
     "IntegrationCredential",
     "Lead",

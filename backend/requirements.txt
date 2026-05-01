@@ -10,6 +10,7 @@ email-validator
 python-multipart
 google-genai
 sendgrid
+anthropic>=0.40.0
 email-reply-parser
 pytest
 httpx>=0.27.0
