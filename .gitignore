@@ -30,7 +30,7 @@ backend/.venv/
 backend/__pycache__/
 backend/app/__pycache__/
 backend/app/*/__pycache__/
-backend/admi_setup.py
+backend/admin_setup.py
 *.pyc
 *.db
 *.log

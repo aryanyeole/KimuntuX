@@ -231,6 +231,24 @@ const ConfirmBtn = styled.button`background: ${C.danger}; border: none; border-r
 
 const ErrorMsg = styled.div`font-size: 12px; color: ${C.danger}; margin-bottom: 12px;`;
 
+// ── Source badge ──────────────────────────────────────────────────────────────
+
+const SourceBadge = styled.span`
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: ${({ $hasTitle }) => $hasTitle ? 'help' : 'default'};
+  background: ${({ $source }) =>
+    $source === 'anthropic' ? 'rgba(0,200,150,0.15)' : 'rgba(245,158,11,0.15)'};
+  color: ${({ $source }) => $source === 'anthropic' ? '#00C896' : '#f59e0b'};
+  border: 1px solid ${({ $source }) =>
+    $source === 'anthropic' ? 'rgba(0,200,150,0.4)' : 'rgba(245,158,11,0.4)'};
+`;
+
 // ── Loading shell ─────────────────────────────────────────────────────────────
 
 const LoadingWrap = styled.div`
@@ -457,22 +475,37 @@ export default function CRMFunnelDetail() {
             <MetaPanel>
               <MetaItem>
                 <MetaLabel>Model</MetaLabel>
-                <MetaValue>{meta.model_used || '—'}</MetaValue>
+                <MetaValue style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {meta.model_used || '—'}
+                  {meta.source && (
+                    <SourceBadge
+                      $source={meta.source}
+                      $hasTitle={!!meta.fallback_reason}
+                      title={meta.fallback_reason ? `Fallback reason: ${meta.fallback_reason}` : undefined}
+                    >
+                      {meta.source}
+                    </SourceBadge>
+                  )}
+                </MetaValue>
               </MetaItem>
               <MetaItem>
-                <MetaLabel>Generation time</MetaLabel>
-                <MetaValue>{meta.generation_seconds != null ? `${meta.generation_seconds}s` : '—'}</MetaValue>
+                <MetaLabel>Tokens</MetaLabel>
+                <MetaValue>
+                  {(meta.input_tokens > 0 || meta.output_tokens > 0)
+                    ? `${(meta.input_tokens || 0).toLocaleString()} in / ${(meta.output_tokens || 0).toLocaleString()} out`
+                    : '—'}
+                </MetaValue>
+              </MetaItem>
+              <MetaItem>
+                <MetaLabel>Time</MetaLabel>
+                <MetaValue>
+                  {meta.generation_seconds != null ? `${meta.generation_seconds}s` : '—'}
+                </MetaValue>
               </MetaItem>
               <MetaItem>
                 <MetaLabel>Generated at</MetaLabel>
                 <MetaValue>{fmtDate(meta.generated_at)}</MetaValue>
               </MetaItem>
-              {meta.tokens_used != null && (
-                <MetaItem>
-                  <MetaLabel>Tokens used</MetaLabel>
-                  <MetaValue>{meta.tokens_used.toLocaleString()}</MetaValue>
-                </MetaItem>
-              )}
             </MetaPanel>
           </IframeWrap>
         )}
