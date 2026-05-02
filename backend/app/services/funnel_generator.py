@@ -64,9 +64,9 @@ def _validate_html(html: str) -> tuple[bool, str]:
 
 # ── Anthropic generation (synchronous, runs in thread pool) ──────────────────
 
-def _run_anthropic(wizard_input: WizardInput) -> dict:
+def _run_anthropic(wizard_input: WizardInput, funnel_id: str, base_url: str) -> dict:
     """Call Anthropic synchronously.  Designed to run in asyncio.to_thread."""
-    system_prompt, user_prompt = build_generation_prompt(wizard_input)
+    system_prompt, user_prompt = build_generation_prompt(wizard_input, funnel_id, base_url)
     client = AnthropicClient()
     return client.generate_html(system_prompt, user_prompt)
 
@@ -89,6 +89,7 @@ async def generate_funnel_async(funnel_id: str, tenant_id: str) -> None:
 
         wizard_input_dict = funnel.wizard_input or {}
         wizard_input = WizardInput(**wizard_input_dict)
+        base_url = settings.funnel_public_base_url
         t_start = time.monotonic()
 
         # ── Step 2 — decide path ──────────────────────────────────────────────
@@ -111,7 +112,7 @@ async def generate_funnel_async(funnel_id: str, tenant_id: str) -> None:
         if not use_fallback:
             # ── Anthropic path ─────────────────────────────────────────────────
             try:
-                result = await asyncio.to_thread(_run_anthropic, wizard_input)
+                result = await asyncio.to_thread(_run_anthropic, wizard_input, funnel_id, base_url)
                 html = result["html"]
 
                 ok, reason = _validate_html(html)
@@ -187,7 +188,7 @@ async def generate_funnel_async(funnel_id: str, tenant_id: str) -> None:
         # ── Fallback path ─────────────────────────────────────────────────────
         if use_fallback:
             try:
-                html = render_fallback_html(wizard_input)
+                html = render_fallback_html(wizard_input, funnel_id=funnel_id, base_url=base_url)
                 generation_seconds = round(time.monotonic() - t_start, 2)
                 metadata = {
                     "model_used":         "fallback-template",

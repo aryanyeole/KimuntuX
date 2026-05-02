@@ -11,7 +11,7 @@ import app.models  # noqa: F401
 from app.blockchain.exceptions import BlockchainError, ConfigurationError, ConnectionError
 from app.blockchain.web3_client import get_client
 from app.core.config import settings
-from app.routers import admin, auth, contacts, crm, webhooks
+from app.routers import admin, auth, campaigns, contacts, crm, public_funnels, webhooks
 
 # ── Fail-fast checks ──────────────────────────────────────────────────────────
 # Catch missing secrets before the server accepts any requests.
@@ -35,7 +35,6 @@ from app.core.database import SessionLocal, engine, ensure_sqlite_campaign_colum
 from app.core.tenancy import SYSTEM_TENANT_ID
 from app.models.tenant import Tenant, TenantPlan
 from app.models.base import Base
-from app.routers import auth, campaigns, contacts, crm
 from app.routers.blockchain.commission import router as commission_router
 from app.routers.blockchain.escrow import router as escrow_router
 from app.routers.blockchain.network import router as network_router
@@ -151,6 +150,7 @@ app.include_router(contacts.router, prefix=settings.api_v1_prefix)
 app.include_router(campaigns.router, prefix=settings.api_v1_prefix)
 app.include_router(crm.router, prefix=settings.api_v1_prefix)
 app.include_router(admin.router, prefix=settings.api_v1_prefix)
+app.include_router(public_funnels.router, prefix=settings.api_v1_prefix)
 app.include_router(webhooks.router, prefix=settings.api_v1_prefix)
 app.include_router(commission_router, prefix=settings.api_v1_prefix)
 app.include_router(wallet_router, prefix=settings.api_v1_prefix)

@@ -82,11 +82,23 @@ def test_render_fallback_includes_company_name():
 
 
 def test_render_fallback_includes_kimux_form_marker():
-    """Every template must include the KIMUX_LEAD_FORM comment and form."""
+    """Every template must include the KIMUX_LEAD_FORM comment."""
     for layout in ["minimal", "modern", "bold", "playful"]:
         html = render_fallback_html(_BASE.model_copy(update={"layout_style": layout}))
         assert "KIMUX_LEAD_FORM" in html, f"Missing KIMUX_LEAD_FORM in {layout} template"
-        assert 'action="#"' in html, f"Form action is not # in {layout} template"
+
+
+def test_render_fallback_form_has_real_action():
+    """When funnel_id is provided, the form action must point to the submit URL."""
+    funnel_id = "fb5-test-funnel-id"
+    html = render_fallback_html(_BASE, funnel_id=funnel_id)
+    assert f"/api/v1/public/funnels/{funnel_id}/submit" in html
+
+
+def test_render_fallback_form_falls_back_to_hash_without_funnel_id():
+    """When no funnel_id is provided, form action falls back to '#'."""
+    html = render_fallback_html(_BASE)
+    assert 'action="#"' in html
 
 
 def test_render_fallback_includes_hero_content():

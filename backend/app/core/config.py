@@ -73,6 +73,10 @@ class Settings(BaseSettings):
     # Set true to force static-template fallback even when the key is present.
     # Useful for local dev when you don't want to burn API tokens.
     funnel_fallback_only: bool = False
+    # Public-facing base URL for funnel submit action. Leave empty in dev
+    # so the form action is a relative URL (works when the iframe is
+    # same-origin with the API). Set to e.g. "https://api.kimux.io" in prod.
+    funnel_public_base_url: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -12,8 +12,9 @@ import PlatformLogo from '../../components/crm/PlatformLogo';
 const SOURCE_LABEL = {
   facebook_ads: 'Facebook Ads', google_ads: 'Google Ads', tiktok_ads: 'TikTok Ads',
   instagram: 'Instagram', landing_page: 'Landing Page', affiliate_link: 'Affiliate Link',
-  website_widget: 'Widget', api: 'API',
+  website_widget: 'Widget', api: 'API', funnel: 'Funnel',
 };
+const SOURCE_COLOR = { funnel: '#8b5cf6' };
 const SOURCES = Object.keys(SOURCE_LABEL);
 const STAGE_COLOR = {
   new: C.muted, contacted: C.accent, qualified: '#06b6d4',
@@ -488,9 +489,16 @@ function LeadDetailDrawer({ leadId, onClose, onStageUpdated, isSendGridConnected
               </DetailRow>
               <DetailRow>
                 <DetailLabel>Source</DetailLabel>
-                <DetailValue style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <PlatformLogo name={lead.source} size={16} />
-                  {SOURCE_LABEL[lead.source] || lead.source}
+                <DetailValue style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <PlatformLogo name={lead.source} size={16} />
+                    <span style={{ color: SOURCE_COLOR[lead.source] || 'inherit' }}>
+                      {SOURCE_LABEL[lead.source] || lead.source}
+                    </span>
+                  </span>
+                  {lead.source_detail && (
+                    <span style={{ fontSize: 11, color: C.muted }}>{lead.source_detail}</span>
+                  )}
                 </DetailValue>
               </DetailRow>
               <DetailRow>
@@ -795,9 +803,18 @@ export default function CRMLeads() {
                 </Td>
                 <Td style={{ color: C.muted }}>{lead.company || '—'}</Td>
                 <Td>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <PlatformLogo name={lead.source} size={18} />
-                    <span style={{ color: C.muted }}>{SOURCE_LABEL[lead.source] || lead.source}</span>
+                  <span style={{ display: 'inline-flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <PlatformLogo name={lead.source} size={18} />
+                      <span style={{ color: SOURCE_COLOR[lead.source] || C.muted }}>
+                        {SOURCE_LABEL[lead.source] || lead.source}
+                      </span>
+                    </span>
+                    {lead.source_detail && (
+                      <span style={{ fontSize: 10, color: C.textDim, paddingLeft: 24 }}>
+                        {lead.source_detail}
+                      </span>
+                    )}
                   </span>
                 </Td>
                 <Td>

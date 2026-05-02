@@ -237,35 +237,46 @@ preserved everywhere except funnel HTML generation.
   submissions are added.
 
 - **FB3** ✅ COMPLETE — Real Claude generation + rule-based fallback.
-  Anthropic SDK `0.97.0` pinned (`anthropic>=0.40.0` in requirements.txt).
-  `backend/app/integrations/anthropic_client.py` wraps the Messages API
-  with streaming (sync + `asyncio.to_thread`), HTML extraction, and typed
-  exceptions. `backend/app/services/funnel_prompt.py` builds the
-  (system_prompt, user_prompt) pair from WizardInput. Three static fallback
-  templates (minimal/modern/bold) in `backend/app/services/funnel_templates/`
-  rendered via Jinja2. `funnel_generator.py` rewritten: Anthropic path with
-  HTML validation (must contain KIMUX_LEAD_FORM marker), fallback on known
-  API errors (rate-limit/timeout/auth/server), mark_failed on unexpected
-  exceptions. Config: `ANTHROPIC_API_KEY` (soft-fail — fallback if absent),
-  `FUNNEL_FALLBACK_ONLY` (force template path). Frontend metadata panel
-  shows source badge (green=anthropic, yellow=fallback), token counts, timing.
-  165 passing tests (1 live Anthropic test skipped by default; run with
-  `RUN_LIVE_ANTHROPIC_TESTS=1`). Fallback path tested end-to-end in CI.
-  Observed p50 generation latency: ~20–35 s. Observed token counts:
-  ~5000–8000 in, ~4000–7000 out (varies by wizard content and layout).
-  Insufficient-credits handling (fixup): `AnthropicInsufficientCredits`
-  exception routes to static-template fallback with
-  `fallback_reason="insufficient_credits"`. `_classify_bad_request` helper
-  separates credits-depleted 400s (fallback-eligible) from other 400s
-  (mark-failed, so prompt/param bugs surface). Discovered during FB3
-  verification when the Anthropic account had $0 in credits. Covered by
-  `test_anthropic_client.py` (unit) and two new entries in
-  `TestFunnelFallback` (integration).
-- **FB5** — Public form submissions wire to CRM leads (new public
-  endpoint, generation prompt instructs Claude to include the form,
-  fallback templates include the form, leads flow into existing pipeline
-  with `source=funnel`). This is what makes it a real CRM feature, not
-  a standalone AI demo.
+  Anthropic SDK 0.97.0, Claude Sonnet 4.5 with streaming, max_tokens=16000.
+  Static template fallback (minimal/modern/bold) renders when API key is
+  missing, fallback flag is set, or specific operational errors occur
+  (rate limit, timeout, server error, insufficient credits). 5 typed
+  exception classes route correctly between fallback and hard-fail paths.
+  
+  Verified end-to-end:
+  - Fallback path: tested with $0 credits during initial build, yellow
+    badge + template renders correctly.
+  - Anthropic success path: tested after sponsor topped up credits.
+    Generation produces ~16K output tokens in ~180s. Output is
+    substantively different from fallback templates (Claude makes
+    bespoke design choices). Green ANTHROPIC badge, real token counts,
+    model claude-sonnet-4-5.
+  
+  Demo data hygiene note: do NOT use real brand names (Gymshark, Nike,
+  etc.) as company_name in funnels shown to sponsors or anyone external —
+  Claude generates legitimately professional output that uses the brand
+  name as a real wordmark. For testing only. Fictional names for demos.
+  
+  Open observations to monitor:
+  - First generation took 180s, longer than expected 15-45s. May be
+    cold start; rerun and confirm subsequent generations are faster.
+  - Output tokens hit 15,991 of 16,000 max — Claude likely stopped on
+    budget, not on completion. Watch for truncated HTML in FB5
+    verification (form may be missing if cutoff happens before contact
+    section). If this becomes a pattern, increase max_tokens or split
+    generation into sections.
+    
+- **FB5** ✅ COMPLETE — Public form submissions wire to CRM leads.
+  `POST /api/v1/public/funnels/{funnel_id}/submit` (no auth) looks up
+  the funnel, validates status=ready, creates a Lead in the funnel's
+  tenant with `source="funnel"` and `source_detail=funnel.title`, logs
+  a form_submit Activity, and returns an HTML thank-you page.
+  `LeadSource.funnel` added to model + Alembic migration
+  `f6a7b8c9d0e1`. Generation prompt and fallback templates now embed
+  the real submit URL (not `action="#"`). `FUNNEL_PUBLIC_BASE_URL`
+  setting controls the base URL (empty=relative in dev, absolute in
+  prod). CRMLeads.js shows funnel source in purple with source_detail
+  below the pill. 9 new tests; total suite: 179 passed + 1 skipped.
 - **FB4** — Edit-via-chat (chat UI on edit page, edit endpoint, edit
   prompt that preserves structure, conversation history in
   `Funnel.edit_history` JSON column).

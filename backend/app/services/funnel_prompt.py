@@ -2,7 +2,7 @@
 
 Builds the (system_prompt, user_prompt) pair that drives Claude Sonnet 4.5.
 Inspired structurally by the KimuntuPro reference generator, adapted for
-KimuX constraints: no <script> tags, KIMUX_LEAD_FORM marker, action="#".
+KimuX constraints: no <script> tags, KIMUX_LEAD_FORM marker, real submit URL.
 """
 from __future__ import annotations
 
@@ -11,7 +11,8 @@ from app.schemas.funnel import WizardInput
 
 # ── System prompt ─────────────────────────────────────────────────────────────
 
-_SYSTEM_PROMPT = """You are an expert web designer and developer specialising in creating beautiful, modern, responsive business landing pages.
+def _build_system_prompt(submit_url: str) -> str:
+    return f"""You are an expert web designer and developer specialising in creating beautiful, modern, responsive business landing pages.
 
 Your task is to generate a complete, production-ready HTML landing page based on the user's specifications.
 
@@ -29,10 +30,14 @@ Your task is to generate a complete, production-ready HTML landing page based on
 Include exactly ONE lead-capture form on the page. It MUST:
 1. Have the following HTML comment immediately above the opening <form> tag (exact text, no changes):
    <!-- KIMUX_LEAD_FORM: action will be replaced by FB5 -->
-2. Have attribute action="#" on the <form> tag.
-3. Contain three fields: name (type=text, required), email (type=email, required), message (textarea, optional).
-4. Have a submit button whose visible text matches the wizard's primary_cta_text.
-5. No JavaScript — pure HTML form POST.
+2. Have attribute action="{submit_url}" on the <form> tag.
+3. The form's method attribute MUST be "post".
+4. Contain exactly three fields:
+   - name (type=text, name="name", required) — visitor's full name
+   - email (type=email, name="email", required) — visitor's email
+   - message (textarea, name="message", optional) — optional message
+5. Have a submit button whose visible text matches the wizard's primary_cta_text.
+6. No JavaScript — pure HTML form POST.
 
 ## Design guidelines
 
@@ -66,19 +71,33 @@ Do NOT truncate or abbreviate. Every included section must be fully implemented.
 REMEMBER before you close your output:
 - No <script> tags anywhere in the document.
 - The KIMUX_LEAD_FORM comment must appear immediately before the <form> tag.
-- The <form> must have action="#".
+- The <form> must have action="{submit_url}" and method="post".
+- Form fields must use exactly: name="name", name="email", name="message".
 - Close all HTML tags properly. End with </body></html>.
 """
 
 
 # ── User prompt builder ───────────────────────────────────────────────────────
 
-def build_generation_prompt(wizard_input: WizardInput) -> tuple[str, str]:
+def build_generation_prompt(
+    wizard_input: WizardInput,
+    funnel_id: str = "",
+    base_url: str = "",
+) -> tuple[str, str]:
     """Return (system_prompt, user_prompt) for Claude funnel generation.
 
-    The system prompt is constant; the user prompt encodes all wizard fields
-    in a clean labeled format (NOT a JSON dump) so Claude can read it naturally.
+    funnel_id and base_url are used to build the real form submit URL so
+    Claude includes a working action attribute.  If funnel_id is empty
+    (e.g. in unit tests that don't have a real funnel yet), the action
+    falls back to "#".
     """
+    submit_url = (
+        f"{base_url}/api/v1/public/funnels/{funnel_id}/submit"
+        if funnel_id
+        else "#"
+    )
+    system_prompt = _build_system_prompt(submit_url)
+
     lines: list[str] = []
 
     # ── Brand Basics ──────────────────────────────────────────────────────────
@@ -187,9 +206,10 @@ def build_generation_prompt(wizard_input: WizardInput) -> tuple[str, str]:
         "no explanation. Wrap your output in ```html ... ``` fences."
     )
     lines.append(
-        "REMEMBER: No <script> tags. Form action must be \"#\". "
-        "Include the KIMUX_LEAD_FORM comment immediately before the <form> tag."
+        f'REMEMBER: No <script> tags. Form action must be "{submit_url}". '
+        "Include the KIMUX_LEAD_FORM comment immediately before the <form> tag. "
+        'Form fields must use name="name", name="email", name="message".'
     )
 
     user_prompt = "\n".join(lines)
-    return _SYSTEM_PROMPT, user_prompt
+    return system_prompt, user_prompt

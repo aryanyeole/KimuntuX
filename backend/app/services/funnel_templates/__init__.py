@@ -77,7 +77,11 @@ def _resolve_accent(color_theme: str) -> str:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
-def render_fallback_html(wizard_input: WizardInput) -> str:
+def render_fallback_html(
+    wizard_input: WizardInput,
+    funnel_id: str = "",
+    base_url: str = "",
+) -> str:
     """Render a static HTML template from the wizard input.
 
     Maps layout_style → template file and color_theme → accent hex.
@@ -130,8 +134,12 @@ def render_fallback_html(wizard_input: WizardInput) -> str:
         "social_links":     social_links,
         # Visual
         "accent_color": _resolve_accent(wizard_input.color_theme),
-        # Form
-        "form_action":  "#",
+        # Form — real submit URL when funnel_id is known; "#" fallback for tests
+        "form_action": (
+            f"{base_url}/api/v1/public/funnels/{funnel_id}/submit"
+            if funnel_id
+            else "#"
+        ),
         # Misc
         "current_year": datetime.now(timezone.utc).year,
     }
