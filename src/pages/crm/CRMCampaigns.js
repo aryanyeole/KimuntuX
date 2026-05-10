@@ -104,7 +104,7 @@ const TableCard = styled.div`
   overflow:hidden;margin-bottom:20px;
 `;
 const TableScroll = styled.div`overflow-x:auto;`;
-const Table = styled.table`width:100%;border-collapse:collapse;min-width:980px;`;
+const Table = styled.table`width:100%;border-collapse:collapse;min-width:700px;`;
 const Th = styled.th`
   font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
   color:${C.muted};padding:11px 14px;text-align:left;background:${C.surface};
@@ -158,10 +158,6 @@ const HealthLabel = styled.span`
   color:${C.text};
   font-size:12px;
   font-weight:600;
-`;
-
-const AnalyzeSection = styled.div`
-  margin:14px 0 18px;
 `;
 
 const AnalyzeButton = styled.button`
@@ -223,6 +219,7 @@ const AnalysisScoreCircle = styled.div`
   font-weight:800;
   font-size:14px;
   flex:0 0 auto;
+  box-shadow:0 0 20px ${({ $tone }) => $tone}44;
 `;
 
 const AnalysisTitleBlock = styled.div`
@@ -244,10 +241,13 @@ const AnalysisHealthLabel = styled.div`
 `;
 
 const AnalysisSummary = styled.div`
-  margin:6px 0 16px;
-  font-size:12px;
+  background:${C.card};
+  border-radius:8px;
+  padding:12px 16px;
+  margin:12px 0;
+  font-size:13px;
   color:${C.muted};
-  line-height:1.5;
+  line-height:1.6;
 `;
 
 const RecommendationGrid = styled.div`
@@ -328,23 +328,89 @@ const PlatformPill = styled.span`
   background:${({ $background }) => $background};
 `;
 
-const NextSteps = styled.ol`
-  margin:14px 0 0 18px;
-  padding:0;
+const NextStepsCard = styled.div`
+  background:${C.card};
+  border:1px solid ${C.border};
+  border-radius:10px;
+  padding:16px 20px;
+  margin-top:12px;
+`;
+
+const NextStepsLabel = styled.div`
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.08em;
   color:${C.muted};
+  margin-bottom:10px;
+`;
+
+const NextStepRow = styled.div`
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:8px;
+  &:last-child{margin-bottom:0;}
+`;
+
+const NextStepCircle = styled.div`
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:${C.accent}22;
+  color:${C.accent};
+  font-size:10px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  margin-top:1px;
+`;
+
+const NextStepText = styled.div`
   font-size:12px;
+  color:${C.muted};
   line-height:1.6;
 `;
 
 const AiEmptyState = styled.div`
-  min-height:220px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  padding:48px;
   text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
   color:${C.muted};
   font-size:13px;
   line-height:1.6;
+`;
+
+const AiEmptyIcon = styled.div`
+  font-size:32px;
+  opacity:.35;
+`;
+
+const AnalyzeBar = styled.div`
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 0;
+  margin:4px 0;
+`;
+
+const AnalyzeBarLabel = styled.div`
+  font-size:12px;
+  color:${C.muted};
+`;
+
+const PlatformDot = styled.span`
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:currentColor;
+  display:inline-block;
+  flex-shrink:0;
 `;
 
 const SkeletonGrid = styled.div`
@@ -391,6 +457,7 @@ const AiCard = styled.div`
   border:1px solid ${C.border};
   border-radius:12px;
   padding:20px;
+  ${({ $scoreColor }) => $scoreColor ? `border-top:3px solid ${$scoreColor};` : ''}
 `;
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -584,15 +651,15 @@ export default function CRMCampaigns() {
                 <Th>Campaign</Th>
                 <Th>Platform</Th>
                 <Th>Offer</Th>
-                <Th>Status</Th>
-                <Th>Health</Th>
-                <Th>Leads</Th>
-                <Th>Conversions</Th>
-                <Th>Spend</Th>
-                <Th>Revenue</Th>
-                <Th>ROAS</Th>
-                <Th>CTR</Th>
-                <Th>CPL</Th>
+                <Th style={{ width: 1 }}>Status</Th>
+                <Th style={{ width: 1 }}>Health</Th>
+                <Th style={{ width: 1 }}>Leads</Th>
+                <Th style={{ width: 1 }}>Conversions</Th>
+                <Th style={{ width: 1 }}>Spend</Th>
+                <Th style={{ width: 1 }}>Revenue</Th>
+                <Th style={{ width: 1 }}>ROAS</Th>
+                <Th style={{ width: 1 }}>CTR</Th>
+                <Th style={{ width: 1 }}>CPL</Th>
               </tr>
             </thead>
             <tbody>
@@ -626,24 +693,25 @@ export default function CRMCampaigns() {
                       setSelectedCampaignId(prev => (prev === c.id ? null : c.id));
                     }}
                   >
-                    <Td $selectedFirst={isSelected} style={{ fontWeight: 700, maxWidth: 200 }}>{c.name}</Td>
-                    <Td><span style={{ color: C.muted }}>{platformLabel}</span></Td>
-                    <Td style={{ color: C.accent }}>{offerName}</Td>
-                    <Td><StatusBadge $status={statusValue}>{statusText}</StatusBadge></Td>
-                    <Td>
+                    <Td $selectedFirst={isSelected} style={{ fontWeight: 700, minWidth: 140 }}>{c.name}</Td>
+                    <Td style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.muted }}>{platformLabel}</span></Td>
+                    <Td style={{ whiteSpace: 'nowrap', color: C.accent }}>{offerName}</Td>
+                    <Td style={{ whiteSpace: 'nowrap' }}><StatusBadge $status={statusValue}>{statusText}</StatusBadge></Td>
+                    <Td style={{ whiteSpace: 'nowrap' }}>
                       <HealthWrap>
                         <HealthDot $color={health.color} />
                         <HealthLabel>{health.label}</HealthLabel>
                       </HealthWrap>
                     </Td>
-                    <Td>0</Td>
-                    <Td>{fmtMoney(spend)}</Td>
-                    <Td style={{ color: C.success }}>{fmtMoney(revenue)}</Td>
-                    <Td>
+                    <Td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>0</Td>
+                    <Td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>0</Td>
+                    <Td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>{fmtMoney(spend)}</Td>
+                    <Td style={{ whiteSpace: 'nowrap', fontSize: 11, color: C.success }}>{fmtMoney(revenue)}</Td>
+                    <Td style={{ whiteSpace: 'nowrap', fontSize: 11 }}>
                       <RoasBadge $good={safeNum(roas) >= 3}>{fmtX(roas)}</RoasBadge>
                     </Td>
-                    <Td style={{ color: C.muted }}>{fmtPct(0)}</Td>
-                    <Td style={{ color: C.muted }}>{fmtCpl(0)}</Td>
+                    <Td style={{ whiteSpace: 'nowrap', fontSize: 11, color: C.muted }}>{fmtPct(0)}</Td>
+                    <Td style={{ whiteSpace: 'nowrap', fontSize: 11, color: C.muted }}>{fmtCpl(0)}</Td>
                   </Tr>
                 );
               })}
@@ -654,7 +722,12 @@ export default function CRMCampaigns() {
       {!!statusMessage && <InlineMessage>{statusMessage}</InlineMessage>}
       {!!errorMessage && <InlineMessage $type="error">{errorMessage}</InlineMessage>}
 
-      <AnalyzeSection>
+      <AnalyzeBar>
+        <AnalyzeBarLabel>
+          {selectedCampaignId
+            ? `Analyzing: ${campaigns.find(c => c.id === selectedCampaignId)?.name || ''}`
+            : 'Select a campaign row to analyze'}
+        </AnalyzeBarLabel>
         <AnalyzeButton
           type="button"
           onClick={handleAnalyzeCampaign}
@@ -664,14 +737,15 @@ export default function CRMCampaigns() {
         >
           {isAnalyzing ? 'Analyzing...' : 'Analyze Campaign'}
         </AnalyzeButton>
-        {!!analysisError && <AnalysisMessage $type="error">{analysisError}</AnalysisMessage>}
-      </AnalyzeSection>
+      </AnalyzeBar>
+      {!!analysisError && <AnalysisMessage $type="error">{analysisError}</AnalysisMessage>}
 
       {/* ── AI Optimization ── */}
-      <AiCard>
+      <AiCard $scoreColor={!isAnalyzing && analysis ? (safeNum(analysis.health_score) >= 70 ? C.success : safeNum(analysis.health_score) >= 40 ? C.warning : C.danger) : null}>
         {!isAnalyzing && !analysis && (
           <AiEmptyState>
-            Select a campaign from the table above and click Analyze to get AI-powered recommendations.
+            <AiEmptyIcon>📊</AiEmptyIcon>
+            Select a campaign and click Analyze to get AI-powered recommendations.
           </AiEmptyState>
         )}
 
@@ -689,11 +763,13 @@ export default function CRMCampaigns() {
           </SkeletonGrid>
         )}
 
-        {!isAnalyzing && analysis && (
+        {!isAnalyzing && analysis && (() => {
+          const scoreColor = safeNum(analysis.health_score) >= 70 ? C.success : safeNum(analysis.health_score) >= 40 ? C.warning : C.danger;
+          return (
           <>
             <AiTitleRow>
               <AnalysisHeader>
-                <AnalysisScoreCircle $tone={analysis.health_score >= 70 ? C.success : analysis.health_score >= 40 ? C.warning : C.danger}>
+                <AnalysisScoreCircle $tone={scoreColor}>
                   {safeNum(analysis.health_score)}
                 </AnalysisScoreCircle>
                 <AnalysisTitleBlock>
@@ -735,7 +811,9 @@ export default function CRMCampaigns() {
                       $color={tone.color}
                       $background={tone.background}
                     >
-                      {platformItem.platform} · {platformItem.performance}
+                      {platformItem.platform}
+                      <PlatformDot />
+                      {platformItem.performance}
                     </PlatformPill>
                   );
                 })}
@@ -743,14 +821,19 @@ export default function CRMCampaigns() {
             )}
 
             {!!analysis.next_steps?.length && (
-              <NextSteps>
+              <NextStepsCard>
+                <NextStepsLabel>Recommended Next Steps</NextStepsLabel>
                 {analysis.next_steps.map((step, index) => (
-                  <li key={`${step}-${index}`}>{step}</li>
+                  <NextStepRow key={`${step}-${index}`}>
+                    <NextStepCircle>{index + 1}</NextStepCircle>
+                    <NextStepText>{step}</NextStepText>
+                  </NextStepRow>
                 ))}
-              </NextSteps>
+              </NextStepsCard>
             )}
           </>
-        )}
+          );
+        })()}
       </AiCard>
       {!!toastMessage && <Toast>{toastMessage}</Toast>}
     </Page>

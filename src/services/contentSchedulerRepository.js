@@ -184,6 +184,7 @@ export function mapSchedulerCardToCampaignPayload(item, { campaignId = null, use
     content_pieces: Array.isArray(campaign.content_pieces)
       ? campaign.content_pieces.map((piece, index) => index === 0 ? ({
           ...piece,
+          status: used ? 'scheduled' : 'draft',
           schedule: {
             ...piece.schedule,
             publish_at: hasStartDateOverride
@@ -194,7 +195,7 @@ export function mapSchedulerCardToCampaignPayload(item, { campaignId = null, use
               ? (normalizedEndDate ? `${normalizedEndDate}T23:59:59` : null)
               : (piece.schedule?.end_at || null),
           },
-        }) : piece)
+        }) : { ...piece, status: used ? 'scheduled' : 'draft' })
       : campaign.content_pieces || [],
   };
 }
