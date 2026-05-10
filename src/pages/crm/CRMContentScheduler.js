@@ -1331,11 +1331,12 @@ export default function CRMContentScheduler() {
   }, [scheduledContentInSelectedWeek, selectedWeekStart]);
 
   const selectedCampaignImage = useMemo(() => {
-    if (!selectedCampaign || !Array.isArray(selectedCampaign.content_pieces)) {
+    const pieces = selectedCampaign?._campaign?.content_pieces || selectedCampaign?.content_pieces;
+    if (!selectedCampaign || !Array.isArray(pieces)) {
       return null;
     }
 
-    for (const piece of selectedCampaign.content_pieces) {
+    for (const piece of pieces) {
       const imageUrl = piece?.media?.image_url;
       if (imageUrl) {
         return {
