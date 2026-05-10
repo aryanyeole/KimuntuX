@@ -451,6 +451,42 @@ class CampaignGeneratorService:
 
         return "Target audience — write copy that speaks directly to these people:\n" + "\n".join(lines)
 
+    # Lightweight pre-generation call to extract a high-quality DataForSEO seed keyword.
+    async def _extract_seed_keyword(self, request: CampaignGenerateRequest) -> str:
+        offer_name = str(request.affiliate_product.get("offer_name") or "").strip()
+        niche = str(request.affiliate_product.get("niche") or "").strip()
+        network = str(request.affiliate_product.get("source_network") or "").strip()
+        prompt_excerpt = request.prompt[:200].strip()
+
+        prompt_words = request.prompt.lower().split()
+        filler = {'a', 'an', 'the', 'for', 'to', 'how', 'and', 'or', 'of', 'in', 'on', 'with', 'that', 'this', 'is', 'are', 'from'}
+        meaningful_words = [w for w in prompt_words if w not in filler]
+        fallback = offer_name.lower() if offer_name else " ".join(meaningful_words[:3])
+
+        seed = fallback
+        try:
+            api_key = settings.gemini_api_key
+            if api_key:
+                user_prompt = (
+                    "Return a single 2-4 word keyword phrase that best represents what someone "
+                    "would search on Google to find this type of product.\n"
+                    f"Offer name: {offer_name}\n"
+                    f"Niche: {niche}\n"
+                    f"Network: {network}\n"
+                    f"Prompt: {prompt_excerpt}\n\n"
+                    "Return ONLY the keyword phrase. No quotes, no explanation, no punctuation."
+                )
+                raw = await self._call_gemini(api_key, user_prompt)
+                candidate = raw.strip().strip('"').strip("'").lower().strip()
+                word_count = len(candidate.split())
+                if candidate and 1 <= word_count <= 5:
+                    seed = candidate
+        except Exception:
+            pass
+
+        print(f"=== AI EXTRACTED SEED KEYWORD: {seed} ===")
+        return seed
+
     # Deterministic local payload for development and offline testing.
     def _build_mock_contract(self, request: CampaignGenerateRequest) -> dict:
         offer_name = str(request.affiliate_product.get("offer_name") or "Your Offer")
@@ -538,18 +574,7 @@ class CampaignGeneratorService:
                 detail="Campaign generation failed: GEMINI_API_KEY is not configured.",
             )
 
-        prompt_words = request.prompt.lower().split()
-        filler = {'a', 'an', 'the', 'for', 'to', 'how', 'and', 'or', 'of', 'in', 'on', 'with', 'that', 'this', 'is', 'are', 'from'}
-        meaningful_words = [w for w in prompt_words if w not in filler]
-
-        interests = []
-        if request.audience:
-            interests = (request.audience.get("demographics") or {}).get("interests") or []
-        seed = (
-            interests[0] if interests
-            else " ".join(meaningful_words[:2])
-        )
-        print(f"=== DATAFORSEO SEED KEYWORD: {seed} ===")
+        seed = await self._extract_seed_keyword(request)
         keywords = await self._fetch_keywords(seed)
 
         commission_value = request.affiliate_product.get("commission", {}).get("value", 0)

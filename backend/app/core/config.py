@@ -65,6 +65,21 @@ class Settings(BaseSettings):
     dataforseo_login: str | None = None
     dataforseo_password: str | None = None
 
+    # ── Ayrshare / Social Publishing ─────────────────────────────────────────
+    # API key for Ayrshare social publishing. Optional — if absent, the
+    # AyrshareService runs in mock mode (returns fake publish_result dicts).
+    # Obtain from app.ayrshare.com → API Key. Set to activate real posting.
+    ayrshare_api_key: str | None = None
+
+    # ── AWS / S3 Image Storage ────────────────────────────────────────────────
+    # Optional. When aws_s3_bucket is set, ImageStorageService uploads generated
+    # and user-uploaded images to S3 instead of storing base64 data URLs in the
+    # campaign JSON. See docs/S3_IMAGE_STORAGE_HANDOFF.md for setup steps.
+    aws_s3_bucket: str | None = None
+    aws_s3_region: str = "us-east-1"
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: str | None = None
+
     # ── Anthropic / Funnel Builder ────────────────────────────────────────────
     # Claude API key for funnel HTML generation. Optional — if absent, funnel
     # generation falls back to static templates. See CLAUDE.md "AI provider
