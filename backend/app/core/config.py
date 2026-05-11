@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:3000"]
+    # Bootstrap admin ensured on startup (override via env in production).
     bootstrap_admin_email: str = "yannick@example.com"
     bootstrap_admin_password: str = "Capstone@123"
     bootstrap_admin_full_name: str = "Yannick"

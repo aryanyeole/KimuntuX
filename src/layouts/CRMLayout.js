@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useUser } from '../contexts/UserContext';
 import { useTenant } from '../contexts/TenantContext';
 import useStrategy from '../hooks/useStrategy';
 import { crm as C } from '../styles/crmTheme';
-import darkNewLogo from '../assets/dark_new_logo.jpeg';
+import crmSidebarLogo from '../assets/transperant_new_log.png';
+import CRMProfilePanel from '../components/crm/CRMProfilePanel';
+
+const CRM_PAGE_TITLE_PX = 16;
+const CRM_PAGE_TITLE_LINE_HEIGHT = 1.25;
+const CRM_LOGO_CROP_LH = CRM_PAGE_TITLE_LINE_HEIGHT * 1.1;
+const CRM_TOPBAR_HEIGHT_PX = 64;
 
 // ── Root shell ────────────────────────────────────────────────────────────────
 const Shell = styled.div`
@@ -19,8 +25,8 @@ const Shell = styled.div`
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
 const Sidebar = styled.aside`
-  width: ${({ $collapsed }) => ($collapsed ? '64px' : '215px')};
-  min-width: ${({ $collapsed }) => ($collapsed ? '64px' : '215px')};
+  width: ${({ $collapsed }) => ($collapsed ? '64px' : '228px')};
+  min-width: ${({ $collapsed }) => ($collapsed ? '64px' : '228px')};
   background: ${C.surface};
   border-right: 1px solid ${C.border};
   display: flex;
@@ -34,23 +40,38 @@ const LogoRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'space-between')};
-  padding: ${({ $collapsed }) => ($collapsed ? '18px 0' : '18px 16px')};
+  box-sizing: border-box;
+  min-height: ${CRM_TOPBAR_HEIGHT_PX}px;
+  padding: ${({ $collapsed }) => ($collapsed ? '0' : '0 10px')};
   border-bottom: 1px solid ${C.border};
-  min-height: 64px;
 `;
 
-const LogoMark = styled.div`
+const LogoMark = styled(Link)`
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
   overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  outline-offset: 2px;
+  width: ${({ $collapsed }) => ($collapsed ? '40px' : '152px')};
+  height: ${({ $collapsed }) =>
+    $collapsed ? '28px' : `calc(${CRM_PAGE_TITLE_PX}px * ${CRM_LOGO_CROP_LH})`};
+  &:focus-visible {
+    outline: 2px solid ${C.accent};
+  }
+  &:hover {
+    opacity: 0.92;
+  }
 `;
 
 const LogoImage = styled.img`
   display: block;
-  object-fit: contain;
   flex-shrink: 0;
-  max-width: ${({ $collapsed }) => ($collapsed ? '36px' : '128px')};
-  height: ${({ $collapsed }) => ($collapsed ? '36px' : '40px')};
+  width: ${({ $collapsed }) => ($collapsed ? '40px' : '152px')};
+  height: auto;
 `;
 
 const HiddenTextForA11y = styled.span`
@@ -275,13 +296,33 @@ const ArrowBtn = styled.button`
 
 // ── Sidebar bottom ────────────────────────────────────────────────────────────
 const SidebarBottom = styled.div`
-  padding: ${({ $collapsed }) => ($collapsed ? '12px 0' : '12px 16px')};
+  padding: ${({ $collapsed }) => ($collapsed ? '8px 0' : '8px 12px')};
   border-top: 1px solid ${C.border};
+  overflow: hidden;
+`;
+
+const ProfileTrigger = styled.button`
+  width: 100%;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
   justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
-  overflow: hidden;
+  padding: ${({ $collapsed }) => ($collapsed ? '8px 0' : '8px 10px')};
+  border-radius: 8px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  &:hover {
+    background: ${C.card};
+  }
+  &:focus-visible {
+    outline: 2px solid ${C.accent};
+    outline-offset: 2px;
+  }
 `;
 
 const Avatar = styled.div`
@@ -319,6 +360,25 @@ const UserRole = styled.div`
   color: ${C.muted};
 `;
 
+const SidebarHomeLink = styled(Link)`
+  display: block;
+  margin-top: 6px;
+  padding: ${({ $collapsed }) => ($collapsed ? '6px 0' : '8px 10px')};
+  text-align: ${({ $collapsed }) => ($collapsed ? 'center' : 'left')};
+  font-size: 12px;
+  font-weight: 600;
+  color: ${C.muted};
+  text-decoration: none;
+  border-radius: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  &:hover {
+    color: ${C.accent};
+    background: ${C.card};
+  }
+`;
+
 // ── Right side: topbar + content ─────────────────────────────────────────────
 const RightPane = styled.div`
   flex: 1;
@@ -328,8 +388,8 @@ const RightPane = styled.div`
 `;
 
 const TopBar = styled.header`
-  height: 64px;
-  min-height: 64px;
+  height: ${CRM_TOPBAR_HEIGHT_PX}px;
+  min-height: ${CRM_TOPBAR_HEIGHT_PX}px;
   background: ${C.surface};
   border-bottom: 1px solid ${C.border};
   display: flex;
@@ -339,8 +399,9 @@ const TopBar = styled.header`
 `;
 
 const PageTitle = styled.h1`
-  font-size: 16px;
+  font-size: ${CRM_PAGE_TITLE_PX}px;
   font-weight: 700;
+  line-height: ${CRM_PAGE_TITLE_LINE_HEIGHT};
   color: ${C.text};
   margin: 0;
   white-space: nowrap;
@@ -530,6 +591,13 @@ const icons = {
       <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
     </svg>
   ),
+  userProfiles: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+  ),
   search: (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -570,48 +638,51 @@ const icons = {
   ),
 };
 
-// ── Nav config ────────────────────────────────────────────────────────────────
-const NAV_SECTIONS = [
-  {
-    label: 'PLATFORM',
-    items: [
-      { label: 'Dashboard',       to: '/crm/dashboard',     icon: 'dashboard'  },
-      { label: 'Strategy Engine', to: '/crm/strategy',      icon: 'strategy',  badge: 'active' },
-      { label: 'Leads',           to: '/crm/leads',         icon: 'leads'      },
-      { label: 'Pipeline',        to: '/crm/pipeline',      icon: 'pipeline'   },
-      {
-        label: 'Campaigns', to: '/crm/campaigns', icon: 'campaigns', expandable: true,
-        children: [
-          { label: 'Content Scheduler', to: '/crm/content-scheduler', icon: 'calendar' },
-          { label: 'Content Generator', to: '/crm/content-gen', icon: 'contentGenerator' },
-        ],
-      },
-      { label: 'Messages',        to: '/crm/communication', icon: 'messages'   },
-    ],
-  },
-  {
-    label: 'COMMERCE',
-    items: [
-      { label: 'Connections',     to: '/crm/connections',   icon: 'connections'               },
-      { label: 'Funnel Builder',  to: '/crm/funnels',       icon: 'funnel'                    },
-      { label: 'Fintech Hub',     to: '/crm/fintech',       icon: 'fintech'    },
-      {
-        label: 'Affiliate Center', icon: 'affiliate', expandable: true,
-        children: [
-          { label: 'Offers', to: '/crm/offers', icon: 'offers' },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'INTELLIGENCE',
-    items: [
-      { label: 'Analytics',       to: '/crm/analytics',     icon: 'analytics'  },
-      { label: 'KimuX Academy',   to: '/crm/academy',       icon: 'academy'    },
-      { label: 'Settings',        to: '/crm/settings',      icon: 'settings'   },
-    ],
-  },
-];
+// ── Nav config (User Profiles for tenant admins; funnels + connections from main) ──
+function getNavSections(isAdmin) {
+  const intelligenceItems = [
+    { label: 'Analytics', to: '/crm/analytics', icon: 'analytics' },
+    { label: 'KimuX Academy', to: '/crm/academy', icon: 'academy' },
+    { label: 'Settings', to: '/crm/settings', icon: 'settings' },
+  ];
+  if (isAdmin) {
+    intelligenceItems.push({ label: 'User Profiles', to: '/crm/user-profiles', icon: 'userProfiles' });
+  }
+  return [
+    {
+      label: 'PLATFORM',
+      items: [
+        { label: 'Dashboard', to: '/crm/dashboard', icon: 'dashboard' },
+        { label: 'Strategy Engine', to: '/crm/strategy', icon: 'strategy', badge: 'active' },
+        { label: 'Leads', to: '/crm/leads', icon: 'leads' },
+        { label: 'Pipeline', to: '/crm/pipeline', icon: 'pipeline' },
+        {
+          label: 'Campaigns', to: '/crm/campaigns', icon: 'campaigns', expandable: true,
+          children: [
+            { label: 'Content Scheduler', to: '/crm/content-scheduler', icon: 'calendar' },
+            { label: 'Content Generator', to: '/crm/content-gen', icon: 'contentGenerator' },
+          ],
+        },
+        { label: 'Messages', to: '/crm/communication', icon: 'messages' },
+      ],
+    },
+    {
+      label: 'COMMERCE',
+      items: [
+        { label: 'Connections', to: '/crm/connections', icon: 'connections' },
+        { label: 'Funnel Builder', to: '/crm/funnels', icon: 'funnel' },
+        { label: 'Fintech Hub', to: '/crm/fintech', icon: 'fintech' },
+        {
+          label: 'Affiliate Center', icon: 'affiliate', expandable: true,
+          children: [
+            { label: 'Offers', to: '/crm/offers', icon: 'offers' },
+          ],
+        },
+      ],
+    },
+    { label: 'INTELLIGENCE', items: intelligenceItems },
+  ];
+}
 
 // Map path segment → TopBar title
 const PATH_TITLES = {
@@ -629,6 +700,7 @@ const PATH_TITLES = {
   analytics:     'Analytics',
   academy:       'KimuX Academy',
   settings:      'Settings',
+  'user-profiles': 'User Profiles',
   connections:   'Connections',
 };
 
@@ -649,7 +721,8 @@ export default function CRMLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [affiliateExpanded, setAffiliateExpanded] = useState(true);
   const [campaignsExpanded, setCampaignsExpanded] = useState(true);
-  const { user, isLoading } = useUser();
+  const [profilePanelOpen, setProfilePanelOpen] = useState(false);
+  const { user, token, isLoading } = useUser();
   const { currentTenant } = useTenant();
   const { strategies } = useStrategy();
   const navigate = useNavigate();
@@ -672,12 +745,16 @@ useEffect(() => {
   const segment = location.pathname.split('/')[2] || 'dashboard';
   const pageTitle = PATH_TITLES[segment] || 'CRM';
 
-  const initials = user?.full_name
-    ? user.full_name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : 'U';
+  const displayName = user?.full_name || user?.name || 'User';
+  const initials = displayName !== 'User'
+    ? displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    : (user?.email ? user.email[0].toUpperCase() : 'U');
+
+  const isAdminUser = !!(user?.isAdmin ?? user?.is_admin);
+  const navSections = getNavSections(isAdminUser);
 
   // Is any Affiliate Center child currently active?
-  const affiliateActive = NAV_SECTIONS[1].items
+  const affiliateActive = navSections[1].items
     .find(i => i.expandable)
     ?.children?.some(c => location.pathname.startsWith(c.to)) || false;
 
@@ -686,9 +763,9 @@ useEffect(() => {
       {/* ── Sidebar ── */}
       <Sidebar $collapsed={collapsed}>
         <LogoRow $collapsed={collapsed}>
-          <LogoMark>
-            <LogoImage src={darkNewLogo} alt="KimuX" $collapsed={collapsed} />
-            <HiddenTextForA11y>KimuX</HiddenTextForA11y>
+          <LogoMark to="/" title="KimuX home" $collapsed={collapsed}>
+            <LogoImage src={crmSidebarLogo} alt="KimuX" $collapsed={collapsed} />
+            <HiddenTextForA11y>KimuX home</HiddenTextForA11y>
           </LogoMark>
           {!collapsed && (
             <CollapseBtn onClick={() => setCollapsed(true)} title="Collapse sidebar">
@@ -706,7 +783,7 @@ useEffect(() => {
         )}
 
         <Nav>
-          {NAV_SECTIONS.map((section) => (
+          {navSections.map((section) => (
             <React.Fragment key={section.label}>
               <SectionLabel $collapsed={collapsed}>{section.label}</SectionLabel>
 
@@ -827,13 +904,30 @@ useEffect(() => {
         </Nav>
 
         <SidebarBottom $collapsed={collapsed}>
-          <Avatar title={user?.full_name || 'User'}>{initials}</Avatar>
-          <UserInfo $collapsed={collapsed}>
-            <UserName>{user?.full_name || 'User'}</UserName>
-            <UserRole>{user?.email || ''}</UserRole>
-          </UserInfo>
+          <ProfileTrigger
+            type="button"
+            $collapsed={collapsed}
+            title="View account information"
+            aria-expanded={profilePanelOpen}
+            onClick={() => setProfilePanelOpen(true)}
+          >
+            <Avatar title={displayName}>{initials}</Avatar>
+            <UserInfo $collapsed={collapsed}>
+              <UserName>{displayName}</UserName>
+              <UserRole>{user?.email || ''}</UserRole>
+            </UserInfo>
+          </ProfileTrigger>
+          <SidebarHomeLink $collapsed={collapsed} to="/" title="Go to Homepage">
+            {collapsed ? 'Home' : 'Go to Homepage'}
+          </SidebarHomeLink>
         </SidebarBottom>
       </Sidebar>
+
+      <CRMProfilePanel
+        open={profilePanelOpen}
+        onClose={() => setProfilePanelOpen(false)}
+        token={token}
+      />
 
       {/* ── Right pane ── */}
       <RightPane>

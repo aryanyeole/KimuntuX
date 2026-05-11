@@ -1,25 +1,48 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
+import { parseJsonOrApiError } from '../utils/parseFetchJson';
+import transparentLogo from '../assets/transperant_new_log.png';
+
+const PLANS = [
+  {
+    id: 'starter',
+    title: 'Starter',
+    subtitle: 'For early-stage teams and solo founders',
+    hint: '$199/month · billing later',
+  },
+  {
+    id: 'growth',
+    title: 'Pro',
+    subtitle: 'For growing businesses with active sales teams',
+    hint: '$799/month · billing later',
+  },
+  {
+    id: 'scalex',
+    title: 'Enterprise',
+    subtitle: 'For organizations needing scale and dedicated support',
+    hint: '$2,999/month · billing later',
+  },
+];
 
 const SignupContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}10, ${props => props.theme?.colors?.accent || '#DAA520'}10);
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 1rem 3rem;
 `;
 
 const SignupCard = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme?.colors?.background || '#FFFFFF'}, ${props => props.theme?.colors?.cardBackground || '#f8f9fa'});
-  border-radius: 20px;
-  padding: 3rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem 2rem 2.25rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
   width: 100%;
-  max-width: 450px;
+  max-width: 520px;
   position: relative;
   overflow: hidden;
 
@@ -30,18 +53,20 @@ const SignupCard = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, ${props => props.theme?.colors?.primary || '#00C896'}, ${props => props.theme?.colors?.accent || '#DAA520'});
+    background: linear-gradient(135deg, #00c896, #daa520);
   }
 `;
 
 const Logo = styled.div`
   text-align: center;
-  margin-bottom: 2rem;
-  
+  margin: 0 0 0.75rem;
+
   img {
-    height: 60px;
+    height: 180px;
     width: auto;
-    margin-bottom: 1rem;
+    max-width: 100%;
+    display: inline-block;
+    background: transparent;
   }
 `;
 
@@ -59,15 +84,16 @@ const Title = styled.h1`
 
 const Subtitle = styled.p`
   text-align: center;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.7;
-  margin-bottom: 2rem;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 1.75rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 `;
 
 const InputGroup = styled.div`
@@ -78,24 +104,158 @@ const InputGroup = styled.div`
 
 const Label = styled.label`
   font-weight: 500;
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  color: rgba(255, 255, 255, 0.92);
   font-size: 0.9rem;
 `;
 
 const Input = styled.input`
   padding: 1rem;
-  border: 2px solid ${props => props.theme?.colors?.border || '#E5E5E5'};
-  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: ${props => props.theme?.colors?.background || '#FFFFFF'};
-  color: ${props => props.theme?.colors?.text || '#111111'};
+  background: #0d0d0d;
+  color: #ffffff;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
 
   &:focus {
     outline: none;
-    border-color: ${props => props.theme?.colors?.primary || '#00C896'};
-    box-shadow: 0 0 0 3px ${props => props.theme?.colors?.primary || '#00C896'}20;
+    border-color: #00c896;
+    box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.2);
   }
+`;
+
+const Textarea = styled.textarea`
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #0d0d0d;
+  color: #ffffff;
+  min-height: 88px;
+  resize: vertical;
+  font-family: inherit;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #00c896;
+    box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.2);
+  }
+`;
+
+const PlanSectionLabel = styled.div`
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+`;
+
+const PlanSectionHelp = styled.p`
+  margin: 0 0 0.65rem;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.45;
+`;
+
+const PlanGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+`;
+
+const PlanCard = styled.label`
+  display: block;
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  border: 2px solid ${p => (p.$selected ? '#00c896' : 'rgba(255, 255, 255, 0.2)')};
+  background: ${p => (p.$selected ? 'rgba(0, 200, 150, 0.12)' : '#0d0d0d')};
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  &:hover {
+    border-color: rgba(0, 200, 150, 0.55);
+  }
+`;
+
+const PlanCardInner = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+`;
+
+const PlanRadio = styled.input`
+  margin-top: 0.2rem;
+  accent-color: #00c896;
+  flex-shrink: 0;
+`;
+
+const PlanTitle = styled.div`
+  font-weight: 700;
+  color: #fff;
+  font-size: 1rem;
+`;
+
+const PlanSub = styled.div`
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.68);
+  margin-top: 2px;
+`;
+
+const PlanPrice = styled.div`
+  font-size: 0.75rem;
+  color: rgba(0, 200, 150, 0.95);
+  margin-top: 6px;
+`;
+
+const PricingLink = styled(Link)`
+  color: #00c896;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const ShowPasswordRow = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  user-select: none;
+  margin-top: -0.25rem;
+`;
+
+const LegalAgreementRow = styled.label`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.5;
+  user-select: none;
+`;
+
+const ShowPasswordCheckbox = styled.input`
+  accent-color: #00c896;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+`;
+
+const LegalCheckbox = styled(ShowPasswordCheckbox)`
+  flex-shrink: 0;
+  margin-top: 0.15rem;
 `;
 
 const Button = styled.button`
@@ -118,21 +278,21 @@ const Button = styled.button`
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
     transition: left 0.5s;
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px ${props => props.theme?.colors?.primary || '#00C896'}40;
-    
+
     &::before {
       left: 100%;
     }
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
   }
@@ -141,36 +301,55 @@ const Button = styled.button`
 const LinkText = styled.p`
   text-align: center;
   margin-top: 1.5rem;
-  color: ${props => props.theme?.colors?.text || '#111111'};
-  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.65);
+`;
+
+const HomeLink = styled(Link)`
+  display: block;
+  text-align: center;
+  margin-top: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    border-color: rgba(0, 200, 150, 0.55);
+    background: rgba(0, 200, 150, 0.1);
+    color: #00c896;
+  }
 `;
 
 const StyledLink = styled(Link)`
-  color: ${props => props.theme?.colors?.primary || '#00C896'};
+  color: #00c896;
   text-decoration: none;
   font-weight: 600;
-  
+
   &:hover {
     text-decoration: underline;
   }
 `;
 
 const ErrorMessage = styled.div`
-  background: #fee;
-  color: #c33;
+  background: rgba(204, 51, 51, 0.15);
+  color: #ff8a8a;
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #fcc;
+  border: 1px solid rgba(255, 100, 100, 0.35);
   margin-bottom: 1rem;
   text-align: center;
 `;
 
 const SuccessMessage = styled.div`
-  background: #efe;
-  color: #363;
+  background: rgba(0, 200, 150, 0.12);
+  color: #7dffc8;
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #cfc;
+  border: 1px solid rgba(0, 200, 150, 0.35);
   margin-bottom: 1rem;
   text-align: center;
 `;
@@ -182,19 +361,34 @@ const SignupPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
+    address: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
+  const [selectedPlan, setSelectedPlan] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [agreedToLegal, setAgreedToLegal] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
+
+  const canSubmit =
+    agreedToLegal &&
+    selectedPlan &&
+    formData.name.trim() &&
+    formData.email.trim() &&
+    formData.phone.trim().length >= 5 &&
+    formData.address.trim().length >= 5 &&
+    formData.password.length >= 6 &&
+    formData.password === formData.confirmPassword;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -202,7 +396,18 @@ const SignupPage = () => {
     setError('');
     setSuccess('');
 
-    // Validation
+    if (!selectedPlan) {
+      setError('Please choose a plan to continue.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!agreedToLegal) {
+      setError('Please agree to the Terms and Conditions and Privacy Policy.');
+      setIsLoading(false);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       setIsLoading(false);
@@ -215,35 +420,56 @@ const SignupPage = () => {
       return;
     }
 
+    if (formData.phone.trim().length < 5) {
+      setError('Please enter a valid phone number.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.address.trim().length < 5) {
+      setError('Please enter your address (at least 5 characters).');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          full_name: formData.name,
-          email: formData.email,
-          password: formData.password
-        })
+          full_name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          address: formData.address.trim(),
+          signup_plan: selectedPlan,
+          password: formData.password,
+        }),
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to create account');
-      }
+      const data = await parseJsonOrApiError(response);
 
       const userData = {
         id: data.user.id,
         name: data.user.full_name,
+        full_name: data.user.full_name,
         email: data.user.email,
+        phone: data.user.phone,
+        address: data.user.address,
+        signup_plan: data.user.signup_plan,
         isActive: data.user.is_active,
-        joinDate: data.user.created_at
+        isAdmin: !!(data.user?.is_admin ?? data.user?.isAdmin),
+        joinDate: data.user.created_at,
       };
 
-      login(userData, data.access_token, data.tenant || null);
+      login(
+        userData,
+        data.access_token,
+        data.tenant === undefined ? undefined : data.tenant
+      );
       setSuccess('Account created successfully! Redirecting...');
-      setTimeout(() => navigate('/dashboard'), 1200);
+      setTimeout(() => navigate('/crm/dashboard'), 1200);
     } catch (err) {
       setError(err.message || 'Unable to create account. Please try again.');
     } finally {
@@ -255,14 +481,14 @@ const SignupPage = () => {
     <SignupContainer>
       <SignupCard>
         <Logo>
-          <img src="/light_logo.jpg" alt="KimuX" />
+          <img src={transparentLogo} alt="KimuX" style={{ background: 'transparent' }} />
         </Logo>
         <Title>Create Account</Title>
         <Subtitle>Join the KimuX intelligent brokerage universe</Subtitle>
-        
+
         {error && <ErrorMessage>{error}</ErrorMessage>}
         {success && <SuccessMessage>{success}</SuccessMessage>}
-        
+
         <Form onSubmit={handleSubmit}>
           <InputGroup>
             <Label htmlFor="name">Full Name</Label>
@@ -274,9 +500,10 @@ const SignupPage = () => {
               onChange={handleChange}
               placeholder="Enter your full name"
               required
+              autoComplete="name"
             />
           </InputGroup>
-          
+
           <InputGroup>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -287,43 +514,132 @@ const SignupPage = () => {
               onChange={handleChange}
               placeholder="Enter your email"
               required
+              autoComplete="email"
             />
           </InputGroup>
-          
+
+          <InputGroup>
+            <Label htmlFor="phone">Phone number</Label>
+            <Input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="e.g. +1 555 123 4567"
+              required
+              autoComplete="tel"
+            />
+          </InputGroup>
+
+          <InputGroup>
+            <Label htmlFor="address">Address</Label>
+            <Textarea
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              placeholder="Street, city, region / state, postal code"
+              required
+              autoComplete="street-address"
+            />
+          </InputGroup>
+
+          <InputGroup>
+            <PlanSectionLabel>Choose your plan</PlanSectionLabel>
+            <PlanSectionHelp>
+              Select the tier you are signing up for. Payment will be connected later; for now your
+              choice is saved with your account.{' '}
+              <PricingLink to="/pricing">Compare plans</PricingLink>
+            </PlanSectionHelp>
+            <PlanGrid>
+              {PLANS.map((plan) => (
+                <PlanCard key={plan.id} $selected={selectedPlan === plan.id}>
+                  <PlanCardInner>
+                    <PlanRadio
+                      type="radio"
+                      name="signup_plan"
+                      value={plan.id}
+                      checked={selectedPlan === plan.id}
+                      onChange={() => setSelectedPlan(plan.id)}
+                    />
+                    <div>
+                      <PlanTitle>{plan.title}</PlanTitle>
+                      <PlanSub>{plan.subtitle}</PlanSub>
+                      <PlanPrice>{plan.hint}</PlanPrice>
+                    </div>
+                  </PlanCardInner>
+                </PlanCard>
+              ))}
+            </PlanGrid>
+          </InputGroup>
+
           <InputGroup>
             <Label htmlFor="password">Password</Label>
             <Input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               placeholder="Create a password"
               required
+              autoComplete="new-password"
             />
+            <ShowPasswordRow htmlFor="show-password-signup">
+              <ShowPasswordCheckbox
+                type="checkbox"
+                id="show-password-signup"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+              />
+              Show password
+            </ShowPasswordRow>
           </InputGroup>
-          
+
           <InputGroup>
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="confirmPassword"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Confirm your password"
               required
+              autoComplete="new-password"
             />
           </InputGroup>
-          
-          <Button type="submit" disabled={isLoading}>
+
+          <LegalAgreementRow htmlFor="signup-agree-legal">
+            <LegalCheckbox
+              type="checkbox"
+              id="signup-agree-legal"
+              checked={agreedToLegal}
+              onChange={(e) => setAgreedToLegal(e.target.checked)}
+            />
+            <span>
+              I agree to the{' '}
+              <StyledLink to="/terms" onClick={(e) => e.stopPropagation()}>
+                Terms and Conditions
+              </StyledLink>{' '}
+              and{' '}
+              <StyledLink to="/privacy" onClick={(e) => e.stopPropagation()}>
+                Privacy Policy
+              </StyledLink>
+              .
+            </span>
+          </LegalAgreementRow>
+
+          <Button type="submit" disabled={isLoading || !canSubmit}>
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>
         </Form>
-        
+
         <LinkText>
           Already have an account? <StyledLink to="/login">Sign in</StyledLink>
         </LinkText>
+        <HomeLink to="/">Go back to Homepage</HomeLink>
       </SignupCard>
     </SignupContainer>
   );

@@ -25,7 +25,17 @@ export const TenantProvider = ({ children }) => {
 
     // Re-hydrate when UserContext bootstraps the tenant during boot
     const handleTenantUpdated = (e) => {
-      if (e.detail) setCurrentTenantState(e.detail);
+      if (e.detail) {
+        setCurrentTenantState(e.detail);
+      } else {
+        setCurrentTenantState(null);
+        try {
+          localStorage.removeItem('kimuntu_tenant');
+          localStorage.removeItem('kimuntu_tenant_id');
+        } catch {
+          /* ignore */
+        }
+      }
     };
     window.addEventListener('kimuntu-tenant-updated', handleTenantUpdated);
     return () => window.removeEventListener('kimuntu-tenant-updated', handleTenantUpdated);

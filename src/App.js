@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { UserProvider } from './contexts/UserContext';
+import { UserProvider, useUser } from './contexts/UserContext';
 import { TenantProvider } from './contexts/TenantContext';
 import { ChatbotProvider } from './providers/ChatbotProvider';
 import { GlobalStyles } from './styles/GlobalStyles';
@@ -14,11 +14,12 @@ import AboutPage from './pages/AboutPage';
 import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import Dashboard from './pages/Dashboard';
+import LegalNoticePage from './pages/LegalNoticePage';
 import FAQPage from './pages/FAQPage';
 import SolutionsPage from './pages/SolutionsPage';
 import BenefitsBySectorPage from './pages/BenefitsBySectorPage';
 import BlogPage from './pages/BlogPage';
+import AdminPage from './pages/AdminPage';
 
 import B2BBrokeragePage from './pages/B2BBrokeragePage';
 import B2CMarketplacePage from './pages/B2CMarketplacePage';
@@ -33,8 +34,10 @@ import MonetizationPage from './pages/MonetizationPage';
 import USBHPage from './pages/USBHPage';
 import ContentGeneratorPage from './pages/ContentGeneratorPage';
 import MarketingReportPage from './pages/MarketingReportPage';
+import ProductsPage from './pages/ProductsPage';
 
 // CRM layout + pages
+import CRMGate from './components/CRMGate';
 import CRMLayout from './layouts/CRMLayout';
 import CRMDashboard from './pages/crm/CRMDashboard';
 import CRMFunnels from './pages/crm/CRMFunnels';
@@ -47,6 +50,7 @@ import CRMPipeline from './pages/crm/CRMPipeline';
 import CRMCommunication from './pages/crm/CRMCommunication';
 import CRMAnalytics from './pages/crm/CRMAnalytics';
 import CRMSettings from './pages/crm/CRMSettings';
+import CRMUserProfiles from './pages/crm/CRMUserProfiles';
 import CRMConnections from './pages/crm/CRMConnections';
 import ContentSchedulerPage from './pages/ContentSchedulerPage';
 import CRMStrategy from './pages/crm/CRMStrategy';
@@ -57,23 +61,36 @@ import AdminOffers from './pages/admin/AdminOffers';
 
 function AppInner() {
   const location = useLocation();
-  const isCRM = location.pathname.startsWith('/crm');
+  const { isAuthenticated, isLoading } = useUser();
+  const isCrmPath = location.pathname.startsWith('/crm');
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  /** Hide global chrome for CRM app shell when logged in, and for standalone auth pages. */
+  const hideGlobalChrome =
+    isAuthPage || (isCrmPath && (isLoading || isAuthenticated));
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.search]);
 
   return (
     <div className="App">
-      {!isCRM && <Header />}
+      {!hideGlobalChrome && <Header />}
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/terms" element={<LegalNoticePage />} />
+        <Route path="/privacy" element={<LegalNoticePage />} />
+        <Route path="/dashboard" element={<Navigate to="/crm/dashboard" replace />} />
         <Route path="/admin/offers" element={<AdminOffers />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/solutions" element={<SolutionsPage />} />
         <Route path="/benefits" element={<BenefitsBySectorPage />} />
         <Route path="/blog" element={<BlogPage />} />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/admin" element={<AdminPage />} />
         <Route path="/b2b-brokerage" element={<B2BBrokeragePage />} />
         <Route path="/b2c-marketplace" element={<B2CMarketplacePage />} />
         <Route path="/affiliate-hub" element={<AffiliateHubPage />} />
@@ -95,30 +112,33 @@ function AppInner() {
         />
         <Route path="/digital-marketing-report" element={<MarketingReportPage />} />
 
-        <Route path="/crm" element={<CRMLayout />}>
-          <Route index element={<Navigate to="/crm/dashboard" replace />} />
-          <Route path="dashboard" element={<CRMDashboard />} />
-          <Route path="offers" element={<CRMOffers />} />
-          <Route path="campaigns" element={<CRMCampaigns />} />
-          <Route path="content-gen" element={<ContentGeneratorPage />} />
-          <Route path="leads" element={<CRMLeads />} />
-          <Route path="pipeline" element={<CRMPipeline />} />
-          <Route path="communication" element={<CRMCommunication />} />
-          <Route path="blockchain" element={<Navigate to="/crm/fintech" replace />} />
-          <Route path="strategy" element={<CRMStrategy />} />
-          <Route path="fintech" element={<CRMFintech />} />
-          <Route path="academy" element={<CRMAcademy />} />
-          <Route path="content-scheduler" element={<CRMContentScheduler />} />
-          <Route path="funnels" element={<CRMFunnels />} />
-          <Route path="funnels/new" element={<CRMFunnelNew />} />
-          <Route path="funnels/:id" element={<CRMFunnelDetail />} />
-          <Route path="analytics" element={<CRMAnalytics />} />
-          <Route path="settings" element={<CRMSettings />} />
-          <Route path="connections" element={<CRMConnections />} />
+        <Route path="/crm" element={<CRMGate />}>
+          <Route element={<CRMLayout />}>
+            <Route index element={<Navigate to="/crm/dashboard" replace />} />
+            <Route path="dashboard" element={<CRMDashboard />} />
+            <Route path="offers" element={<CRMOffers />} />
+            <Route path="campaigns" element={<CRMCampaigns />} />
+            <Route path="content-gen" element={<ContentGeneratorPage />} />
+            <Route path="leads" element={<CRMLeads />} />
+            <Route path="pipeline" element={<CRMPipeline />} />
+            <Route path="communication" element={<CRMCommunication />} />
+            <Route path="blockchain" element={<Navigate to="/crm/fintech" replace />} />
+            <Route path="strategy" element={<CRMStrategy />} />
+            <Route path="fintech" element={<CRMFintech />} />
+            <Route path="academy" element={<CRMAcademy />} />
+            <Route path="content-scheduler" element={<CRMContentScheduler />} />
+            <Route path="funnels" element={<CRMFunnels />} />
+            <Route path="funnels/new" element={<CRMFunnelNew />} />
+            <Route path="funnels/:id" element={<CRMFunnelDetail />} />
+            <Route path="analytics" element={<CRMAnalytics />} />
+            <Route path="settings" element={<CRMSettings />} />
+            <Route path="connections" element={<CRMConnections />} />
+            <Route path="user-profiles" element={<CRMUserProfiles />} />
+          </Route>
         </Route>
       </Routes>
-      {!isCRM && <ChatWidget />}
-      {!isCRM && <Footer />}
+      {!hideGlobalChrome && <ChatWidget />}
+      {!hideGlobalChrome && <Footer />}
     </div>
   );
 }

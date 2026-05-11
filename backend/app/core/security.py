@@ -29,6 +29,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except (ValueError, TypeError, UnknownHashError):
+        # Unknown or legacy hash format — avoid 500 on login; treat as invalid password.
         return False
 
 
@@ -68,7 +69,7 @@ def get_current_user(
     return user
 
 
-def get_platform_admin_user(current_user=Depends(get_current_user)):
+def get_platform_admin_user(current_user: User = Depends(get_current_user)) -> User:
     """Dependency that gates access to platform-admin-only endpoints."""
     if not current_user.is_platform_admin:
         raise HTTPException(

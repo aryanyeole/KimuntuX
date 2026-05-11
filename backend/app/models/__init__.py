@@ -8,6 +8,7 @@ from app.models.integration_credential import IntegrationCredential
 from app.models.lead import Lead
 from app.models.offer import Offer
 from app.models.strategy import Strategy
+from app.models.support_message import SupportMessage
 from app.models.webhook_event import WebhookEvent
 from app.models.tenant import Tenant
 from app.models.tenant_membership import TenantMembership
@@ -24,6 +25,7 @@ __all__ = [
     "Lead",
     "Offer",
     "Strategy",
+    "SupportMessage",
     "Tenant",
     "TenantMembership",
     "User",

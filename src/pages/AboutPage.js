@@ -533,8 +533,8 @@ export default function AboutPage() {
           <Body>
             <InlineList>
               <p><strong>Motto:</strong> “Beyond eCommerce : Where AI Builds the Future of Business.”</p>
-              <p><strong>Contact:</strong> contact@kimux.io</p>
-              <p><strong>Help center:</strong> support@kimux.io</p>
+              <p><strong>Contact:</strong> contact@kimux.co</p>
+              <p><strong>Help center:</strong> contact@kimux.co</p>
             </InlineList>
           </Body>
         </Section>
