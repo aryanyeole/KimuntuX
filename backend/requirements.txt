@@ -9,6 +9,7 @@ passlib[bcrypt]
 email-validator
 python-multipart
 google-genai
+jinja2>=3.1.0
 sendgrid
 anthropic>=0.40.0
 email-reply-parser
