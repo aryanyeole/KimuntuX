@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import CampaignPlatformPreview from '../components/CampaignPlatformPreview';
 import { createCampaignForScheduler } from '../services/contentSchedulerRepository';
@@ -403,6 +403,264 @@ const NumberSelect = styled(SelectInput)`
   appearance: auto;
 `;
 
+const OfferSelectorWrap = styled.div`
+  position: relative;
+`;
+
+const OfferSelectorTrigger = styled.button`
+  ${baseInputStyles}
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+`;
+
+const OfferTriggerText = styled.span`
+  font-size: 13px;
+  color: ${props => (props.$placeholder ? C.muted : C.text)};
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+const OfferTriggerActions = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: ${C.muted};
+  flex-shrink: 0;
+`;
+
+const OfferClearButton = styled.button`
+  border: none;
+  background: transparent;
+  color: ${C.muted};
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    color: ${C.text};
+  }
+`;
+
+const OfferDropdown = styled.div`
+  position: absolute;
+  z-index: 100;
+  width: 100%;
+  margin-top: 6px;
+  background: ${C.card};
+  border: 1px solid ${C.border};
+  border-radius: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+`;
+
+const OfferSearchInput = styled.input`
+  ${baseInputStyles}
+  border: none;
+  border-bottom: 1px solid ${C.border};
+  border-radius: 8px 8px 0 0;
+  height: 36px;
+  padding: 0 10px;
+`;
+
+const OfferItem = styled.button`
+  width: 100%;
+  border: none;
+  border-top: 1px solid ${C.border};
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  &:hover {
+    background: ${C.surface};
+  }
+`;
+
+const OfferMeta = styled.div`
+  min-width: 0;
+`;
+
+const OfferName = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: ${C.text};
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+const OfferSub = styled.div`
+  font-size: 11px;
+  color: ${C.muted};
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+const OfferCommission = styled.span`
+  font-size: 11px;
+  color: ${C.accent};
+  flex-shrink: 0;
+`;
+
+const SmallActionLink = styled.button`
+  margin-top: 6px;
+  border: none;
+  background: transparent;
+  color: ${C.muted};
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    color: ${C.text};
+  }
+`;
+
+const SubtleLoading = styled.div`
+  font-size: 11px;
+  color: ${C.muted};
+`;
+
+const FunnelSelectorWrap = styled.div`
+  position: relative;
+`;
+
+const FunnelSelectorTrigger = styled.button`
+  ${baseInputStyles}
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+`;
+
+const FunnelTriggerText = styled.span`
+  font-size: 13px;
+  color: ${props => (props.$placeholder ? C.muted : C.text)};
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+const FunnelTriggerActions = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: ${C.muted};
+  flex-shrink: 0;
+`;
+
+const FunnelClearButton = styled.button`
+  border: none;
+  background: transparent;
+  color: ${C.muted};
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    color: ${C.text};
+  }
+`;
+
+const FunnelDropdown = styled.div`
+  position: absolute;
+  z-index: 100;
+  width: 100%;
+  margin-top: 6px;
+  background: ${C.card};
+  border: 1px solid ${C.border};
+  border-radius: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+`;
+
+const FunnelSearchInput = styled.input`
+  ${baseInputStyles}
+  border: none;
+  border-bottom: 1px solid ${C.border};
+  border-radius: 8px 8px 0 0;
+  height: 36px;
+  padding: 0 10px;
+`;
+
+const FunnelItem = styled.button`
+  width: 100%;
+  border: none;
+  border-top: 1px solid ${C.border};
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  &:hover {
+    background: ${C.surface};
+  }
+`;
+
+const FunnelMeta = styled.div`
+  min-width: 0;
+`;
+
+const FunnelName = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: ${C.text};
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+const FunnelSub = styled.div`
+  font-size: 11px;
+  color: ${C.muted};
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+`;
+
+const FunnelDate = styled.span`
+  font-size: 11px;
+  color: ${C.accent};
+  flex-shrink: 0;
+`;
+
+const FunnelInfo = styled.div`
+  margin-top: 6px;
+  font-size: 11px;
+  color: ${C.muted};
+`;
+
+const FunnelLink = styled.button`
+  border: none;
+  background: transparent;
+  color: ${C.accent};
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+`;
+
 const platformOptions = [
   { value: 'Email', label: 'Email' },
   { value: 'Instagram', label: 'Instagram' },
@@ -498,6 +756,7 @@ export default function ContentGeneratorPage() {
   const [saveMessage, setSaveMessage] = useState('');
   const [saveErrors, setSaveErrors] = useState([]);
   const [previewSelections, setPreviewSelections] = useState({});
+  const [hasUnsavedPreviewChanges, setHasUnsavedPreviewChanges] = useState(false);
   const [showRawJson, setShowRawJson] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [numVariants, setNumVariants] = useState(3);
@@ -505,6 +764,17 @@ export default function ContentGeneratorPage() {
   const [vendor, setVendor] = useState('');
   const [hoplink, setHoplink] = useState('');
   const [commission, setCommission] = useState(50);
+  const [offers, setOffers] = useState([]);
+  const [offersLoading, setOffersLoading] = useState(false);
+  const [selectedOfferId, setSelectedOfferId] = useState(null);
+  const [offerSelectorOpen, setOfferSelectorOpen] = useState(false);
+  const [offerSearchQuery, setOfferSearchQuery] = useState('');
+  const [useManualOffer, setUseManualOffer] = useState(false);
+  const [funnels, setFunnels] = useState([]);
+  const [funnelsLoading, setFunnelsLoading] = useState(false);
+  const [selectedFunnelId, setSelectedFunnelId] = useState(null);
+  const [funnelSelectorOpen, setFunnelSelectorOpen] = useState(false);
+  const [funnelSearchQuery, setFunnelSearchQuery] = useState('');
   const [showProductForm, setShowProductForm] = useState(true);
   const [showAudienceForm, setShowAudienceForm] = useState(false);
   const [showSettingsForm, setShowSettingsForm] = useState(false);
@@ -515,6 +785,8 @@ export default function ContentGeneratorPage() {
   const [audienceIncomeLevel, setAudienceIncomeLevel] = useState('Any');
   const [audienceCountries, setAudienceCountries] = useState('US');
   const [audienceLanguage, setAudienceLanguage] = useState('en');
+  const offerSelectorRef = useRef(null);
+  const funnelSelectorRef = useRef(null);
 
   const saveMessageIsDanger = useMemo(() => /error|missing/i.test(saveMessage), [saveMessage]);
   const primaryPiece = useMemo(() => {
@@ -524,9 +796,171 @@ export default function ContentGeneratorPage() {
     return campaign.content_pieces[0] || null;
   }, [campaign]);
 
+  const selectedOffer = useMemo(
+    () => offers.find((offer) => offer.id === selectedOfferId) || null,
+    [offers, selectedOfferId],
+  );
+
+  const filteredOffers = useMemo(() => {
+    const query = offerSearchQuery.trim().toLowerCase();
+    if (!query) return offers;
+    return offers.filter((offer) => {
+      const name = String(offer.name || '').toLowerCase();
+      const niche = String(offer.niche || '').toLowerCase();
+      return name.includes(query) || niche.includes(query);
+    });
+  }, [offers, offerSearchQuery]);
+
+  const selectedFunnel = useMemo(
+    () => funnels.find((funnel) => funnel.id === selectedFunnelId) || null,
+    [funnels, selectedFunnelId],
+  );
+
+  const filteredFunnels = useMemo(() => {
+    const query = funnelSearchQuery.trim().toLowerCase();
+    if (!query) return funnels;
+    return funnels.filter((funnel) => String(funnel.title || '').toLowerCase().includes(query));
+  }, [funnels, funnelSearchQuery]);
+
   useEffect(() => {
     setManualJson(campaign ? JSON.stringify(campaign, null, 2) : '');
   }, [campaign]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchOffers = async () => {
+      setOffersLoading(true);
+      try {
+        const token = localStorage.getItem('kimuntu_token');
+        const tenantId = localStorage.getItem('kimuntu_tenant_id');
+        const headers = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+        if (tenantId) headers['X-Tenant-ID'] = tenantId;
+
+        const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const url = new URL(`${baseUrl}/api/v1/crm/offers`);
+        url.searchParams.set('sort_by', 'gravity');
+        url.searchParams.set('sort_dir', 'desc');
+
+        const response = await fetch(url.toString(), {
+          method: 'GET',
+          headers,
+        });
+        if (!response.ok) return;
+
+        const payload = await response.json();
+        const nextOffers = Array.isArray(payload?.data) ? payload.data : [];
+        if (!cancelled) {
+          setOffers(nextOffers);
+        }
+      } catch {
+        // Manual entry remains the fallback when offers are unavailable.
+      } finally {
+        if (!cancelled) {
+          setOffersLoading(false);
+        }
+      }
+    };
+
+    fetchOffers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchFunnels = async () => {
+      setFunnelsLoading(true);
+      try {
+        const token = localStorage.getItem('kimuntu_token');
+        const tenantId = localStorage.getItem('kimuntu_tenant_id');
+        const headers = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+        if (tenantId) headers['X-Tenant-ID'] = tenantId;
+
+        const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const url = new URL(`${baseUrl}/api/v1/crm/funnels`);
+        url.searchParams.set('page', '1');
+        url.searchParams.set('limit', '100');
+
+        const response = await fetch(url.toString(), {
+          method: 'GET',
+          headers,
+        });
+        if (!response.ok) return;
+
+        const payload = await response.json();
+        console.log('=== FUNNELS RESPONSE STATUS:', response.status);
+        console.log('=== FUNNELS RESPONSE PAYLOAD:', payload);
+        const readyFunnels = Array.isArray(payload?.items)
+          ? payload.items.filter((funnel) => funnel.status === 'ready')
+          : [];
+
+        if (!cancelled) {
+          setFunnels(readyFunnels);
+        }
+      } catch {
+        // Silent fallback: funnels are optional.
+      } finally {
+        if (!cancelled) {
+          setFunnelsLoading(false);
+        }
+      }
+    };
+
+    fetchFunnels();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleDocumentClick = (event) => {
+      if (!offerSelectorRef.current) return;
+      if (!offerSelectorRef.current.contains(event.target)) {
+        setOfferSelectorOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleFunnelDocumentClick = (event) => {
+      if (!funnelSelectorRef.current) return;
+      if (!funnelSelectorRef.current.contains(event.target)) {
+        setFunnelSelectorOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleFunnelDocumentClick);
+    return () => {
+      document.removeEventListener('click', handleFunnelDocumentClick);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!offers.length) {
+      setUseManualOffer(false);
+      setSelectedOfferId(null);
+      setOfferSelectorOpen(false);
+    }
+  }, [offers.length]);
+
+  useEffect(() => {
+    if (!funnels.length) {
+      setSelectedFunnelId(null);
+      setFunnelSelectorOpen(false);
+    }
+  }, [funnels.length]);
 
   const togglePlatform = (platform) => {
     setSelectedPlatforms((prev) => (
@@ -545,6 +979,36 @@ export default function ContentGeneratorPage() {
 
   const removeInterest = (value) => {
     setAudienceInterests((prev) => prev.filter((item) => item !== value));
+  };
+
+  const selectOffer = (offer) => {
+    setSelectedOfferId(offer.id);
+    setUseManualOffer(false);
+    setOfferName(offer.name || '');
+    setVendor(offer.network || 'Unknown Vendor');
+    setHoplink(offer.external_url || '');
+    setCommission(Math.round((offer.commission_rate || 0.3) * 100));
+    setOfferSelectorOpen(false);
+    setOfferSearchQuery('');
+  };
+
+  const clearOfferSelection = () => {
+    setSelectedOfferId(null);
+    setUseManualOffer(true);
+    setOfferSelectorOpen(false);
+    setOfferSearchQuery('');
+  };
+
+  const selectFunnel = (funnel) => {
+    setSelectedFunnelId(funnel.id);
+    setFunnelSelectorOpen(false);
+    setFunnelSearchQuery('');
+  };
+
+  const clearFunnelSelection = () => {
+    setSelectedFunnelId(null);
+    setFunnelSelectorOpen(false);
+    setFunnelSearchQuery('');
   };
 
   const runGeneration = async () => {
@@ -567,23 +1031,43 @@ export default function ContentGeneratorPage() {
     setStatusMessage('Generating campaign...');
 
     try {
+      const mappedOffer = selectedOfferId
+        ? offers.find((offer) => offer.id === selectedOfferId)
+        : null;
+      const ctaLink = selectedFunnelId
+        ? `https://kimux.io/funnels/${selectedFunnelId}`
+        : (hoplink.trim() || 'https://example.com');
+
+      const affiliate_product = {
+        product_id: selectedOfferId || `manual-${Date.now()}`,
+        vendor: vendor.trim() || 'Unknown Vendor',
+        offer_name: offerName.trim() || 'Untitled Offer',
+        hoplink: ctaLink,
+        commission: {
+          model: 'percentage',
+          value: commission / 100,
+          currency: 'USD',
+          payout_frequency: 'weekly',
+        },
+        niche: selectedOfferId
+          ? (mappedOffer?.niche || 'general')
+          : 'general',
+        source_network: selectedOfferId
+          ? (mappedOffer?.network || 'manual')
+          : 'manual',
+        gravity: selectedOfferId
+          ? (mappedOffer?.gravity || null)
+          : null,
+        aov: selectedOfferId
+          ? (mappedOffer?.aov || null)
+          : null,
+        funnel_id: selectedFunnelId || null,
+      };
+
       const nextCampaign = await generateCampaign({
         prompt: prompt.trim(),
         platforms: selectedPlatforms,
-        affiliate_product: {
-          product_id: `manual-${Date.now()}`,
-          vendor: vendor.trim() || 'Unknown Vendor',
-          offer_name: offerName.trim() || 'Untitled Offer',
-          hoplink: hoplink.trim() || 'https://example.com',
-          commission: {
-            model: 'percentage',
-            value: commission / 100,
-            currency: 'USD',
-            payout_frequency: 'weekly',
-          },
-          niche: 'general',
-          source_network: 'manual',
-        },
+        affiliate_product,
         audience: {
           personas: ['new affiliate marketers'],
           demographics: {
@@ -604,6 +1088,7 @@ export default function ContentGeneratorPage() {
       });
 
       setCampaign(nextCampaign);
+      setHasUnsavedPreviewChanges(false);
       setStatusMessage('Campaign generation complete. Review and send to scheduler.');
     } catch (error) {
       setStatusMessage(error?.message || 'Campaign generation failed. Please try again.');
@@ -613,7 +1098,7 @@ export default function ContentGeneratorPage() {
   };
 
   const sendToScheduler = async () => {
-    if (!campaign || isGenerating) return;
+    if (!campaign || isGenerating || hasUnsavedPreviewChanges) return;
 
     try {
       const payload = !Object.keys(previewSelections).length
@@ -622,65 +1107,37 @@ export default function ContentGeneratorPage() {
           ...campaign,
           content_pieces: campaign.content_pieces.map((piece, index) => {
             const platformKey = piece?.platform || `Platform ${index + 1}`;
-            const platformSelections = previewSelections?.[platformKey];
-
-            if (!platformSelections) {
-              return piece;
-            }
-
-            const clampIndex = (value) => {
-              const safeValue = Number.isInteger(value) ? value : 0;
-              return Math.max(0, Math.min(2, safeValue));
-            };
-
-            const pickVariant = (value, indexValue) => {
-              const variants = [value, value, value];
-              return variants[clampIndex(indexValue)];
-            };
-
-            const selectedHeadline = pickVariant(piece?.copy?.headline, platformSelections.headline);
-            const selectedBody = pickVariant(piece?.copy?.body ?? piece?.copy?.caption, platformSelections.body);
-            const selectedCta = pickVariant(piece?.copy?.cta_text ?? piece?.cta_text, platformSelections.cta);
-            const selectedHashtags = pickVariant(
-              Array.isArray(piece?.hashtags) ? piece.hashtags : undefined,
-              platformSelections.hashtags,
-            );
-            const selectedImagePrompt = pickVariant(piece?.media?.image_prompt, platformSelections.imagePrompt);
-
-            const nextCopy = {
-              ...(piece?.copy || {}),
-            };
-
-            if (selectedHeadline !== undefined) {
-              nextCopy.headline = selectedHeadline;
-            }
-
-            if (selectedBody !== undefined) {
-              nextCopy.body = selectedBody;
-              nextCopy.caption = selectedBody;
-            }
-
-            const nextPiece = {
+            const platformSelections = previewSelections[platformKey] || {};
+            return {
               ...piece,
-              copy: nextCopy,
+              copy: {
+                ...piece.copy,
+                headline: Array.isArray(piece.copy?.headline)
+                  ? (platformSelections.headline ?? piece.copy.headline[0])
+                  : piece.copy?.headline,
+                body: Array.isArray(piece.copy?.body)
+                  ? (platformSelections.body ?? piece.copy.body[0])
+                  : piece.copy?.body,
+                caption: Array.isArray(piece.copy?.caption)
+                  ? (platformSelections.body ?? piece.copy.caption[0])
+                  : piece.copy?.caption,
+                subject_line: Array.isArray(piece.copy?.subject_line)
+                  ? (platformSelections.headline ?? piece.copy.subject_line[0])
+                  : piece.copy?.subject_line,
+              },
+              cta_text: Array.isArray(piece.cta_text)
+                ? (platformSelections.cta ?? piece.cta_text[0])
+                : piece.cta_text,
+              hashtags: platformSelections.hashtags ??
+                (Array.isArray(piece.hashtags?.[0]) ? piece.hashtags[0] : piece.hashtags),
+              media: {
+                ...piece.media,
+                image_prompt: Array.isArray(piece.media?.image_prompt)
+                  ? (platformSelections.imagePrompt ?? piece.media.image_prompt[0])
+                  : piece.media?.image_prompt,
+                image_url: platformSelections.imageUrl ?? piece.media?.image_url ?? null,
+              },
             };
-
-            if (selectedCta !== undefined) {
-              nextPiece.cta_text = selectedCta;
-            }
-
-            if (selectedHashtags !== undefined) {
-              nextPiece.hashtags = Array.isArray(selectedHashtags) ? [...selectedHashtags] : selectedHashtags;
-            }
-
-            if (selectedImagePrompt !== undefined) {
-              nextPiece.media = {
-                ...(piece?.media || {}),
-                image_prompt: selectedImagePrompt,
-              };
-            }
-
-            return nextPiece;
           }),
         };
 
@@ -743,7 +1200,7 @@ export default function ContentGeneratorPage() {
         <HeaderButton type="button" onClick={runGeneration} disabled={isGenerating}>
           {isGenerating ? 'Generating...' : 'Generate'}
         </HeaderButton>
-        <HeaderButton type="button" $ghost onClick={sendToScheduler} disabled={!campaign || isGenerating}>
+        <HeaderButton type="button" $ghost onClick={sendToScheduler} disabled={!campaign || isGenerating || hasUnsavedPreviewChanges}>
           Send to Scheduler
         </HeaderButton>
         </StickyButtonGroup>
@@ -776,16 +1233,98 @@ export default function ContentGeneratorPage() {
                 </ToggleChip>
               ))}
             </ToggleGrid>
+            <div style={{ fontSize: '11px', color: C.muted, marginTop: '8px', fontStyle: 'italic' }}>
+              Paid advertising platforms (Google Ads, TikTok Ads, Pinterest) — coming soon
+            </div>
           </PanelSection>
 
           <PanelSection>
-            <CollapsibleHeader type="button" onClick={() => setShowProductForm((prev) => !prev)}>
-              <CollapsibleTitle>Affiliate Product</CollapsibleTitle>
-              <Chevron>{showProductForm ? '▼' : '▶'}</Chevron>
-            </CollapsibleHeader>
+            <FieldLabel>Affiliate Product</FieldLabel>
 
-            {showProductForm ? (
+            {offersLoading && !useManualOffer ? (
+              <SubtleLoading>Loading offers...</SubtleLoading>
+            ) : (offers.length > 0 && !useManualOffer) ? (
+              <div>
+                <OfferSelectorWrap ref={offerSelectorRef}>
+                  <OfferSelectorTrigger
+                    type="button"
+                    onClick={() => setOfferSelectorOpen((prev) => !prev)}
+                  >
+                    <OfferTriggerText $placeholder={!selectedOffer}>
+                      {selectedOffer ? selectedOffer.name : 'Search your offers...'}
+                    </OfferTriggerText>
+                    <OfferTriggerActions>
+                      {selectedOffer ? (
+                        <OfferClearButton
+                          type="button"
+                          aria-label="Clear selected offer"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            clearOfferSelection();
+                          }}
+                        >
+                          ×
+                        </OfferClearButton>
+                      ) : null}
+                      <span>{offerSelectorOpen ? '▲' : '▼'}</span>
+                    </OfferTriggerActions>
+                  </OfferSelectorTrigger>
+
+                  {offerSelectorOpen ? (
+                    <OfferDropdown>
+                      <OfferSearchInput
+                        value={offerSearchQuery}
+                        onChange={(event) => setOfferSearchQuery(event.target.value)}
+                        placeholder="Filter by offer name or niche"
+                      />
+                      {filteredOffers.map((offer) => (
+                        <OfferItem
+                          key={offer.id}
+                          type="button"
+                          onClick={() => selectOffer(offer)}
+                        >
+                          <OfferMeta>
+                            <OfferName>{offer.name}</OfferName>
+                            <OfferSub>{offer.network || 'Unknown'} • {offer.niche || 'General'}</OfferSub>
+                          </OfferMeta>
+                          <OfferCommission>{Math.round((offer.commission_rate || 0) * 100)}%</OfferCommission>
+                        </OfferItem>
+                      ))}
+                      {!filteredOffers.length ? (
+                        <OfferItem as="div">
+                          <OfferSub>No matching offers</OfferSub>
+                        </OfferItem>
+                      ) : null}
+                    </OfferDropdown>
+                  ) : null}
+                </OfferSelectorWrap>
+
+                <SmallActionLink
+                  type="button"
+                  onClick={() => {
+                    setUseManualOffer(true);
+                    setSelectedOfferId(null);
+                    setOfferSelectorOpen(false);
+                  }}
+                >
+                  Enter manually instead →
+                </SmallActionLink>
+              </div>
+            ) : (
               <SectionGrid style={{ marginTop: '12px' }}>
+                {offers.length > 0 ? (
+                  <SmallActionLink
+                    type="button"
+                    onClick={() => {
+                      setUseManualOffer(false);
+                      setOfferSelectorOpen(false);
+                    }}
+                    style={{ marginTop: 0 }}
+                  >
+                    ← Select from your offers
+                  </SmallActionLink>
+                ) : null}
+
                 <div>
                   <FieldLabel>Offer Name</FieldLabel>
                   <TextInput value={offerName} onChange={(event) => setOfferName(event.target.value)} placeholder="Offer name" />
@@ -810,7 +1349,90 @@ export default function ContentGeneratorPage() {
                   </NumberSelect>
                 </div>
               </SectionGrid>
-            ) : null}
+            )}
+          </PanelSection>
+
+          <PanelSection>
+            <CollapsibleHeader type="button" onClick={() => setFunnelSelectorOpen((prev) => (funnels.length > 0 ? !prev : prev))}>
+              <CollapsibleTitle>Landing Page (Optional)</CollapsibleTitle>
+              <Chevron>{funnelSelectorOpen ? '▼' : '▶'}</Chevron>
+            </CollapsibleHeader>
+
+            {funnelsLoading ? (
+              <SubtleLoading style={{ marginTop: '12px' }}>Loading funnels...</SubtleLoading>
+            ) : funnels.length > 0 ? (
+              <div style={{ marginTop: '12px' }}>
+                <FunnelSelectorWrap ref={funnelSelectorRef}>
+                  <FunnelSelectorTrigger
+                    type="button"
+                    onClick={() => setFunnelSelectorOpen((prev) => !prev)}
+                  >
+                    <FunnelTriggerText $placeholder={!selectedFunnel}>
+                      {selectedFunnel ? selectedFunnel.title : 'No funnel selected — use direct affiliate link'}
+                    </FunnelTriggerText>
+                    <FunnelTriggerActions>
+                      {selectedFunnel ? (
+                        <FunnelClearButton
+                          type="button"
+                          aria-label="Clear selected funnel"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            clearFunnelSelection();
+                          }}
+                        >
+                          ×
+                        </FunnelClearButton>
+                      ) : null}
+                      <span>{funnelSelectorOpen ? '▲' : '▼'}</span>
+                    </FunnelTriggerActions>
+                  </FunnelSelectorTrigger>
+
+                  {funnelSelectorOpen ? (
+                    <FunnelDropdown>
+                      <FunnelSearchInput
+                        value={funnelSearchQuery}
+                        onChange={(event) => setFunnelSearchQuery(event.target.value)}
+                        placeholder="Filter by funnel title"
+                      />
+                      {filteredFunnels.map((funnel) => (
+                        <FunnelItem
+                          key={funnel.id}
+                          type="button"
+                          onClick={() => selectFunnel(funnel)}
+                        >
+                          <FunnelMeta>
+                            <FunnelName>{funnel.title}</FunnelName>
+                            <FunnelSub>Created {funnel.created_at ? new Date(funnel.created_at).toLocaleDateString() : 'recently'}</FunnelSub>
+                          </FunnelMeta>
+                          <FunnelDate>{funnel.status}</FunnelDate>
+                        </FunnelItem>
+                      ))}
+                      {!filteredFunnels.length ? (
+                        <FunnelItem as="div">
+                          <FunnelSub>No matching funnels</FunnelSub>
+                        </FunnelItem>
+                      ) : null}
+                    </FunnelDropdown>
+                  ) : null}
+                </FunnelSelectorWrap>
+
+                <FunnelInfo>
+                  {selectedFunnel
+                    ? '→ Campaigns will link to your funnel, which redirects to your affiliate URL'
+                    : '→ Campaigns will link directly to your affiliate URL'}
+                </FunnelInfo>
+              </div>
+            ) : (
+              <div style={{ marginTop: '12px' }}>
+                <div style={{ fontSize: '11px', color: C.muted }}>
+                  No ready funnels found. Create one in the Funnel Builder.{' '}
+                  <FunnelLink type="button" onClick={() => { window.location.href = '/crm/funnels/new'; }}>
+                    Go to /crm/funnels/new
+                  </FunnelLink>
+                </div>
+                <FunnelInfo>→ Campaigns will link directly to your affiliate URL</FunnelInfo>
+              </div>
+            )}
           </PanelSection>
 
           <PanelSection>
@@ -911,6 +1533,7 @@ export default function ContentGeneratorPage() {
                   contentPieces={campaign.content_pieces}
                   selections={previewSelections}
                   onSelectionsChange={handleSelectionsChange}
+                  onDirtyChange={setHasUnsavedPreviewChanges}
                 />
               </PlatformPreviews>
             ) : isGenerating ? (

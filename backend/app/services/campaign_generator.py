@@ -10,6 +10,7 @@ from app.core.config import settings
 import asyncio
 import json
 
+
 logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = (
@@ -330,7 +331,7 @@ class CampaignGeneratorService:
             print("=== DATAFORSEO CREDENTIALS NOT SET — SKIPPING ===")
             return []
 
-        endpoint = "https://api.dataforseo.com/v3/keywords_data/google/search_volume/live"
+        endpoint = "https://api.dataforseo.com/v3/keywords_data/google/keywords_for_keywords/live"
         credentials = f"{settings.dataforseo_login}:{settings.dataforseo_password}".encode("utf-8")
         encoded_credentials = base64.b64encode(credentials).decode("utf-8")
         payload = json.dumps(
@@ -339,6 +340,7 @@ class CampaignGeneratorService:
                     "keywords": [topic],
                     "language_code": "en",
                     "location_code": 2840,
+                    "limit": 10
                 }
             ]
         ).encode("utf-8")
@@ -360,24 +362,23 @@ class CampaignGeneratorService:
             collected: list[dict] = []
             for task in parsed.get("tasks", []) or []:
                 for result in task.get("result", []) or []:
-                    for item in result.get("items", []) or []:
-                        keyword = item.get("keyword")
-                        if not keyword:
-                            continue
-                        search_volume = int(item.get("search_volume") or 0)
-                        keyword_difficulty = int(item.get("keyword_difficulty") or 0)
-                        cpc = float(item.get("cpc") or 0.0)
-                        collected.append(
-                            {
-                                "keyword": str(keyword),
-                                "search_volume": search_volume,
-                                "keyword_difficulty": keyword_difficulty,
-                                "cpc": cpc,
-                            }
-                        )
+                    keyword = result.get("keyword")
+                    if not keyword:
+                        continue
+                    search_volume = int(result.get("search_volume") or 0)
+                    competition = float(result.get("competition") or 0.0)
+                    cpc = float(result.get("cpc") or 0.0)
+                    collected.append(
+                        {
+                            "keyword": str(keyword),
+                            "search_volume": search_volume,
+                            "keyword_difficulty": int(competition * 100),
+                            "cpc": cpc,
+                        }
+                    )
 
             collected.sort(key=lambda entry: entry.get("search_volume", 0), reverse=True)
-            return collected[:5]
+            return collected[:10]
 
         try:
             keywords = await asyncio.to_thread(_make_request)
@@ -449,6 +450,42 @@ class CampaignGeneratorService:
             return ""
 
         return "Target audience — write copy that speaks directly to these people:\n" + "\n".join(lines)
+
+    # Lightweight pre-generation call to extract a high-quality DataForSEO seed keyword.
+    async def _extract_seed_keyword(self, request: CampaignGenerateRequest) -> str:
+        offer_name = str(request.affiliate_product.get("offer_name") or "").strip()
+        niche = str(request.affiliate_product.get("niche") or "").strip()
+        network = str(request.affiliate_product.get("source_network") or "").strip()
+        prompt_excerpt = request.prompt[:200].strip()
+
+        prompt_words = request.prompt.lower().split()
+        filler = {'a', 'an', 'the', 'for', 'to', 'how', 'and', 'or', 'of', 'in', 'on', 'with', 'that', 'this', 'is', 'are', 'from'}
+        meaningful_words = [w for w in prompt_words if w not in filler]
+        fallback = offer_name.lower() if offer_name else " ".join(meaningful_words[:3])
+
+        seed = fallback
+        try:
+            api_key = settings.gemini_api_key
+            if api_key:
+                user_prompt = (
+                    "Return a single 2-4 word keyword phrase that best represents what someone "
+                    "would search on Google to find this type of product.\n"
+                    f"Offer name: {offer_name}\n"
+                    f"Niche: {niche}\n"
+                    f"Network: {network}\n"
+                    f"Prompt: {prompt_excerpt}\n\n"
+                    "Return ONLY the keyword phrase. No quotes, no explanation, no punctuation."
+                )
+                raw = await self._call_gemini(api_key, user_prompt)
+                candidate = raw.strip().strip('"').strip("'").lower().strip()
+                word_count = len(candidate.split())
+                if candidate and 1 <= word_count <= 5:
+                    seed = candidate
+        except Exception:
+            pass
+
+        print(f"=== AI EXTRACTED SEED KEYWORD: {seed} ===")
+        return seed
 
     # Deterministic local payload for development and offline testing.
     def _build_mock_contract(self, request: CampaignGenerateRequest) -> dict:
@@ -537,7 +574,9 @@ class CampaignGeneratorService:
                 detail="Campaign generation failed: GEMINI_API_KEY is not configured.",
             )
 
-        keywords = await self._fetch_keywords(request.prompt)
+        seed = await self._extract_seed_keyword(request)
+        keywords = await self._fetch_keywords(seed)
+
         commission_value = request.affiliate_product.get("commission", {}).get("value", 0)
         try:
             commission_percent = float(commission_value) * 100
@@ -563,6 +602,7 @@ class CampaignGeneratorService:
         )
 
         keyword_context = self._build_keyword_context(keywords)
+        print(f"=== KEYWORD CONTEXT BEING INJECTED: '{keyword_context}' ===")
         if keyword_context:
             base_user_prompt += f"\n\n{keyword_context}"
 
@@ -571,9 +611,6 @@ class CampaignGeneratorService:
             base_user_prompt += f"\n\n{audience_context}"
 
         first_attempt = await self._call_gemini(api_key, base_user_prompt)
-        print("=== GEMINI RAW RESPONSE ===")
-        print(first_attempt[:2000])  # first 2000 chars
-        print("===========================")
         parsed = self._try_parse_json(first_attempt)
         if parsed is not None:
             return self._build_contract_from_gemini_output(parsed, request, keywords)

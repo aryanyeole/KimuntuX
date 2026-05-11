@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.core.tenancy import get_current_tenant
@@ -12,9 +13,14 @@ from app.models.lead import LeadClassification, LeadSource, LeadStage
 from app.models.tenant import Tenant
 from app.models.user import User
 from app.schemas.campaign import CampaignCreate, CampaignListResponse, CampaignResponse, CampaignUpdate
-from app.schemas.communication import CommunicationCreate, CommunicationListResponse, CommunicationResponse
+from app.schemas.communication import CommunicationCreate, CommunicationListResponse, CommunicationResponse, SendEmailRequest
 from app.schemas.dashboard import DashboardSummaryResponse
-from app.schemas.integration import IntegrationListResponse, IntegrationResponse
+from app.schemas.integration import (
+    IntegrationListResponse,
+    IntegrationResponse,
+    SendGridConnectRequest,
+    SendGridStatusResponse,
+)
 from app.schemas.lead import (
     ActivityCreate,
     ActivityResponse,
@@ -30,23 +36,30 @@ from app.schemas.lead import (
 from app.schemas.offer import (
     AccountStatusResponse,
     ClickBankConnectRequest,
-    MarketplaceStatusResponse,
     MarketplaceSyncResponse,
     OfferCreate,
     OfferListResponse,
     OfferResponse,
+    OfferUpdate,
+    UserAddedOfferCreate,
 )
+from app.schemas.funnel import FunnelCreate, FunnelListResponse, FunnelResponse, FunnelUpdate
 from app.schemas.strategy import StrategyListResponse, StrategyResponse, StrategyWizardInput
 from app.services import (
     ai_service,
     campaign_service,
     communication_service,
     dashboard_service,
+    funnel_generator,
+    funnel_service,
     integration_service,
     lead_service,
     offer_service,
     strategy_service,
 )
+from app.services.exceptions import SendGridSendError, TenantIsolationError
+from app.services.campaign_analysis_service import CampaignAnalysisService
+from app.services.test_metrics_service import TestMetricsService
 
 router = APIRouter(prefix="/crm", tags=["crm"])
 
@@ -235,7 +248,13 @@ def list_campaigns(
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> CampaignListResponse:
-    return campaign_service.get_campaigns(db, tenant.id, page=page, limit=limit)
+    return campaign_service.get_campaigns(
+        db,
+        tenant_id=tenant.id,
+        page=page,
+        limit=limit,
+        test_mode=settings.campaign_test_mode,
+    )
 
 
 @router.post("/campaigns", response_model=CampaignResponse, status_code=status.HTTP_201_CREATED)
@@ -244,7 +263,7 @@ def create_campaign(
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> CampaignResponse:
-    campaign = campaign_service.create_campaign(db, payload, tenant.id)
+    campaign = campaign_service.create_campaign(db, payload, tenant_id=tenant.id)
     return CampaignResponse.model_validate(campaign)
 
 
@@ -254,7 +273,7 @@ def get_campaign(
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> CampaignResponse:
-    campaign = campaign_service.get_campaign_by_id(db, campaign_id, tenant.id)
+    campaign = campaign_service.get_campaign_by_id(db, campaign_id, tenant_id=tenant.id)
     return CampaignResponse.model_validate(campaign)
 
 
@@ -265,8 +284,19 @@ def update_campaign(
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> CampaignResponse:
-    campaign = campaign_service.update_campaign(db, campaign_id, payload, tenant.id)
+    campaign = campaign_service.update_campaign(db, campaign_id, payload, tenant_id=tenant.id)
     return CampaignResponse.model_validate(campaign)
+
+
+@router.post("/campaigns/{campaign_id}/analyze")
+async def analyze_campaign(
+    campaign_id: str,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> dict:
+    campaign = campaign_service.get_campaign_by_id(db, campaign_id, tenant_id=tenant.id)
+    campaign_payload = TestMetricsService.inject_metrics([campaign], settings.campaign_test_mode)[0]
+    return await CampaignAnalysisService().analyze(campaign_payload)
 
 
 # ---------------------------------------------------------------------------
@@ -278,6 +308,7 @@ def list_offers(
     niche: str | None = Query(default=None),
     network: str | None = Query(default=None),
     source: str | None = Query(default=None),
+    tag: str | None = Query(default=None),
     sort_by: str = Query(default="gravity"),
     sort_dir: str = Query(default="desc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
@@ -285,36 +316,39 @@ def list_offers(
 ) -> OfferListResponse:
     return offer_service.get_offers(
         db, tenant.id, niche=niche, network=network, source=source,
-        sort_by=sort_by, sort_dir=sort_dir,
+        sort_by=sort_by, sort_dir=sort_dir, tag=tag,
     )
 
 
 @router.post("/offers", response_model=OfferResponse, status_code=status.HTTP_201_CREATED)
-def create_offer(
-    payload: OfferCreate,
+def create_user_added_offer(
+    payload: UserAddedOfferCreate,
     db: Session = Depends(get_db),
     tenant: Tenant = Depends(get_current_tenant),
 ) -> OfferResponse:
-    offer = offer_service.create_offer(db, payload, tenant.id)
+    offer = offer_service.create_user_added_offer(db, payload, tenant.id)
     return OfferResponse.model_validate(offer)
 
 
-@router.post("/offers/marketplace/sync", response_model=MarketplaceSyncResponse)
-def sync_marketplace(
+@router.patch("/offers/{offer_id}", response_model=OfferResponse)
+def update_user_added_offer(
+    offer_id: str,
+    payload: OfferUpdate,
     db: Session = Depends(get_db),
-    _tenant: Tenant = Depends(get_current_tenant),
-) -> MarketplaceSyncResponse:
-    """Sync public ClickBank marketplace offers into the system tenant (platform creds)."""
-    return offer_service.sync_marketplace_offers(db)
+    tenant: Tenant = Depends(get_current_tenant),
+) -> OfferResponse:
+    offer = offer_service.update_user_added_offer(db, offer_id, payload, tenant.id)
+    return OfferResponse.model_validate(offer)
 
 
-@router.get("/offers/marketplace/status", response_model=MarketplaceStatusResponse)
-def marketplace_status(
+@router.delete("/offers/{offer_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+def delete_user_added_offer(
+    offer_id: str,
     db: Session = Depends(get_db),
-    _tenant: Tenant = Depends(get_current_tenant),
-) -> MarketplaceStatusResponse:
-    """Return marketplace offer count and last sync timestamp."""
-    return offer_service.get_marketplace_status(db)
+    tenant: Tenant = Depends(get_current_tenant),
+) -> Response:
+    offer_service.delete_user_added_offer(db, offer_id, tenant.id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------------------------------------------------------------------
@@ -340,6 +374,29 @@ def create_communication(
     return CommunicationResponse.model_validate(comm)
 
 
+@router.post(
+    "/leads/{lead_id}/communications/send-email",
+    response_model=CommunicationResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def send_email_to_lead(
+    lead_id: str,
+    payload: SendEmailRequest,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+    current_user: User = Depends(get_current_user),
+) -> CommunicationResponse:
+    try:
+        comm = communication_service.send_outreach_email(
+            db, tenant.id, lead_id, current_user, payload.subject, payload.body
+        )
+        return CommunicationResponse.model_validate(comm)
+    except TenantIsolationError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lead not found")
+    except SendGridSendError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
+
+
 # ---------------------------------------------------------------------------
 # Integrations
 # ---------------------------------------------------------------------------
@@ -350,6 +407,42 @@ def list_integrations(
     tenant: Tenant = Depends(get_current_tenant),
 ) -> IntegrationListResponse:
     return integration_service.get_integrations(db, tenant.id)
+
+
+# ── SendGrid email-sender config (must be defined BEFORE generic {platform_name} routes) ──
+
+@router.get("/integrations/sendgrid/status", response_model=SendGridStatusResponse)
+def sendgrid_status(
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> SendGridStatusResponse:
+    return integration_service.get_sendgrid_config(db, tenant.id)
+
+
+@router.post("/integrations/sendgrid/connect", response_model=SendGridStatusResponse)
+def sendgrid_connect(
+    payload: SendGridConnectRequest,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> SendGridStatusResponse:
+    return integration_service.connect_sendgrid(db, tenant.id, str(payload.sender_email), payload.sender_name)
+
+
+@router.delete("/integrations/sendgrid/disconnect", response_model=SendGridStatusResponse)
+def sendgrid_disconnect(
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> SendGridStatusResponse:
+    return integration_service.disconnect_sendgrid(db, tenant.id)
+
+
+@router.post("/integrations/sendgrid/test-send")
+def sendgrid_test_send(
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    return integration_service.send_sendgrid_test_email(db, tenant.id, current_user.email)
 
 
 @router.post("/integrations/{platform_name}/connect", response_model=IntegrationResponse)
@@ -446,3 +539,103 @@ def get_strategy(
     """Return a single strategy. Returns 404 if it doesn't belong to the current user."""
     strategy = strategy_service.get_strategy_by_id(db, strategy_id, str(current_user.id))
     return StrategyResponse.model_validate(strategy)
+
+
+# ---------------------------------------------------------------------------
+# Funnels
+# ---------------------------------------------------------------------------
+
+@router.post("/funnels", response_model=FunnelResponse, status_code=status.HTTP_201_CREATED)
+def create_funnel(
+    payload: FunnelCreate,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+    current_user: User = Depends(get_current_user),
+) -> FunnelResponse:
+    funnel = funnel_service.create_funnel(db, tenant.id, str(current_user.id), payload)
+    return FunnelResponse.model_validate(funnel)
+
+
+@router.get("/funnels", response_model=FunnelListResponse)
+def list_funnels(
+    page: int = Query(default=1, ge=1),
+    limit: int = Query(default=20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelListResponse:
+    items, total = funnel_service.list_funnels(db, tenant.id, page=page, limit=limit)
+    from app.schemas.funnel import FunnelListItem
+    return FunnelListResponse(
+        items=[FunnelListItem.model_validate(f) for f in items],
+        total=total,
+    )
+
+
+@router.get("/funnels/{funnel_id}", response_model=FunnelResponse)
+def get_funnel(
+    funnel_id: str,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelResponse:
+    funnel = funnel_service.get_funnel(db, tenant.id, funnel_id)
+    if funnel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    return FunnelResponse.model_validate(funnel)
+
+
+@router.patch("/funnels/{funnel_id}", response_model=FunnelResponse)
+def update_funnel(
+    funnel_id: str,
+    payload: FunnelUpdate,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelResponse:
+    if payload.title is None:
+        funnel = funnel_service.get_funnel(db, tenant.id, funnel_id)
+    else:
+        funnel = funnel_service.update_funnel_title(db, tenant.id, funnel_id, payload.title)
+    if funnel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    return FunnelResponse.model_validate(funnel)
+
+
+@router.delete("/funnels/{funnel_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+def delete_funnel(
+    funnel_id: str,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> Response:
+    deleted = funnel_service.delete_funnel(db, tenant.id, funnel_id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/funnels/{funnel_id}/generate", response_model=FunnelResponse)
+def generate_funnel(
+    funnel_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelResponse:
+    funnel = funnel_service.get_funnel(db, tenant.id, funnel_id)
+    if funnel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    funnel = funnel_service.mark_generating(db, tenant.id, funnel_id)
+    background_tasks.add_task(funnel_generator.generate_funnel_async, funnel_id, tenant.id)
+    return FunnelResponse.model_validate(funnel)
+
+
+@router.post("/funnels/{funnel_id}/regenerate", response_model=FunnelResponse)
+def regenerate_funnel(
+    funnel_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    tenant: Tenant = Depends(get_current_tenant),
+) -> FunnelResponse:
+    funnel = funnel_service.get_funnel(db, tenant.id, funnel_id)
+    if funnel is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Funnel not found")
+    funnel = funnel_service.reset_for_regenerate(db, tenant.id, funnel_id)
+    background_tasks.add_task(funnel_generator.generate_funnel_async, funnel_id, tenant.id)
+    return FunnelResponse.model_validate(funnel)

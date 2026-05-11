@@ -1330,6 +1330,25 @@ export default function CRMContentScheduler() {
     return groups;
   }, [scheduledContentInSelectedWeek, selectedWeekStart]);
 
+  const selectedCampaignImage = useMemo(() => {
+    const pieces = selectedCampaign?._campaign?.content_pieces || selectedCampaign?.content_pieces;
+    if (!selectedCampaign || !Array.isArray(pieces)) {
+      return null;
+    }
+
+    for (const piece of pieces) {
+      const imageUrl = piece?.media?.image_url;
+      if (imageUrl) {
+        return {
+          imageUrl,
+          platform: piece?.platform || '',
+        };
+      }
+    }
+
+    return null;
+  }, [selectedCampaign]);
+
   return (
     <Page>
       <PageInner>
@@ -1522,10 +1541,31 @@ export default function CRMContentScheduler() {
                 </PanelHeader>
 
                 <PanelBody>
-                  <ImagePlaceholder>
-                    {/* Real campaign image generation would render here once the asset pipeline is available. */}
-                    No image yet
-                  </ImagePlaceholder>
+                  {selectedCampaignImage ? (
+                    <div>
+                      <img
+                        src={selectedCampaignImage.imageUrl}
+                        alt={selectedCampaign.name}
+                        style={{
+                          width: '100%',
+                          borderRadius: '8px',
+                          objectFit: 'cover',
+                          maxHeight: '200px',
+                          display: 'block',
+                        }}
+                      />
+                      {selectedCampaignImage.platform ? (
+                        <div style={{ marginTop: '6px', fontSize: '11px', color: C.muted }}>
+                          {selectedCampaignImage.platform}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <ImagePlaceholder>
+                      {/* Real campaign image generation would render here once the asset pipeline is available. */}
+                      No image yet
+                    </ImagePlaceholder>
+                  )}
 
                   <FieldGrid>
                     <Field>

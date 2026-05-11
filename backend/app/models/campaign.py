@@ -59,6 +59,12 @@ class Campaign(Base):
         index=True,
         nullable=False,
     )
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     status: Mapped[CampaignStatus] = mapped_column(String(32), default=CampaignStatus.draft, nullable=False)
     theme_color: Mapped[str | None] = mapped_column(String(20), nullable=True)

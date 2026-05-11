@@ -15,10 +15,6 @@ from app.core.database import get_db
 from app.models.user import User
 
 
-# Use a stable pure-Python hash scheme for local/dev compatibility.
-pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.api_v1_prefix}/auth/login")
-# Use a passlib-native scheme to avoid local bcrypt backend compatibility issues.
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.api_v1_prefix}/auth/token")
 
@@ -73,9 +69,17 @@ def get_current_user(
     return user
 
 
-def get_current_admin(
-    current_user: User = Depends(get_current_user),
-) -> User:
+def get_platform_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    """Dependency that gates access to platform-admin-only endpoints."""
+    if not current_user.is_platform_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Platform admin access required.",
+        )
+    return current_user
+
+
+def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
     if not getattr(current_user, "is_admin", False):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

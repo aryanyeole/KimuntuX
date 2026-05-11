@@ -1,8 +1,11 @@
 $ErrorActionPreference = "Stop"
 
 $targets = @(
+    "*KimuX_BlockchainIntegration*hardhat*",
     "*KimuntuX_BlockchainIntegration*hardhat*",
+    "*KimuX_BlockchainIntegration*node_modules*hardhat*",
     "*KimuntuX_BlockchainIntegration*node_modules*hardhat*",
+    "*uvicorn app.main:app*",
     "*uvicorn main:app*",
     "*react-scripts start*",
     "*node_modules*react-scripts*"

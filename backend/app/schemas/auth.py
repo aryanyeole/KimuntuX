@@ -12,9 +12,9 @@ class UserSignup(BaseModel):
     full_name: str = Field(min_length=1, max_length=255)
     email: EmailStr
     password: str = Field(min_length=6, max_length=128)
-    phone: str = Field(min_length=5, max_length=64, description="Contact phone at signup")
-    address: str = Field(min_length=5, max_length=512, description="Street / city / region at signup")
-    signup_plan: SignupPlan = Field(description="Selected pricing tier (payment integration later)")
+    phone: str | None = Field(default=None, min_length=5, max_length=64)
+    address: str | None = Field(default=None, min_length=5, max_length=512)
+    signup_plan: SignupPlan | None = None
 
 
 class UserLogin(BaseModel):
@@ -62,15 +62,15 @@ class UserResponse(BaseModel):
 
     @field_validator("is_active", "is_admin", mode="before")
     @classmethod
-    def bool_none_to_false(cls, v: object) -> bool:
-        return False if v is None else bool(v)
+    def bool_none_to_false(cls, value: object) -> bool:
+        return False if value is None else bool(value)
 
     @field_validator("full_name", mode="before")
     @classmethod
-    def empty_name_to_unknown(cls, v: object) -> str:
-        if v is None or (isinstance(v, str) and not v.strip()):
+    def empty_name_to_unknown(cls, value: object) -> str:
+        if value is None or (isinstance(value, str) and not value.strip()):
             return "User"
-        return str(v)
+        return str(value)
 
 
 class TokenResponse(BaseModel):

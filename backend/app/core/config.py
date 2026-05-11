@@ -5,6 +5,7 @@ import json
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
     app_name: str = "KimuX Backend"
     app_env: str = "development"
@@ -14,23 +15,42 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:3000"]
-    # Ensured on startup (create or update). Override via env in production.
+    # Bootstrap admin ensured on startup (override via env in production).
     bootstrap_admin_email: str = "yannick@example.com"
     bootstrap_admin_password: str = "Capstone@123"
     bootstrap_admin_full_name: str = "Yannick"
     gemini_api_key: str | None = None
+    testing: bool = False
+    campaign_test_mode: bool = False
 
-    # ── Phase 2: Encryption + ClickBank ──────────────────────────────────────
+    # ── Encryption ────────────────────────────────────────────────────────────
     # Required for encrypting tenant credentials. Generate with:
     #   cd backend && python -m app.scripts.generate_fernet_key
     kimux_fernet_key: str | None = None
 
-    # Platform-level ClickBank credential (single developer key, post-Aug 2023 auth model).
-    # Used for marketplace data — visible to all tenants.
-    # Obtain from https://accounts.clickbank.com/developer/index.htm
-    clickbank_developer_key: str | None = None
+    # ── SendGrid ──────────────────────────────────────────────────────────────
+    # Platform-owned SendGrid account. Per-tenant keys deferred to Phase 5.
+    sendgrid_api_key: str | None = None
 
-    # ── Blockchain Configuration ─────────────────────────────────────────────
+    # ECDSA public key from SendGrid Mail Settings → Event Webhook → Signature.
+    # Required at startup if SENDGRID_API_KEY is set.
+    sendgrid_event_webhook_public_key: str | None = None
+
+    # Toggle signature verification on the Inbound Parse webhook.
+    # Default false in dev (no MX record pointed at localhost).
+    sendgrid_inbound_verify: bool = False
+    sendgrid_inbound_public_key: str | None = None
+
+    # ── Reply address tokens ──────────────────────────────────────────────────
+    # HMAC secret for reply-to address tokens. Required at startup.
+    # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    kimux_reply_token_secret: str | None = None
+    reply_domain: str = "reply.kimux.io"
+
+    # ── Outbound email sender ─────────────────────────────────────────────────
+    default_sender_email: str | None = None
+    default_sender_name: str = "KimuX"
+    clickbank_developer_key: str | None = None
     sepolia_rpc_url: str = "http://127.0.0.1:8545"
     sepolia_rpc_fallback: str | None = None
     platform_private_key: str | None = None
@@ -45,6 +65,30 @@ class Settings(BaseSettings):
     gemini_mock_mode: bool = True
     dataforseo_login: str | None = None
     dataforseo_password: str | None = None
+
+    # ── Ayrshare / Social Publishing ─────────────────────────────────────────
+    # API key for Ayrshare social publishing. Optional — if absent, the
+    # AyrshareService runs in mock mode (returns fake publish_result dicts).
+    # Obtain from app.ayrshare.com → API Key. Set to activate real posting.
+    ayrshare_api_key: str | None = None
+
+    # ── AWS / S3 Image Storage ────────────────────────────────────────────────
+    # Optional. When aws_s3_bucket is set, ImageStorageService uploads generated
+    # and user-uploaded images to S3 instead of storing base64 data URLs in the
+    # campaign JSON. See docs/S3_IMAGE_STORAGE_HANDOFF.md for setup steps.
+    aws_s3_bucket: str | None = None
+    aws_s3_region: str = "us-east-1"
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: str | None = None
+
+    # ── Anthropic / Funnel Builder ────────────────────────────────────────────
+    # Claude API key for funnel HTML generation. Optional — if absent, funnel
+    # generation falls back to static templates. See CLAUDE.md "AI provider
+    # exception": this is the ONE feature on the platform that uses Claude.
+    anthropic_api_key: str | None = None
+    # Set true to force static-template fallback even when the key is present.
+    # Useful for local dev when you don't want to burn API tokens.
+    funnel_fallback_only: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",

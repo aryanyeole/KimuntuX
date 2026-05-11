@@ -6,10 +6,6 @@ function useIntegrations() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ── ClickBank marketplace state ─────────────────────────────────────────────
-  const [marketplaceStatus, setMarketplaceStatus] = useState(null);
-  const [marketplaceLoading, setMarketplaceLoading] = useState(false);
-
   // ── ClickBank account state ─────────────────────────────────────────────────
   const [clickbankAccount, setClickbankAccount] = useState(null);
   const [clickbankAccountLoading, setClickbankAccountLoading] = useState(false);
@@ -44,28 +40,6 @@ function useIntegrations() {
     setIntegrations(prev => prev.map(i => i.platform_name === platformName ? updated : i));
     return updated;
   }, []);
-
-  // ── ClickBank marketplace ───────────────────────────────────────────────────
-
-  const fetchMarketplaceStatus = useCallback(async () => {
-    try {
-      const data = await api.get('/api/v1/crm/offers/marketplace/status');
-      setMarketplaceStatus(data);
-    } catch {
-      // non-fatal
-    }
-  }, []);
-
-  const syncMarketplace = useCallback(async () => {
-    setMarketplaceLoading(true);
-    try {
-      const result = await api.post('/api/v1/crm/offers/marketplace/sync');
-      await fetchMarketplaceStatus();
-      return result;
-    } finally {
-      setMarketplaceLoading(false);
-    }
-  }, [fetchMarketplaceStatus]);
 
   // ── ClickBank account ───────────────────────────────────────────────────────
 
@@ -115,6 +89,30 @@ function useIntegrations() {
     }
   }, [fetchClickbankAccountStatus]);
 
+  // ── SendGrid email-sender config ────────────────────────────────────────────
+
+  const sendgridIntegration = integrations.find(i => i.platform_name === 'sendgrid') || null;
+  const isSendGridConnected = sendgridIntegration?.status === 'connected';
+
+  const connectSendGrid = useCallback(async ({ senderEmail, senderName }) => {
+    const result = await api.post('/api/v1/crm/integrations/sendgrid/connect', {
+      sender_email: senderEmail,
+      sender_name: senderName,
+    });
+    await fetchIntegrations();
+    return result;
+  }, [fetchIntegrations]);
+
+  const disconnectSendGrid = useCallback(async () => {
+    const result = await api.delete('/api/v1/crm/integrations/sendgrid/disconnect');
+    await fetchIntegrations();
+    return result;
+  }, [fetchIntegrations]);
+
+  const sendSendGridTestEmail = useCallback(async () => {
+    return api.post('/api/v1/crm/integrations/sendgrid/test-send');
+  }, []);
+
   return {
     integrations,
     loading,
@@ -122,11 +120,12 @@ function useIntegrations() {
     refetch: fetchIntegrations,
     connect,
     disconnect,
-    // marketplace
-    marketplaceStatus,
-    marketplaceLoading,
-    fetchMarketplaceStatus,
-    syncMarketplace,
+    // sendgrid email sender
+    sendgridIntegration,
+    isSendGridConnected,
+    connectSendGrid,
+    disconnectSendGrid,
+    sendSendGridTestEmail,
     // clickbank account
     clickbankAccount,
     clickbankAccountLoading,

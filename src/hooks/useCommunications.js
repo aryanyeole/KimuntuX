@@ -38,7 +38,18 @@ function useCommunications(leadId = null) {
     return created;
   }, []);
 
-  return { messages, total, loading, error, refetch: fetchMessages, sendMessage };
+  const sendEmail = useCallback(async ({ subject, body }) => {
+    if (!leadId) throw new Error('sendEmail requires a leadId');
+    const created = await api.post(
+      `/api/v1/crm/leads/${leadId}/communications/send-email`,
+      { subject, body }
+    );
+    setMessages(prev => [created, ...prev]);
+    setTotal(prev => prev + 1);
+    return created;
+  }, [leadId]);
+
+  return { messages, total, loading, error, refetch: fetchMessages, sendMessage, sendEmail };
 }
 
 export default useCommunications;

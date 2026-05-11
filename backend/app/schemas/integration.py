@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from app.models.integration import IntegrationStatus, PlatformType
 
@@ -23,3 +23,16 @@ class IntegrationResponse(BaseModel):
 
 class IntegrationListResponse(BaseModel):
     data: list[IntegrationResponse]
+
+
+# ── SendGrid email-sender config ───────────────────────────────────────────────
+
+class SendGridConnectRequest(BaseModel):
+    sender_email: EmailStr
+    sender_name: str
+
+
+class SendGridStatusResponse(BaseModel):
+    connected: bool
+    sender_email: str | None = None
+    sender_name: str | None = None

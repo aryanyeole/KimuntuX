@@ -16,6 +16,11 @@ class CommunicationCreate(BaseModel):
     meta: dict | None = None
 
 
+class SendEmailRequest(BaseModel):
+    subject: str = Field(min_length=1, max_length=512)
+    body: str = Field(min_length=1)
+
+
 class CommunicationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
@@ -27,6 +32,10 @@ class CommunicationResponse(BaseModel):
     body: str
     preview: str | None
     read: bool
+    status: str | None = None
+    from_email: str | None = None
+    to_email: str | None = None
+    provider_message_id: str | None = None
     meta: dict | None
     timestamp: datetime
 

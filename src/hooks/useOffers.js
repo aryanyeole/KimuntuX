@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 
-/**
- * @param {Object} params - { niche, network, source, sort_by, sort_dir }
- */
 function useOffers(params = {}) {
   const [offers, setOffers] = useState([]);
   const [total, setTotal] = useState(0);
@@ -29,7 +26,24 @@ function useOffers(params = {}) {
     fetchOffers();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { offers, total, loading, error, refetch: fetchOffers };
+  const addOffer = useCallback(async (payload) => {
+    const result = await api.post('/api/v1/crm/offers', payload);
+    await fetchOffers();
+    return result;
+  }, [fetchOffers]);
+
+  const updateOffer = useCallback(async (offerId, payload) => {
+    const result = await api.patch(`/api/v1/crm/offers/${offerId}`, payload);
+    setOffers(prev => prev.map(o => o.id === offerId ? result : o));
+    return result;
+  }, []);
+
+  const deleteOffer = useCallback(async (offerId) => {
+    await api.delete(`/api/v1/crm/offers/${offerId}`);
+    setOffers(prev => prev.filter(o => o.id !== offerId));
+  }, []);
+
+  return { offers, total, loading, error, refetch: fetchOffers, addOffer, updateOffer, deleteOffer };
 }
 
 export default useOffers;

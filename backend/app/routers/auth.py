@@ -24,7 +24,6 @@ from app.schemas.auth import (
     UserSignup,
 )
 
-
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
@@ -52,19 +51,17 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is already registered")
 
-    # Create user first so we have an ID
     user = User(
         full_name=payload.full_name.strip(),
         email=payload.email.lower(),
         hashed_password=hash_password(payload.password),
-        phone=payload.phone.strip(),
-        address=payload.address.strip(),
+        phone=(payload.phone or "").strip() or None,
+        address=(payload.address or "").strip() or None,
         signup_plan=payload.signup_plan,
     )
     db.add(user)
     db.flush()
 
-    # Create default tenant for the new user
     base_slug = _slugify(payload.full_name.strip())
     slug = base_slug
     counter = 1
@@ -80,7 +77,6 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
     db.add(tenant)
     db.flush()
 
-    # Link user to tenant as owner
     membership = TenantMembership(
         tenant_id=tenant.id,
         user_id=user.id,
@@ -88,7 +84,6 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
     )
     db.add(membership)
 
-    # Set user's default tenant
     user.default_tenant_id = tenant.id
     db.commit()
     db.refresh(user)
@@ -100,6 +95,15 @@ def signup(payload: UserSignup, db: Session = Depends(get_db)) -> TokenResponse:
         user=UserResponse.model_validate(user),
         tenant=TenantResponse.model_validate(tenant),
     )
+
+
+@router.post("/token", response_model=OAuthTokenResponse)
+def token(
+    form: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+) -> OAuthTokenResponse:
+    user = authenticate_user(form.username, form.password, db)
+    return OAuthTokenResponse(access_token=create_access_token(user.id))
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -140,7 +144,7 @@ def update_current_user(
     return UserResponse.model_validate(current_user)
 
 
-@router.post("/me/change-password", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/me/change-password", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 def change_password(
     payload: PasswordChangeRequest,
     db: Session = Depends(get_db),
@@ -153,13 +157,13 @@ def change_password(
     db.commit()
 
 
-@router.post("/me/delete", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/me/delete", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 def delete_own_account(
     payload: AccountDeleteRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:
-    if current_user.is_admin:
+    if current_user.is_admin or getattr(current_user, "is_platform_admin", False):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Admin accounts cannot be deleted through this endpoint.",
@@ -170,22 +174,22 @@ def delete_own_account(
     uid = current_user.id
     memberships = list(db.scalars(select(TenantMembership).where(TenantMembership.user_id == uid)).all())
     tenant_ids = {m.tenant_id for m in memberships}
-    for m in memberships:
-        db.delete(m)
+    for membership in memberships:
+        db.delete(membership)
     db.flush()
 
-    for tid in tenant_ids:
+    for tenant_id in tenant_ids:
         remaining = db.scalar(
-            select(func.count()).select_from(TenantMembership).where(TenantMembership.tenant_id == tid)
+            select(func.count()).select_from(TenantMembership).where(TenantMembership.tenant_id == tenant_id)
         )
         if remaining == 0:
-            tenant = db.get(Tenant, tid)
+            tenant = db.get(Tenant, tenant_id)
             if tenant:
                 db.delete(tenant)
 
-    u = db.get(User, uid)
-    if u:
-        db.delete(u)
+    user = db.get(User, uid)
+    if user:
+        db.delete(user)
     db.commit()
 
 

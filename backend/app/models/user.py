@@ -24,6 +24,7 @@ class User(Base):
     address: Mapped[str | None] = mapped_column(String(512), nullable=True)
     signup_plan: Mapped[str | None] = mapped_column(String(32), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_platform_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     default_tenant_id: Mapped[str | None] = mapped_column(
         String(36),

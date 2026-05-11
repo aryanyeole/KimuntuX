@@ -6,9 +6,15 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.integration import Integration, IntegrationStatus
+from app.integrations import sendgrid_client
+from app.models.integration import Integration, IntegrationStatus, PlatformType
 from app.models.integration_credential import IntegrationCredential
-from app.schemas.integration import IntegrationListResponse, IntegrationResponse
+from app.schemas.integration import (
+    IntegrationListResponse,
+    IntegrationResponse,
+    SendGridConnectRequest,
+    SendGridStatusResponse,
+)
 from app.schemas.offer import AccountStatusResponse, ClickBankConnectRequest
 
 
@@ -60,6 +66,118 @@ def disconnect_platform(db: Session, platform_name: str, tenant_id: str) -> Inte
     db.commit()
     db.refresh(integration)
     return IntegrationResponse.model_validate(integration)
+
+
+# ── SendGrid email-sender config ──────────────────────────────────────────────
+
+def get_sendgrid_config(db: Session, tenant_id: str) -> SendGridStatusResponse:
+    integration = db.scalar(
+        select(Integration).where(
+            Integration.platform_name == "sendgrid",
+            Integration.tenant_id == tenant_id,
+        )
+    )
+    if integration is None or integration.status != IntegrationStatus.connected:
+        return SendGridStatusResponse(connected=False)
+    cfg = integration.config or {}
+    return SendGridStatusResponse(
+        connected=True,
+        sender_email=cfg.get("sender_email"),
+        sender_name=cfg.get("sender_name"),
+    )
+
+
+def connect_sendgrid(
+    db: Session, tenant_id: str, sender_email: str, sender_name: str
+) -> SendGridStatusResponse:
+    """Upsert the SendGrid Integration row with sender config (no secrets stored)."""
+    integration = db.scalar(
+        select(Integration).where(
+            Integration.platform_name == "sendgrid",
+            Integration.tenant_id == tenant_id,
+        )
+    )
+    now = datetime.now(timezone.utc)
+    config = {"sender_email": sender_email, "sender_name": sender_name}
+    if integration is None:
+        integration = Integration(
+            tenant_id=tenant_id,
+            platform_name="sendgrid",
+            platform_type=PlatformType.tool,
+            status=IntegrationStatus.connected,
+            config=config,
+            connected_at=now,
+        )
+        db.add(integration)
+    else:
+        integration.config = config
+        integration.status = IntegrationStatus.connected
+        integration.connected_at = now
+    db.commit()
+    db.refresh(integration)
+    return SendGridStatusResponse(connected=True, sender_email=sender_email, sender_name=sender_name)
+
+
+def disconnect_sendgrid(db: Session, tenant_id: str) -> SendGridStatusResponse:
+    """Mark SendGrid disconnected and clear sender config."""
+    integration = db.scalar(
+        select(Integration).where(
+            Integration.platform_name == "sendgrid",
+            Integration.tenant_id == tenant_id,
+        )
+    )
+    if integration is None or integration.status != IntegrationStatus.connected:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="SendGrid is not connected for this tenant.",
+        )
+    integration.status = IntegrationStatus.disconnected
+    integration.config = {}
+    db.commit()
+    return SendGridStatusResponse(connected=False)
+
+
+def send_sendgrid_test_email(db: Session, tenant_id: str, to_email: str) -> dict:
+    """Send a real test email to verify SendGrid + sender config are live."""
+    from app.core.config import settings
+
+    integration = db.scalar(
+        select(Integration).where(
+            Integration.platform_name == "sendgrid",
+            Integration.tenant_id == tenant_id,
+            Integration.status == IntegrationStatus.connected,
+        )
+    )
+    if integration is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Configure a sender email in Settings → Email Sender first.",
+        )
+
+    cfg = integration.config or {}
+    sender_email = cfg.get("sender_email") or settings.default_sender_email
+    sender_name = cfg.get("sender_name") or settings.default_sender_name or "KimuX"
+
+    if not sender_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No sender email configured.",
+        )
+
+    try:
+        result = sendgrid_client.send_email(
+            from_email=sender_email,
+            from_name=sender_name,
+            to_email=to_email,
+            subject="KimuX — Test Email",
+            body_text=(
+                "This is a test email from your KimuX CRM.\n\n"
+                "If you received this, your SendGrid sender is configured correctly."
+            ),
+        )
+        return {"success": True, "message_id": result.message_id, "status_code": result.status_code}
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
 
 
 # ── ClickBank account credential management ────────────────────────────────────

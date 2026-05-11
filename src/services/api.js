@@ -45,15 +45,19 @@ async function handleResponse(res) {
 
   // Try to extract the error detail from the response body
   let detail = `HTTP ${res.status}`;
+  let responseData = null;
   try {
-    const body = await res.json();
-    detail = body.detail || body.message || JSON.stringify(body);
+    responseData = await res.json();
+    detail = responseData.detail || responseData.message || JSON.stringify(responseData);
   } catch {
     // body wasn't JSON — use status text
     detail = res.statusText || detail;
   }
-  const err = new Error(detail);
+  // Coerce array details to string for err.message so old callers still work;
+  // attach raw responseData so formatApiError can format it properly.
+  const err = new Error(Array.isArray(detail) ? JSON.stringify(detail) : detail);
   err.status = res.status;
+  err.responseData = responseData; // raw parsed body; detail may be string or array
   throw err;
 }
 

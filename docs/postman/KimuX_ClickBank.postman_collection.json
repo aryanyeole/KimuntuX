@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "KimuX — ClickBank Integration",
-    "description": "Phase 2 endpoints: marketplace sync (platform credentials) + account connect/sync (tenant credentials).\n\nPre-requisites:\n1. Set {{base_url}} = http://localhost:8000\n2. Log in via POST /api/v1/auth/token and set {{token}} = access_token\n3. Set {{tenant_id}} = your tenant UUID (from GET /api/v1/auth/me/tenant)\n\nCredential tiers:\n- Platform: KimuX's own CLICKBANK_DEVELOPER_KEY in .env — powers marketplace for all users\n- Tenant: per-user developer key stored Fernet-encrypted in integration_credentials table",
+    "description": "Phase 2 endpoints: account connect/sync (tenant credentials).\n\nPre-requisites:\n1. Set {{base_url}} = http://localhost:8000\n2. Log in via POST /api/v1/auth/token and set {{token}} = access_token\n3. Set {{tenant_id}} = your tenant UUID (from GET /api/v1/auth/me/tenant)\n\nCredential tier:\n- Tenant: per-user developer key stored Fernet-encrypted in integration_credentials table",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -37,75 +37,6 @@
           "request": {
             "method": "GET",
             "url": "{{base_url}}/api/v1/auth/me/tenant"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Marketplace (Platform Credentials)",
-      "description": "Syncs public ClickBank marketplace using KimuX's own platform developer key (CLICKBANK_DEVELOPER_KEY env var). Offers land under SYSTEM_TENANT_ID and are visible to all tenants.",
-      "item": [
-        {
-          "name": "Sync Marketplace",
-          "request": {
-            "method": "POST",
-            "url": "{{base_url}}/api/v1/crm/offers/marketplace/sync",
-            "header": [
-              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
-            ]
-          },
-          "response": [
-            {
-              "name": "200 OK",
-              "status": "OK",
-              "code": 200,
-              "body": "{\n  \"synced\": 47,\n  \"created\": 47,\n  \"updated\": 0,\n  \"last_synced_at\": \"2026-04-17T10:30:00Z\"\n}"
-            },
-            {
-              "name": "503 — Platform key not configured",
-              "status": "Service Unavailable",
-              "code": 503,
-              "body": "{ \"detail\": \"Platform ClickBank credential not configured. Set CLICKBANK_DEVELOPER_KEY in .env\" }"
-            }
-          ]
-        },
-        {
-          "name": "Marketplace Status",
-          "request": {
-            "method": "GET",
-            "url": "{{base_url}}/api/v1/crm/offers/marketplace/status",
-            "header": [
-              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
-            ]
-          },
-          "response": [
-            {
-              "name": "200 OK",
-              "status": "OK",
-              "code": 200,
-              "body": "{\n  \"offer_count\": 47,\n  \"last_synced_at\": \"2026-04-17T10:30:00Z\"\n}"
-            }
-          ]
-        },
-        {
-          "name": "List Offers (all sources)",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/v1/crm/offers?sort_by=gravity&sort_dir=desc",
-              "host": ["{{base_url}}"],
-              "path": ["api", "v1", "crm", "offers"],
-              "query": [
-                { "key": "sort_by",  "value": "gravity" },
-                { "key": "sort_dir", "value": "desc" },
-                { "key": "niche",    "value": "", "disabled": true },
-                { "key": "network",  "value": "", "disabled": true },
-                { "key": "source",   "value": "clickbank_marketplace", "disabled": true }
-              ]
-            },
-            "header": [
-              { "key": "X-Tenant-ID", "value": "{{tenant_id}}" }
-            ]
           }
         }
       ]
