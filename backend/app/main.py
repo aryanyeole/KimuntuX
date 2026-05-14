@@ -15,7 +15,7 @@ from app.core.database import SessionLocal, engine, ensure_sqlite_campaign_colum
 from app.core.tenancy import SYSTEM_TENANT_ID
 from app.models.base import Base
 from app.models.tenant import Tenant, TenantPlan
-from app.routers import admin, auth, campaigns, contacts, crm, support, webhooks
+from app.routers import admin, auth, campaigns, campaigns, contacts, crm, support, public_funnels, webhooks
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,18 @@ if not settings.testing:
             "SENDGRID_EVENT_WEBHOOK_PUBLIC_KEY is not set. "
             "Find it in SendGrid Mail Settings → Event Webhook → Signature Verification."
         )
+from app.core.database import SessionLocal, engine, ensure_sqlite_campaign_columns
+from app.core.tenancy import SYSTEM_TENANT_ID
+from app.models.tenant import Tenant, TenantPlan
+from app.models.base import Base
+from app.routers.blockchain.commission import router as commission_router
+from app.routers.blockchain.escrow import router as escrow_router
+from app.routers.blockchain.network import router as network_router
+from app.routers.blockchain.wallet import router as wallet_router
+from app.schemas.blockchain import ErrorResponse
+
+logger = logging.getLogger(__name__)
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -158,6 +170,7 @@ app.include_router(support.router, prefix=settings.api_v1_prefix)
 app.include_router(campaigns.router, prefix=settings.api_v1_prefix)
 app.include_router(crm.router, prefix=settings.api_v1_prefix)
 app.include_router(admin.router, prefix=settings.api_v1_prefix)
+app.include_router(public_funnels.router, prefix=settings.api_v1_prefix)
 app.include_router(webhooks.router, prefix=settings.api_v1_prefix)
 
 

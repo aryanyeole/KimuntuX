@@ -43,7 +43,7 @@ _BASE_INPUT = WizardInput(
 
 def test_build_generation_prompt_includes_all_wizard_fields():
     """Every non-empty wizard field must appear at least once in the user_prompt."""
-    _, user_prompt = build_generation_prompt(_BASE_INPUT)
+    _, user_prompt = build_generation_prompt(_BASE_INPUT, funnel_id="test-id")
 
     assert "PeakFuel Nutrition" in user_prompt
     assert "Fuel your peak" in user_prompt
@@ -64,7 +64,7 @@ def test_build_generation_prompt_includes_all_wizard_fields():
 
 def test_system_prompt_forbids_scripts():
     """System prompt must explicitly forbid <script> tags / JavaScript."""
-    system_prompt, _ = build_generation_prompt(_BASE_INPUT)
+    system_prompt, _ = build_generation_prompt(_BASE_INPUT, funnel_id="test-id")
 
     lower = system_prompt.lower()
     # At least one clear prohibition on scripts/JS must be present
@@ -73,8 +73,27 @@ def test_system_prompt_forbids_scripts():
 
 def test_system_prompt_includes_form_marker_instruction():
     """System prompt must instruct Claude to include the KIMUX_LEAD_FORM marker."""
-    system_prompt, _ = build_generation_prompt(_BASE_INPUT)
+    system_prompt, _ = build_generation_prompt(_BASE_INPUT, funnel_id="test-id")
     assert "KIMUX_LEAD_FORM" in system_prompt
+
+
+def test_system_prompt_includes_real_submit_url():
+    """System prompt must contain the real submit URL when funnel_id is provided."""
+    funnel_id = "abc123-real-funnel"
+    system_prompt, user_prompt = build_generation_prompt(
+        _BASE_INPUT,
+        funnel_id=funnel_id,
+        base_url="https://api.kimux.io",
+    )
+    expected = f"/api/v1/public/funnels/{funnel_id}/submit"
+    assert expected in system_prompt
+    assert expected in user_prompt
+
+
+def test_submit_url_falls_back_to_hash_when_no_funnel_id():
+    """When funnel_id is empty (e.g. unit tests), the action falls back to '#'."""
+    system_prompt, user_prompt = build_generation_prompt(_BASE_INPUT)
+    assert 'action="#"' in system_prompt or 'action="#"' in user_prompt
 
 
 def test_excluded_sections_not_requested_in_prompt():
@@ -101,8 +120,8 @@ def test_excluded_sections_not_requested_in_prompt():
         update={"include_pricing": True, "include_faq": True}
     )
 
-    _, prompt_no_pricing = build_generation_prompt(no_pricing_input)
-    _, prompt_with_pricing = build_generation_prompt(with_pricing_input)
+    _, prompt_no_pricing = build_generation_prompt(no_pricing_input, funnel_id="t")
+    _, prompt_with_pricing = build_generation_prompt(with_pricing_input, funnel_id="t")
 
     # "Pricing" section should appear MORE in the prompt that has it enabled
     count_no_pricing = prompt_no_pricing.lower().count("pricing")
@@ -120,6 +139,6 @@ def test_excluded_sections_not_requested_in_prompt():
 
 def test_generation_instruction_in_user_prompt():
     """User prompt must contain the final generation instruction."""
-    _, user_prompt = build_generation_prompt(_BASE_INPUT)
+    _, user_prompt = build_generation_prompt(_BASE_INPUT, funnel_id="test-id")
     assert "Generate the complete HTML now" in user_prompt
     assert "KIMUX_LEAD_FORM" in user_prompt

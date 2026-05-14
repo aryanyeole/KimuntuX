@@ -468,7 +468,7 @@ export default function CRMFunnelDetail() {
           <IframeWrap>
             <iframe
               srcDoc={funnel.generated_html}
-              sandbox="allow-same-origin"
+              sandbox="allow-same-origin allow-forms"
               title={funnel.title}
               style={{ width: '100%', height: '70vh', border: 'none', display: 'block' }}
             />

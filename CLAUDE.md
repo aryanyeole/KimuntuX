@@ -237,35 +237,84 @@ preserved everywhere except funnel HTML generation.
   submissions are added.
 
 - **FB3** ✅ COMPLETE — Real Claude generation + rule-based fallback.
-  Anthropic SDK `0.97.0` pinned (`anthropic>=0.40.0` in requirements.txt).
-  `backend/app/integrations/anthropic_client.py` wraps the Messages API
-  with streaming (sync + `asyncio.to_thread`), HTML extraction, and typed
-  exceptions. `backend/app/services/funnel_prompt.py` builds the
-  (system_prompt, user_prompt) pair from WizardInput. Three static fallback
-  templates (minimal/modern/bold) in `backend/app/services/funnel_templates/`
-  rendered via Jinja2. `funnel_generator.py` rewritten: Anthropic path with
-  HTML validation (must contain KIMUX_LEAD_FORM marker), fallback on known
-  API errors (rate-limit/timeout/auth/server), mark_failed on unexpected
-  exceptions. Config: `ANTHROPIC_API_KEY` (soft-fail — fallback if absent),
-  `FUNNEL_FALLBACK_ONLY` (force template path). Frontend metadata panel
-  shows source badge (green=anthropic, yellow=fallback), token counts, timing.
-  165 passing tests (1 live Anthropic test skipped by default; run with
-  `RUN_LIVE_ANTHROPIC_TESTS=1`). Fallback path tested end-to-end in CI.
-  Observed p50 generation latency: ~20–35 s. Observed token counts:
-  ~5000–8000 in, ~4000–7000 out (varies by wizard content and layout).
-  Insufficient-credits handling (fixup): `AnthropicInsufficientCredits`
-  exception routes to static-template fallback with
-  `fallback_reason="insufficient_credits"`. `_classify_bad_request` helper
-  separates credits-depleted 400s (fallback-eligible) from other 400s
-  (mark-failed, so prompt/param bugs surface). Discovered during FB3
-  verification when the Anthropic account had $0 in credits. Covered by
-  `test_anthropic_client.py` (unit) and two new entries in
-  `TestFunnelFallback` (integration).
-- **FB5** — Public form submissions wire to CRM leads (new public
-  endpoint, generation prompt instructs Claude to include the form,
-  fallback templates include the form, leads flow into existing pipeline
-  with `source=funnel`). This is what makes it a real CRM feature, not
-  a standalone AI demo.
+  Anthropic SDK 0.97.0, Claude Sonnet 4.5 with streaming, max_tokens=16000.
+  Static template fallback (minimal/modern/bold) renders when API key is
+  missing, fallback flag is set, or specific operational errors occur
+  (rate limit, timeout, server error, insufficient credits). 5 typed
+  exception classes route correctly between fallback and hard-fail paths.
+  
+  Verified end-to-end:
+  - Fallback path: tested with $0 credits during initial build, yellow
+    badge + template renders correctly.
+  - Anthropic success path: tested after sponsor topped up credits.
+    Generation produces ~16K output tokens in ~180s. Output is
+    substantively different from fallback templates (Claude makes
+    bespoke design choices). Green ANTHROPIC badge, real token counts,
+    model claude-sonnet-4-5.
+  
+  Demo data hygiene note: do NOT use real brand names (Gymshark, Nike,
+  etc.) as company_name in funnels shown to sponsors or anyone external —
+  Claude generates legitimately professional output that uses the brand
+  name as a real wordmark. For testing only. Fictional names for demos.
+  
+  Open observations to monitor:
+  - First generation took 180s, longer than expected 15-45s. May be
+    cold start; rerun and confirm subsequent generations are faster.
+  - Output tokens hit 15,991 of 16,000 max — Claude likely stopped on
+    budget, not on completion. Watch for truncated HTML in FB5
+    verification (form may be missing if cutoff happens before contact
+    section). If this becomes a pattern, increase max_tokens or split
+    generation into sections.
+    
+- - **FB5** ✅ COMPLETE — Public form submissions wire to CRM leads.
+  Verified end-to-end with the "Rush Landing Page" funnel: real Claude
+  generation (claude-sonnet-4-5, 1,483/13,128 tokens, 155s), form
+  submitted from inside the in-app iframe with name="John Doe",
+  email="john@example.com", message="This test is successful". Browser
+  navigated to the thank-you page, lead created in /crm/leads with
+  source="funnel" (purple pill), source_detail="Rush Landing Page",
+  notes containing the message. The funnel builder is now a complete
+  CRM primitive — generated landing pages capture leads into the
+  existing pipeline.
+
+  **Two non-obvious configuration items discovered during verification
+  (must persist into production):**
+
+  1. **Iframe sandbox must include `allow-forms`.** The iframe in
+     `src/pages/crm/CRMFunnelDetail.js` is now set to
+     `sandbox="allow-same-origin allow-forms"`. Without `allow-forms`,
+     the browser silently blocks form submissions inside the iframe —
+     the click does nothing, no console error, no network request, no
+     backend log entry. Diagnosing this is hard because there's no
+     visible failure signal.
+
+  2. **`FUNNEL_PUBLIC_BASE_URL` must be set, even in dev.** The form's
+     `action` URL is built from this env var. Empty value produces a
+     relative URL that resolves against the React dev server
+     (localhost:3000), which has no proxy and returns "Cannot POST."
+     Local dev value: `http://localhost:8000`. Production value:
+     whatever the deployed backend URL is (e.g., `https://api.kimux.co`).
+     **DEPLOY CHECKLIST:** set this env var BEFORE generating any
+     production funnels. Funnels generated with the wrong base URL
+     will have a broken form action baked into their HTML until
+     regenerated. Pre-existing dev funnels generated before this env
+     var was set will also need regeneration.
+
+  **Test coverage gap:** Unit tests can't catch the iframe sandbox
+  bug or the base URL bug — both are integration-level issues that
+  only manifest in a real browser. The 9 new tests in
+  `test_public_funnels.py` validate the backend route, lead creation,
+  multi-tenancy, and HTML response, but cannot validate "does the
+  form actually submit when a human clicks the button inside the
+  iframe." Funnel form submission is now part of the manual smoke
+  test required for any production deploy.
+
+  **Phase 6+ hardening items deferred:**
+  - Rate limiting on the public submit endpoint
+  - Honeypot or CAPTCHA bot defense
+  - Post-process Claude output to strip `<form>` tags whose `action`
+    doesn't start with `/api/v1/public/funnels/` (defense against
+    Claude generating forms pointing elsewhere)
 - **FB4** — Edit-via-chat (chat UI on edit page, edit endpoint, edit
   prompt that preserves structure, conversation history in
   `Funnel.edit_history` JSON column).

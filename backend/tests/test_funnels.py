@@ -506,7 +506,7 @@ class TestFunnelFallback:
         from app.core.config import settings
         from app.integrations.anthropic_client import AnthropicInsufficientCredits
 
-        def _mock_run_credits(wi):
+        def _mock_run_credits(wi, funnel_id, base_url):
             raise AnthropicInsufficientCredits(
                 "Your credit balance is too low to access the Anthropic API."
             )
@@ -542,7 +542,7 @@ class TestFunnelFallback:
         from app.core.config import settings
         from app.integrations.anthropic_client import AnthropicError
 
-        def _mock_run_bad_request(wi):
+        def _mock_run_bad_request(wi, funnel_id, base_url):
             raise AnthropicError("max_tokens must be a positive integer")
 
         monkeypatch.setattr(settings, "anthropic_api_key", "sk-fake-for-test")

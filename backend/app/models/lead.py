@@ -19,6 +19,7 @@ class LeadSource(str, enum.Enum):
     affiliate_link = "affiliate_link"
     website_widget = "website_widget"
     api = "api"
+    funnel = "funnel"
 
 
 class LeadStage(str, enum.Enum):
