@@ -266,17 +266,55 @@ preserved everywhere except funnel HTML generation.
     section). If this becomes a pattern, increase max_tokens or split
     generation into sections.
     
-- **FB5** ✅ COMPLETE — Public form submissions wire to CRM leads.
-  `POST /api/v1/public/funnels/{funnel_id}/submit` (no auth) looks up
-  the funnel, validates status=ready, creates a Lead in the funnel's
-  tenant with `source="funnel"` and `source_detail=funnel.title`, logs
-  a form_submit Activity, and returns an HTML thank-you page.
-  `LeadSource.funnel` added to model + Alembic migration
-  `f6a7b8c9d0e1`. Generation prompt and fallback templates now embed
-  the real submit URL (not `action="#"`). `FUNNEL_PUBLIC_BASE_URL`
-  setting controls the base URL (empty=relative in dev, absolute in
-  prod). CRMLeads.js shows funnel source in purple with source_detail
-  below the pill. 9 new tests; total suite: 179 passed + 1 skipped.
+- - **FB5** ✅ COMPLETE — Public form submissions wire to CRM leads.
+  Verified end-to-end with the "Rush Landing Page" funnel: real Claude
+  generation (claude-sonnet-4-5, 1,483/13,128 tokens, 155s), form
+  submitted from inside the in-app iframe with name="John Doe",
+  email="john@example.com", message="This test is successful". Browser
+  navigated to the thank-you page, lead created in /crm/leads with
+  source="funnel" (purple pill), source_detail="Rush Landing Page",
+  notes containing the message. The funnel builder is now a complete
+  CRM primitive — generated landing pages capture leads into the
+  existing pipeline.
+
+  **Two non-obvious configuration items discovered during verification
+  (must persist into production):**
+
+  1. **Iframe sandbox must include `allow-forms`.** The iframe in
+     `src/pages/crm/CRMFunnelDetail.js` is now set to
+     `sandbox="allow-same-origin allow-forms"`. Without `allow-forms`,
+     the browser silently blocks form submissions inside the iframe —
+     the click does nothing, no console error, no network request, no
+     backend log entry. Diagnosing this is hard because there's no
+     visible failure signal.
+
+  2. **`FUNNEL_PUBLIC_BASE_URL` must be set, even in dev.** The form's
+     `action` URL is built from this env var. Empty value produces a
+     relative URL that resolves against the React dev server
+     (localhost:3000), which has no proxy and returns "Cannot POST."
+     Local dev value: `http://localhost:8000`. Production value:
+     whatever the deployed backend URL is (e.g., `https://api.kimux.co`).
+     **DEPLOY CHECKLIST:** set this env var BEFORE generating any
+     production funnels. Funnels generated with the wrong base URL
+     will have a broken form action baked into their HTML until
+     regenerated. Pre-existing dev funnels generated before this env
+     var was set will also need regeneration.
+
+  **Test coverage gap:** Unit tests can't catch the iframe sandbox
+  bug or the base URL bug — both are integration-level issues that
+  only manifest in a real browser. The 9 new tests in
+  `test_public_funnels.py` validate the backend route, lead creation,
+  multi-tenancy, and HTML response, but cannot validate "does the
+  form actually submit when a human clicks the button inside the
+  iframe." Funnel form submission is now part of the manual smoke
+  test required for any production deploy.
+
+  **Phase 6+ hardening items deferred:**
+  - Rate limiting on the public submit endpoint
+  - Honeypot or CAPTCHA bot defense
+  - Post-process Claude output to strip `<form>` tags whose `action`
+    doesn't start with `/api/v1/public/funnels/` (defense against
+    Claude generating forms pointing elsewhere)
 - **FB4** — Edit-via-chat (chat UI on edit page, edit endpoint, edit
   prompt that preserves structure, conversation history in
   `Funnel.edit_history` JSON column).
