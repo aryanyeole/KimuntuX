@@ -38,7 +38,7 @@ export const UserProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
+    const API_BASE = process.env.REACT_APP_API_URL || '';
     const bootstrap = async () => {
       const savedUser = localStorage.getItem('kimuntu_user');
       const savedToken = localStorage.getItem('kimuntu_token');

@@ -7,7 +7,7 @@
 
 import { BrowserProvider, Contract, formatEther, parseEther } from 'ethers';
 
-const API_URL = process.env.REACT_APP_BLOCKCHAIN_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_BLOCKCHAIN_API_URL || process.env.REACT_APP_API_URL || '';
 const NETWORK = process.env.REACT_APP_BLOCKCHAIN_NETWORK || 'localhost';
 const DEFAULT_COMMISSION_RATE_BPS = Number(process.env.REACT_APP_DEFAULT_COMMISSION_RATE_BPS || 10000);
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';

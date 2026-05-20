@@ -240,7 +240,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const forgotFlow = new URLSearchParams(location.search).get('forgot') === '1';
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
   const [formData, setFormData] = useState({
     email: '',
     password: ''

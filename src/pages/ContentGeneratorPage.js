@@ -838,7 +838,7 @@ export default function ContentGeneratorPage() {
         if (token) headers.Authorization = `Bearer ${token}`;
         if (tenantId) headers['X-Tenant-ID'] = tenantId;
 
-        const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const baseUrl = process.env.REACT_APP_API_URL || '';
         const url = new URL(`${baseUrl}/api/v1/crm/offers`);
         url.searchParams.set('sort_by', 'gravity');
         url.searchParams.set('sort_dir', 'desc');
@@ -882,7 +882,7 @@ export default function ContentGeneratorPage() {
         if (token) headers.Authorization = `Bearer ${token}`;
         if (tenantId) headers['X-Tenant-ID'] = tenantId;
 
-        const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+        const baseUrl = process.env.REACT_APP_API_URL || '';
         const url = new URL(`${baseUrl}/api/v1/crm/funnels`);
         url.searchParams.set('page', '1');
         url.searchParams.set('limit', '100');

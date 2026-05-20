@@ -1,6 +1,6 @@
 import { clearAccessToken, getAccessToken } from './authService';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 // Canonical scheduler record contract used across UI and future API mode.
 export const SCHEDULER_RECURRENCE_OPTIONS = ['once', 'weekly', 'biweekly', 'monthly'];

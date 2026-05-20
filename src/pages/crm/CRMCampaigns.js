@@ -10,7 +10,7 @@ const STATUS_COLOR = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 const fmtMoney = n => '$' + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
 const fmtPct = n => `${Number(n || 0).toFixed(2)}%`;

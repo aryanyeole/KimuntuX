@@ -5,7 +5,7 @@ import { parseJsonOrApiError } from '../../utils/parseFetchJson';
 import { crm as C } from '../../styles/crmTheme';
 import { useUser } from '../../contexts/UserContext';
 
-const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:8000/api/v1';
+const API_BASE = process.env.REACT_APP_API_URL || '';
 
 const Overlay = styled.div`
   position: fixed;
