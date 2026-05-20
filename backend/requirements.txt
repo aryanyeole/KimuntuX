@@ -3,6 +3,7 @@ uvicorn[standard]
 sqlalchemy
 alembic
 psycopg[binary]
+psycopg2-binary
 pydantic-settings
 python-jose[cryptography]
 passlib[bcrypt]
