@@ -26,8 +26,9 @@ NOW = datetime.now(timezone.utc).isoformat()
 def upgrade() -> None:
     # Insert system tenant (ignore if already exists)
     op.execute(
-        f"INSERT OR IGNORE INTO tenants (id, name, slug, plan, created_at, updated_at) "
-        f"VALUES ('{SYSTEM_TENANT_ID}', 'System', 'system', 'free', '{NOW}', '{NOW}')"
+        f"INSERT INTO tenants (id, name, slug, plan, created_at, updated_at) "
+        f"VALUES ('{SYSTEM_TENANT_ID}', 'System', 'system', 'free', '{NOW}', '{NOW}') "
+        f"ON CONFLICT (id) DO NOTHING"
     )
 
     # Backfill all NULL tenant_ids to system tenant

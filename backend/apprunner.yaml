@@ -1,0 +1,44 @@
+version: 1.0
+runtime: python311
+build:
+  commands:
+    build:
+      - pip install -r requirements.txt
+      - python -m alembic upgrade head
+run:
+  command: uvicorn app.main:app --host 0.0.0.0 --port 8080
+  network:
+    port: 8080
+  env:
+    - name: APP_ENV
+      value: production
+    - name: CORS_ORIGINS
+      value: '["https://kimux.co","https://www.kimux.co"]'
+    - name: FUNNEL_PUBLIC_BASE_URL
+      value: https://REPLACE_AFTER_APPRUNNER_DEPLOY.awsapprunner.com
+    - name: GEMINI_MOCK_MODE
+      value: "false"
+    - name: DEFAULT_SENDER_EMAIL
+      value: contact@kimux.co
+    - name: DEFAULT_SENDER_NAME
+      value: KimuX
+    - name: REPLY_DOMAIN
+      value: kimux.co
+    - name: SENDGRID_INBOUND_VERIFY
+      value: "false"
+    - name: DATABASE_URL
+      value_from: arn:aws:secretsmanager:us-east-1:281505305629:secret:kimux/database-url-21uavB
+    - name: JWT_SECRET_KEY
+      value_from: arn:aws:secretsmanager:us-east-1:281505305629:secret:kimux/jwt-secret-YI3mNB
+    - name: KIMUX_FERNET_KEY
+      value_from: arn:aws:secretsmanager:us-east-1:281505305629:secret:kimux/fernet-key-trow59
+    - name: KIMUX_REPLY_TOKEN_SECRET
+      value_from: arn:aws:secretsmanager:us-east-1:281505305629:secret:kimux/reply-token-secret-1Kdc9D
+    - name: GEMINI_API_KEY
+      value_from: arn:aws:secretsmanager:us-east-1:281505305629:secret:kimux/gemini-key-0Hq3lK
+    - name: SENDGRID_API_KEY
+      value_from: arn:aws:secretsmanager:us-east-1:281505305629:secret:kimux/sendgrid-key-7j32bP
+    - name: SENDGRID_EVENT_WEBHOOK_PUBLIC_KEY
+      value_from: arn:aws:secretsmanager:us-east-1:281505305629:secret:kimux/sendgrid-webhook-key-M5g9DC
+    - name: ANTHROPIC_API_KEY
+      value_from: arn:aws:secretsmanager:us-east-1:281505305629:secret:kimux/anthropic-key-0LFNL9
