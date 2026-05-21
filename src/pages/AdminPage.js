@@ -217,7 +217,7 @@ const EmptyNote = styled.p`
   }
 `;
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || ''}/api/v1`;
 
 const PLAN_LABEL = { starter: 'Starter', growth: 'Pro', scalex: 'Enterprise' };
 function planLabel(id) {

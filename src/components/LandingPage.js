@@ -1886,7 +1886,7 @@ const SliderContainer = styled.div`
 
 const LandingPage = () => {
   const theme = useTheme();
-  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+  const API_BASE_URL = `${process.env.REACT_APP_API_URL || ''}/api/v1`;
   const [showVideo, setShowVideo] = useState(false);
   const [openFaqPreview, setOpenFaqPreview] = useState(new Set());
   const [isContactSubmitting, setIsContactSubmitting] = useState(false);

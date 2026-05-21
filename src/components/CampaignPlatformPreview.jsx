@@ -3,7 +3,7 @@ import styled, { keyframes } from 'styled-components';
 import { getAccessToken } from '../services/authService';
 import { crm as C } from '../styles/crmTheme';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || ''}/api/v1`;
 
 const spin = keyframes`
   from { transform: rotate(0deg); }

@@ -357,7 +357,7 @@ const SuccessMessage = styled.div`
 const SignupPage = () => {
   const { login } = useUser();
   const navigate = useNavigate();
-  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+  const API_BASE_URL = `${process.env.REACT_APP_API_URL || ''}/api/v1`;
   const [formData, setFormData] = useState({
     name: '',
     email: '',

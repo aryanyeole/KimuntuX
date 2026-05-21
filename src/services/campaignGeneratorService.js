@@ -1,6 +1,6 @@
 import { getAccessToken } from './authService';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+const API_BASE_URL = `${process.env.REACT_APP_API_URL || ''}/api/v1`;
 
 // Normalize optional fields so the backend always gets a stable payload shape.
 export async function generateCampaign(payload) {

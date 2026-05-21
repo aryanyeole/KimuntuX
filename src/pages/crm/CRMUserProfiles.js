@@ -5,7 +5,7 @@ import { useUser } from '../../contexts/UserContext';
 import { parseJsonOrApiError } from '../../utils/parseFetchJson';
 import { crm as C } from '../../styles/crmTheme';
 
-const API_BASE = process.env.REACT_APP_API_URL || '';
+const API_BASE = `${process.env.REACT_APP_API_URL || ''}/api/v1`;
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(6px); }
